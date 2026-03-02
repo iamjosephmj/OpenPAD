@@ -81,3 +81,10 @@ dependencies {
     androidTestImplementation(libs.test.core)
     androidTestImplementation(libs.test.ext.junit)
 }
+
+tasks.register<Exec>("runNativeTests") {
+    group = "verification"
+    description = "Build and run C++ unit tests on host (requires cmake, gcc/g++)"
+    workingDir = file("src/test/cpp")
+    commandLine("sh", "-c", "cmake -B build -S . && cmake --build build && ctest --test-dir build --output-on-failure")
+}

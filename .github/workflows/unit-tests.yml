@@ -1,0 +1,46 @@
+name: Unit Tests
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  kotlin-tests:
+    name: Kotlin Unit Tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: "17"
+          distribution: "temurin"
+          cache: "gradle"
+
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v3
+        with:
+          packages: >
+            tools
+            platform-tools
+            build-tools;35.0.0
+            platforms;android-35
+            ndk;26.1.10909125
+
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
+
+      - name: Run Kotlin unit tests
+        run: ./gradlew :pad-core:testDebugUnitTest --no-daemon
+
+  cpp-tests:
+    name: C++ Unit Tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Run C++ unit tests
+        run: ./scripts/run_cpp_tests.sh
