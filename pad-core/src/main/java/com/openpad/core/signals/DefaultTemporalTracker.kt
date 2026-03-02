@@ -2,7 +2,6 @@ package com.openpad.core.signals
 
 import com.openpad.core.PadConfig
 import com.openpad.core.detection.FaceDetection
-import timber.log.Timber
 import kotlin.math.sqrt
 
 /**
@@ -61,12 +60,6 @@ class DefaultTemporalTracker(
         val sizeStability = computeStdDev(areaHistory)
         val blink = detectBlink()
         val smoothness = computeMovementSmoothness()
-
-        Timber.tag(TAG).v(
-            "Temporal[%d]: conf=%.3f movement=%.4f blink=%s frameSim=%.3f consec=%d smooth=%.4f",
-            framesCollected, detection.confidence, headMovement, blink,
-            frameSimilarity, consecutiveFaceFrames, smoothness
-        )
 
         return TemporalFeatures(
             faceDetected = true,

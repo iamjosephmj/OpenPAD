@@ -5,7 +5,6 @@ import android.graphics.Bitmap
 import com.openpad.core.detection.FaceDetection
 import com.openpad.core.model.ModelLoader
 import org.tensorflow.lite.Interpreter
-import timber.log.Timber
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
 import kotlin.math.sqrt
@@ -50,11 +49,7 @@ class MobileFaceNetAnalyzer(context: Context) : FaceEmbeddingAnalyzer {
             ByteBuffer.allocateDirect(0)
         }
 
-        if (isPlaceholder) {
-            Timber.tag(TAG).w("MobileFaceNet model not found — face consistency check disabled")
-        } else {
-            Timber.tag(TAG).d("MobileFaceNet loaded (batch=2, 112x112 -> 192-dim)")
-        }
+        // isPlaceholder already set above; no further init needed
     }
 
     override fun analyze(bitmap: Bitmap, faceBbox: FaceDetection.BBox): FaceEmbeddingResult {
@@ -146,7 +141,6 @@ class MobileFaceNetAnalyzer(context: Context) : FaceEmbeddingAnalyzer {
     }
 
     companion object {
-        private const val TAG = "PAD"
         private const val MODEL_PATH = "models/face_embedding.pad"
         private const val INPUT_SIZE = 112
         private const val EMBEDDING_DIM = 192
