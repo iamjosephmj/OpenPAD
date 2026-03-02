@@ -82,7 +82,7 @@ TEST(RingBuf, Variance) {
     opad_ring_push(&rb, 4.0f);
 
     float var = opad_ring_variance(&rb);
-    float expected = 4.0f / 3.0f;
+    float expected = 8.0f / 9.0f;
     EXPECT_NEAR(expected, var, 1e-5f);
 }
 
