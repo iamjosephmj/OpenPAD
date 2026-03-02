@@ -10,7 +10,33 @@ On-device Presentation Attack Detection (face liveness) for Android. Detects fac
 
 ### 1. Add the dependency
 
-Include the `pad-core` module in your project.
+**Option A: JitPack (published SDK)**
+
+1. Add the JitPack repository in `settings.gradle.kts`:
+
+```kotlin
+dependencyResolutionManagement {
+    repositories {
+        google()
+        mavenCentral()
+        maven { url = uri("https://jitpack.io") }
+    }
+}
+```
+
+2. Add the dependency (replace `YourGitHubUsername` with the repo owner and `VERSION` with a tag or commit, e.g. `1.0.0`):
+
+```kotlin
+dependencies {
+    implementation("com.github.YourGitHubUsername:OpenPAD:VERSION")
+}
+```
+
+To publish a release: push a Git tag (e.g. `1.0.0`). JitPack will build and serve the `pad-core` AAR. See [JitPack docs](https://docs.jitpack.io/android/).
+
+**Option B: Local module**
+
+Include the `pad-core` module in your project (e.g. as a Git submodule or copied source) and add `implementation(project(":pad-core"))`.
 
 ### 2. Initialize
 
