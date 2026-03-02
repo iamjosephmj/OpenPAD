@@ -48,8 +48,14 @@ class StateStabilizerTest {
 
     @Test
     fun spoofSuspectedRequiresEnterConsecutiveFrames() {
-        stabilizer.update(PadStatus.LIVE, enterConsecutive = 3, exitConsecutive = 2)
+        // First get into LIVE (needs exitConsecutive=2 frames from non-ANALYZING)
+        stabilizer.update(PadStatus.NO_FACE, 3, 2)
+        repeat(2) {
+            stabilizer.update(PadStatus.LIVE, 3, 2)
+        }
+        assertEquals(PadStatus.LIVE, stabilizer.current)
 
+        // Now test that SPOOF needs enterConsecutive=3 frames to commit
         repeat(2) {
             stabilizer.update(PadStatus.SPOOF_SUSPECTED, 3, 2)
         }

@@ -65,9 +65,15 @@ class MovementChallengeTest {
         val ch = MovementChallenge(config)
         val f = face(area = 0.1f)
 
+        // First frame transitions IDLE → ANALYZING
         ch.onFrame(padResult(face = f))
         assertEquals(ChallengePhase.ANALYZING, ch.phase)
 
+        // Second frame: 1st face frame in ANALYZING
+        ch.onFrame(padResult(face = f))
+        assertEquals(ChallengePhase.ANALYZING, ch.phase)
+
+        // Third frame: 2nd face frame hits analyzingStableFrames=2
         ch.onFrame(padResult(face = f))
         assertEquals(ChallengePhase.CHALLENGE_CLOSER, ch.phase)
     }
