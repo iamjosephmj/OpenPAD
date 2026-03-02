@@ -27,7 +27,7 @@ Add the dependency in your app `build.gradle.kts`:
 
 ```kotlin
 dependencies {
-    implementation("com.github.iamjosephmj:OpenPAD:1.0.0")
+    implementation("com.github.iamjosephmj:OpenPAD:1.0.4")
 }
 ```
 
