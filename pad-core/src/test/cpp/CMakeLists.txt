@@ -43,6 +43,7 @@ target_include_directories(openpad_test_lib
     PRIVATE ${OPENPAD_ROOT}/src/photometric
     PRIVATE ${OPENPAD_ROOT}/src/temporal
 )
+target_compile_definitions(openpad_test_lib PRIVATE _GNU_SOURCE)
 target_compile_options(openpad_test_lib PRIVATE -std=c99 -Wall -Wextra -O2)
 
 # Pipeline and tracker may need math lib
