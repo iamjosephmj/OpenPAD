@@ -5,7 +5,6 @@ import android.graphics.Bitmap
 import com.openpad.core.detection.FaceDetection
 import com.openpad.core.model.ModelLoader
 import org.tensorflow.lite.Interpreter
-import timber.log.Timber
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
 
@@ -50,11 +49,7 @@ class SsdDeviceDetector(context: Context) : DeviceDetector {
             ByteBuffer.allocateDirect(0)
         }
 
-        if (isPlaceholder) {
-            Timber.tag(TAG).w("Device detection model not found — falling back to placeholder mode.")
-        } else {
-            Timber.tag(TAG).d("Device detection: SSD MobileNet V1 loaded")
-        }
+        // isPlaceholder already set above; no further init needed
     }
 
     override fun analyze(bitmap: Bitmap, faceBbox: FaceDetection.BBox): DeviceDetectionResult {
@@ -105,11 +100,6 @@ class SsdDeviceDetector(context: Context) : DeviceDetector {
                 faceBbox.left, faceBbox.top, faceBbox.right, faceBbox.bottom
             )
 
-            Timber.tag(TAG).d(
-                "Device: %s conf=%.3f box=[%.2f,%.2f,%.2f,%.2f] faceOverlap=%.2f",
-                className, conf, xmin, ymin, xmax, ymax, overlap
-            )
-
             if (conf > bestConf) {
                 bestConf = conf
                 bestClass = className
@@ -129,13 +119,6 @@ class SsdDeviceDetector(context: Context) : DeviceDetector {
             }
         } else {
             0f
-        }
-
-        if (deviceDetected) {
-            Timber.tag(TAG).d(
-                "Device detected: %s conf=%.3f overlap=%s spoofScore=%.3f",
-                bestClass, bestConf, bestOverlap, spoofScore
-            )
         }
 
         return DeviceDetectionResult(
@@ -185,7 +168,6 @@ class SsdDeviceDetector(context: Context) : DeviceDetector {
     }
 
     companion object {
-        private const val TAG = "PAD"
         private const val MODEL_PATH = "models/device_detection.pad"
         private const val INPUT_SIZE = 300
         private const val MAX_DETECTIONS = 10

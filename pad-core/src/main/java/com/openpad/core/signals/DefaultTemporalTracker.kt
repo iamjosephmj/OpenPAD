@@ -129,7 +129,6 @@ class DefaultTemporalTracker(
                     if (!foundDip && drop >= BLINK_CONFIDENCE_DIP) {
                         foundDip = true
                     } else if (foundDip && drop < BLINK_CONFIDENCE_DIP * 0.3f) {
-                        Timber.tag(TAG).d("Blink detected via confidence dip")
                         blinkEverDetected = true
                         return true
                     }
@@ -147,7 +146,6 @@ class DefaultTemporalTracker(
                     if (!foundDip && area < mean * AREA_DIP_THRESHOLD) {
                         foundDip = true
                     } else if (foundDip && area > mean * AREA_RECOVERY_THRESHOLD) {
-                        Timber.tag(TAG).d("Blink detected via area dip")
                         blinkEverDetected = true
                         return true
                     }
@@ -194,7 +192,6 @@ class DefaultTemporalTracker(
     }
 
     companion object {
-        private const val TAG = "PAD"
         private const val BLINK_WINDOW = 12
         private const val BLINK_MIN_BASELINE_CONFIDENCE = 0.80f
         private const val BLINK_CONFIDENCE_DIP = 0.025f

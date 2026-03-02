@@ -5,6 +5,7 @@ compose-bom = "2026.01.01"
 camerax = "1.5.3"
 lifecycle = "2.8.7"
 litert = "1.0.1"
+openpad = "1.0.0"
 timber = "5.0.1"
 activity-compose = "1.9.3"
 junit = "4.13.2"
@@ -34,6 +35,7 @@ litert = { group = "com.google.ai.edge.litert", name = "litert", version.ref = "
 litert-gpu = { group = "com.google.ai.edge.litert", name = "litert-gpu", version.ref = "litert" }
 
 # Other
+openpad = { module = "com.github.iamjosephmj:OpenPAD", version.ref = "openpad" }
 timber = { group = "com.jakewharton.timber", name = "timber", version.ref = "timber" }
 activity-compose = { group = "androidx.activity", name = "activity-compose", version.ref = "activity-compose" }
 core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "core-ktx" }

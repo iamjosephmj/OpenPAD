@@ -5,7 +5,6 @@ import android.graphics.Bitmap
 import com.openpad.core.detection.FaceDetection
 import com.openpad.core.model.ModelLoader
 import org.tensorflow.lite.Interpreter
-import timber.log.Timber
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
 
@@ -52,18 +51,10 @@ class MiniFasNetAnalyzer(
                 val model = ModelLoader.loadFromAssets(appContext, config.modelPath)
                 Interpreter(model, opts)
             }
-        } catch (e: Exception) {
-            Timber.tag(TAG).w(
-                e, "MiniFASNet models not found in assets — falling back to placeholder mode. " +
-                    "Download pretrained models from: " +
-                    "github.com/feni-katharotiya/Silent-Face-Anti-Spoofing-TFLite"
-            )
+        } catch (@Suppress("TooGenericExceptionCaught") e: Exception) {
             null
         }
         isPlaceholder = interpreters == null
-        if (!isPlaceholder) {
-            Timber.tag(TAG).d("MiniFASNet loaded: %d models", interpreters!!.size)
-        }
     }
 
     override fun analyze(bitmap: Bitmap, faceBbox: FaceDetection.BBox): TextureResult {
@@ -91,12 +82,6 @@ class MiniFasNetAnalyzer(
         } else {
             Pair(0f, avgGenuine)
         }
-
-        Timber.tag(TAG).v(
-            "Texture: genuine=%.3f, spoof=%.3f, bg=%.3f, refVar=%.5f [scales: %s]",
-            avgGenuine, avgSpoof, avgBg, reflVariance,
-            scaleScores.joinToString { "%.2f".format(it[1]) }
-        )
 
         return TextureResult(
             genuineScore = avgGenuine,
@@ -128,10 +113,6 @@ class MiniFasNetAnalyzer(
         interpreter.run(inputBuffer, output)
 
         val raw = output[0]
-        Timber.tag(TAG).d(
-            "MiniFAS raw output: [%.4f, %.4f, %.4f] sum=%.4f",
-            raw[0], raw[1], raw[2], raw[0] + raw[1] + raw[2]
-        )
 
         // If the model already outputs probabilities (sum ≈ 1.0), skip softmax
         // to avoid double-softmax which compresses scores toward uniform
@@ -164,15 +145,6 @@ class MiniFasNetAnalyzer(
 
         val pixels = IntArray(INPUT_SIZE * INPUT_SIZE)
         bitmap.getPixels(pixels, 0, INPUT_SIZE, 0, 0, INPUT_SIZE, INPUT_SIZE)
-
-        // Debug: log a few center pixels to verify BGR [0-255] values
-        val centerIdx = (INPUT_SIZE / 2) * INPUT_SIZE + INPUT_SIZE / 2
-        val p = pixels[centerIdx]
-        Timber.tag(TAG).d(
-            "MiniFAS input pixel[center]: ARGB=0x%08X → B=%d G=%d R=%d (bitmap %dx%d config=%s)",
-            p, p and 0xFF, p shr 8 and 0xFF, p shr 16 and 0xFF,
-            bitmap.width, bitmap.height, bitmap.config
-        )
 
         for (pixel in pixels) {
             inputBuffer.putFloat((pixel and 0xFF).toFloat())         // B
@@ -213,12 +185,6 @@ class MiniFasNetAnalyzer(
         val top = (faceCY - cropH / 2f).toInt().coerceIn(0, imgH - 1)
         val right = (faceCX + cropW / 2f).toInt().coerceIn(left + 1, imgW)
         val bottom = (faceCY + cropH / 2f).toInt().coerceIn(top + 1, imgH)
-
-        Timber.tag(TAG).d(
-            "MiniFAS crop: scale=%.1f bbox=[%.3f,%.3f,%.3f,%.3f] → crop=[%d,%d,%d,%d] (%dx%d) img=%dx%d",
-            scale, faceBbox.left, faceBbox.top, faceBbox.right, faceBbox.bottom,
-            left, top, right, bottom, right - left, bottom - top, imgW, imgH
-        )
 
         val cropped = Bitmap.createBitmap(bitmap, left, top, right - left, bottom - top)
         return Bitmap.createScaledBitmap(cropped, INPUT_SIZE, INPUT_SIZE, true)
@@ -268,10 +234,6 @@ class MiniFasNetAnalyzer(
     // ---- Private: placeholder fallback ----
 
     private fun analyzePlaceholder(): TextureResult {
-        Timber.tag(TAG).v(
-            "Texture (placeholder): genuine=%.3f, spoof=%.3f, bg=%.3f",
-            PLACEHOLDER_GENUINE, PLACEHOLDER_SPOOF, PLACEHOLDER_BG
-        )
         return TextureResult(
             genuineScore = PLACEHOLDER_GENUINE,
             spoofScore = PLACEHOLDER_SPOOF,
@@ -286,7 +248,6 @@ class MiniFasNetAnalyzer(
     private data class ScaleConfig(val scale: Float, val modelPath: String)
 
     companion object {
-        private const val TAG = "PAD"
         private const val INPUT_SIZE = 80
         private const val NUM_CLASSES = 3
 

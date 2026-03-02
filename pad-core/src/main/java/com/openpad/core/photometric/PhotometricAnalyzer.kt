@@ -3,7 +3,6 @@ package com.openpad.core.photometric
 import android.graphics.Bitmap
 import androidx.annotation.VisibleForTesting
 import com.openpad.core.detection.FaceDetection
-import timber.log.Timber
 import kotlin.math.abs
 import kotlin.math.sqrt
 
@@ -47,11 +46,6 @@ class PhotometricAnalyzer {
                 edgeDofScore * WEIGHT_EDGE_DOF +
                 lightingScore * WEIGHT_LIGHTING
             ).coerceIn(0f, 1f)
-
-        Timber.tag(TAG).v(
-            "Photometric: spec=%.3f chrom=%.3f edgeDof=%.3f light=%.3f → combined=%.3f",
-            specularScore, chrominanceScore, edgeDofScore, lightingScore, combinedScore
-        )
 
         return PhotometricResult(
             specularScore = specularScore,
@@ -309,7 +303,6 @@ class PhotometricAnalyzer {
         // Screen: CV ~0.2-0.5 (uniform sharpness across flat surface)
         val score = ((cv - 0.35f) / 0.8f).coerceIn(0f, 1f)
 
-        Timber.tag(TAG).v("SharpUnif: mean=%.1f cv=%.3f → score=%.3f", mean, cv, score)
         return score
     }
 
@@ -389,8 +382,6 @@ class PhotometricAnalyzer {
         // Bonus if the gradient goes in the expected direction (highlights warmer)
         val directionBonus = if (ctDiff > 0.05f) 0.15f else 0f
 
-        Timber.tag(TAG).v("ColorTemp: darkRb=%.3f brightRb=%.3f diff=%.3f skin=%d",
-            darkRb, brightRb, ctDiff, skinPixels.size)
         return (ctScore * 0.85f + directionBonus).coerceIn(0f, 1f)
     }
 
@@ -434,7 +425,6 @@ class PhotometricAnalyzer {
     }
 
     companion object {
-        private const val TAG = "PAD"
         private const val CROP_SIZE = 80
 
         // Specular highlight thresholds

@@ -5,7 +5,6 @@ import android.graphics.Bitmap
 import com.openpad.core.detection.FaceDetection
 import com.openpad.core.model.ModelLoader
 import org.tensorflow.lite.Interpreter
-import timber.log.Timber
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
 
@@ -75,11 +74,9 @@ class CdcnDepthAnalyzer(context: Context) : DepthAnalyzer {
             if (hasCdcn) "CDCN" else null,
             if (hasMn3) "MN3" else null
         )
-        if (loaded.isNotEmpty()) {
-            Timber.tag(TAG).d("Depth models loaded: %s", loaded.joinToString(", "))
-        } else {
-            Timber.tag(TAG).w("No depth models found — falling back to placeholder mode.")
-        }
+        // loaded list used only for initialization tracking
+        @Suppress("UNUSED_VARIABLE")
+        val _ = loaded
     }
 
     /**
@@ -122,7 +119,6 @@ class CdcnDepthAnalyzer(context: Context) : DepthAnalyzer {
         mn3Interpreter.run(mn3InputBuffer, output)
 
         val scores = softmax(output[0])
-        Timber.tag(TAG).v("Depth (MN3): real=%.3f spoof=%.3f", scores[0], scores[1])
         return Pair(scores[0], scores[1])
     }
 
@@ -151,7 +147,6 @@ class CdcnDepthAnalyzer(context: Context) : DepthAnalyzer {
         }
         val mean = sum / (CDCN_OUTPUT_SIZE * CDCN_OUTPUT_SIZE)
 
-        Timber.tag(TAG).v("Depth (CDCN): score=%.3f", mean)
         return Triple(mean.coerceIn(0f, 1f), 0f, mean)
     }
 
@@ -215,8 +210,6 @@ class CdcnDepthAnalyzer(context: Context) : DepthAnalyzer {
     }
 
     companion object {
-        private const val TAG = "PAD"
-
         private const val CDCN_MODEL_PATH = "models/depth_map.pad"
         private const val CDCN_INPUT_SIZE = 256
         private const val CDCN_OUTPUT_SIZE = 32

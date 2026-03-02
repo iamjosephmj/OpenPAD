@@ -18,7 +18,6 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
-import timber.log.Timber
 
 /**
  * Headless analysis session for integrators who provide their own camera UI.
@@ -193,7 +192,6 @@ internal class OpenPadSessionImpl(
         val faceConsistent = checkFaceConsistency(bitmapA, bitmapB, emb)
 
         if (!faceConsistent) {
-            Timber.tag(TAG).w("FACE SWAP DETECTED (headless)")
             val terminal = challengeManager.handleSpoof()
             spoofAttemptCount++
             if (terminal) {
@@ -209,11 +207,6 @@ internal class OpenPadSessionImpl(
         val threshold = (config.genuineProbabilityThreshold +
             spoofAttemptCount * config.spoofAttemptPenaltyPerCount)
             .coerceAtMost(config.maxGenuineProbabilityThreshold)
-
-        Timber.tag(TAG).d(
-            "Headless eval: genuineProb=%.3f, threshold=%.3f",
-            genuineProbability, threshold
-        )
 
         if (genuineProbability >= threshold) {
             challengeManager.advanceToLive()
@@ -241,7 +234,6 @@ internal class OpenPadSessionImpl(
         val embA = pair.first.embedding ?: return true
         val embB = pair.second.embedding ?: return true
         val similarity = MobileFaceNetAnalyzer.cosineSimilarity(embA, embB)
-        Timber.tag(TAG).d("Face consistency (headless): similarity=%.3f", similarity)
         return similarity >= config.faceConsistencyThreshold
     }
 
@@ -326,10 +318,7 @@ internal class OpenPadSessionImpl(
         evaluateJob?.cancel()
         liveTimer?.cancel()
         scope.cancel()
-        Timber.tag(TAG).d("Headless session released")
     }
 
-    companion object {
-        private const val TAG = "PAD"
-    }
+    companion object
 }
