@@ -70,13 +70,6 @@ class CdcnDepthAnalyzer(context: Context) : DepthAnalyzer {
             ByteBuffer.allocateDirect(0)
         }
 
-        val loaded = listOfNotNull(
-            if (hasCdcn) "CDCN" else null,
-            if (hasMn3) "MN3" else null
-        )
-        // loaded list used only for initialization tracking
-        @Suppress("UNUSED_VARIABLE")
-        val _ = loaded
     }
 
     /**
