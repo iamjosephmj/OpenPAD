@@ -19,7 +19,6 @@ import com.openpad.core.signals.TemporalFeatures
 import com.openpad.core.texture.TextureAnalyzer
 import com.openpad.core.texture.TextureResult
 import android.graphics.Bitmap
-import timber.log.Timber
 
 /**
  * CameraX [ImageAnalysis.Analyzer] that orchestrates the full PAD pipeline per frame.
@@ -194,7 +193,6 @@ class PadFrameAnalyzer internal constructor(
                 timestampMs = now
             )
 
-            Timber.tag(TAG).v("Pipeline: status=%s score=%.3f", result.status, nativeOutput.aggregatedScore)
             onResult(result)
         } finally {
             image.close()
@@ -239,7 +237,6 @@ class PadFrameAnalyzer internal constructor(
     }
 
     companion object {
-        private const val TAG = "PAD"
         private const val FACE_CROP_SIZE = 112
         private const val CROP_MARGIN = 1.3f
         private const val GUIDE_OVAL_WIDTH_FRACTION = 0.65f

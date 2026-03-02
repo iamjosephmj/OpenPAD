@@ -5,7 +5,6 @@ import android.content.Context
 import android.content.Intent
 import android.os.Handler
 import android.os.Looper
-import timber.log.Timber
 import java.util.concurrent.Executors
 import java.util.concurrent.atomic.AtomicBoolean
 
@@ -39,7 +38,6 @@ import java.util.concurrent.atomic.AtomicBoolean
  */
 object OpenPad {
 
-    private const val TAG = "OpenPad"
     private val mainHandler = Handler(Looper.getMainLooper())
     private val initExecutor = Executors.newSingleThreadExecutor()
 
@@ -89,13 +87,11 @@ object OpenPad {
         onError: (OpenPadError) -> Unit = {}
     ) {
         if (pipeline != null) {
-            Timber.tag(TAG).d("Already initialized")
             mainHandler.post(onReady)
             return
         }
 
         if (!initializing.compareAndSet(false, true)) {
-            Timber.tag(TAG).d("Initialization already in progress")
             return
         }
 
@@ -103,13 +99,10 @@ object OpenPad {
 
         initExecutor.execute {
             try {
-                Timber.tag(TAG).d("Initializing pipeline...")
                 val p = PadPipeline.create(context.applicationContext, config.toPadConfig())
                 pipeline = p
-                Timber.tag(TAG).d("Pipeline initialized successfully")
                 mainHandler.post(onReady)
             } catch (@Suppress("TooGenericExceptionCaught") e: Exception) {
-                Timber.tag(TAG).e(e, "Pipeline initialization failed")
                 mainHandler.post { onError(OpenPadError.InitializationFailed(e.message ?: "unknown")) }
             } finally {
                 initializing.set(false)
@@ -172,7 +165,6 @@ object OpenPad {
             return null
         }
 
-        Timber.tag(TAG).d("Creating headless session")
         return OpenPadSessionImpl(p, sdkConfig.toPadConfig(), listener)
     }
 
@@ -185,7 +177,6 @@ object OpenPad {
         pipeline?.close()
         pipeline = null
         activeListener = null
-        Timber.tag(TAG).d("SDK released")
     }
 
     internal fun deliverResult(result: OpenPadResult) {

@@ -16,7 +16,6 @@ import com.openpad.core.ndk.NativeChallengeManager
 import com.openpad.core.ndk.OpenPadNative
 import com.openpad.core.texture.MiniFasNetAnalyzer
 import com.openpad.core.texture.TextureAnalyzer
-import timber.log.Timber
 
 /**
  * Entry point for the Open-PAD pipeline.
@@ -59,18 +58,14 @@ class PadPipeline private constructor(
         depthAnalyzer.close()
         deviceDetector.close()
         embeddingAnalyzer.close()
-        Timber.tag(TAG).d("Pipeline closed")
     }
 
     companion object {
-        private const val TAG = "PAD"
-
         /**
          * Build a fully-initialized pipeline.
          * Must be called on a background thread (model loading blocks).
          */
         fun create(context: Context, config: PadConfig = PadConfig.Default): PadPipeline {
-            Timber.tag(TAG).d("Creating pipeline...")
             val appContext = context.applicationContext
 
             val faceDetector = MediaPipeFaceDetector(appContext)
@@ -83,7 +78,6 @@ class PadPipeline private constructor(
 
             OpenPadNative.nativeInit(OpenPadNative.configToBytes(config))
 
-            Timber.tag(TAG).d("Pipeline created")
             return PadPipeline(
                 faceDetector = faceDetector,
                 textureAnalyzer = textureAnalyzer,

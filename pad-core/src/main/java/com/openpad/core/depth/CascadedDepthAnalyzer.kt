@@ -3,7 +3,6 @@ package com.openpad.core.depth
 import android.graphics.Bitmap
 import com.openpad.core.PadConfig
 import com.openpad.core.detection.FaceDetection
-import timber.log.Timber
 import java.util.concurrent.Executors
 import java.util.concurrent.Future
 import java.util.concurrent.atomic.AtomicReference
@@ -50,15 +49,9 @@ class CascadedDepthAnalyzer(
                     bitmapCopy.recycle()
                 }
             })
-            Timber.tag(TAG).v(
-                "Cascade: MN3=%.3f >= %.3f → CDCN triggered", mn3Real, config.mn3GateThreshold
-            )
         } else {
             pendingCdcn.getAndSet(null)?.cancel(false)
             cachedCdcnResult = null
-            Timber.tag(TAG).v(
-                "Cascade: MN3=%.3f < %.3f → CDCN skipped", mn3Real, config.mn3GateThreshold
-            )
         }
 
         // Step 4: Build unified result
@@ -89,8 +82,7 @@ class CascadedDepthAnalyzer(
                 // Not done yet — put it back for next frame
                 pendingCdcn.compareAndSet(null, future)
             }
-        } catch (e: Exception) {
-            Timber.tag(TAG).w(e, "CDCN inference failed")
+        } catch (@Suppress("TooGenericExceptionCaught") e: Exception) {
             cachedCdcnResult = null
         }
     }
@@ -101,7 +93,5 @@ class CascadedDepthAnalyzer(
         models.close()
     }
 
-    companion object {
-        private const val TAG = "PAD"
-    }
+    companion object
 }

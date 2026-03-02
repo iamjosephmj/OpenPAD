@@ -3,7 +3,6 @@ package com.openpad.core.challenge
 import com.openpad.core.PadConfig
 import com.openpad.core.PadResult
 import com.openpad.core.aggregation.PadStatus
-import timber.log.Timber
 import kotlin.math.abs
 
 /**
@@ -40,7 +39,6 @@ class MovementChallenge(
         when (phase) {
             ChallengePhase.IDLE -> {
                 phase = ChallengePhase.ANALYZING
-                Timber.tag(TAG).d("Challenge: IDLE → ANALYZING")
             }
 
             ChallengePhase.ANALYZING -> {
@@ -55,7 +53,6 @@ class MovementChallenge(
                     baselineCalibrated = false
                     baselineAreas.clear()
                     phase = ChallengePhase.CHALLENGE_CLOSER
-                    Timber.tag(TAG).d("Challenge: ANALYZING → CHALLENGE_CLOSER")
                 }
             }
 
@@ -82,10 +79,6 @@ class MovementChallenge(
                             baselineArea = baselineArea,
                             checkpointBitmapAnalyzing = result.faceCropBitmap
                         )
-                        Timber.tag(TAG).d(
-                            "Challenge: baseline calibrated=%.4f, captured pre-zoom checkpoint",
-                            baselineArea
-                        )
                     }
                     return phase
                 }
@@ -98,13 +91,6 @@ class MovementChallenge(
 
                 val closerEnough = areaIncrease >= config.challengeCloserMinIncrease
                 val totalFrames = _evidence.totalFrames + 1
-
-                Timber.tag(TAG).v(
-                    "Challenge: area=%.4f base=%.4f inc=%.3f centered=%s closer=%s hold=%d/%d total=%d/%d",
-                    area, baselineArea, areaIncrease, centered, closerEnough,
-                    challengeHoldFrames, config.challengeStableFrames,
-                    totalFrames, config.challengeMinFrames
-                )
 
                 if (closerEnough && centered) {
                     challengeHoldFrames++
@@ -133,12 +119,10 @@ class MovementChallenge(
                         val crop = result.faceCropBitmap
                         if (crop != null) {
                             _evidence = _evidence.copy(checkpointBitmapChallenge = crop)
-                            Timber.tag(TAG).d("Challenge: captured CHALLENGE checkpoint bitmap")
                         }
 
                         _evidence = _evidence.copy(completed = true)
                         phase = ChallengePhase.EVALUATING
-                        Timber.tag(TAG).d("Challenge: CHALLENGE_CLOSER → EVALUATING")
                     }
                 } else {
                     // Decrement instead of hard reset — tolerate occasional jitter
@@ -168,17 +152,14 @@ class MovementChallenge(
 
     override fun advanceToLive() {
         phase = ChallengePhase.LIVE
-        Timber.tag(TAG).d("Challenge: → LIVE")
     }
 
     override fun advanceToDone() {
         phase = ChallengePhase.DONE
-        Timber.tag(TAG).d("Challenge: → DONE")
     }
 
     override fun handleSpoof(): Boolean {
         spoofAttemptCount++
-        Timber.tag(TAG).d("Challenge: SPOOF (attempt #%d/%d)", spoofAttemptCount, config.maxSpoofAttempts)
 
         if (config.maxSpoofAttempts > 0 && spoofAttemptCount >= config.maxSpoofAttempts) {
             phase = ChallengePhase.DONE
@@ -206,7 +187,6 @@ class MovementChallenge(
     }
 
     companion object {
-        private const val TAG = "PAD"
         private const val BASELINE_CALIBRATION_FRAMES = 2
     }
 }

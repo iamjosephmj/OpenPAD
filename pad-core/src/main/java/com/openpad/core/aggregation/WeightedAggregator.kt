@@ -7,7 +7,6 @@ import com.openpad.core.frequency.FrequencyResult
 import com.openpad.core.photometric.PhotometricResult
 import com.openpad.core.signals.TemporalFeatures
 import com.openpad.core.texture.TextureResult
-import timber.log.Timber
 
 /**
  * Unified score fusion + decision gate.
@@ -49,28 +48,21 @@ class WeightedAggregator(
 
         // Rule 1: Not enough data
         if (features.framesCollected < config.minFramesForDecision) {
-            Timber.tag(TAG).v("Classify → ANALYZING (frames=%d < min=%d)",
-                features.framesCollected, config.minFramesForDecision)
             return PadStatus.ANALYZING
         }
 
         // Rule 2: No face
         if (!features.faceDetected) {
-            Timber.tag(TAG).v("Classify → NO_FACE (not detected)")
             return PadStatus.NO_FACE
         }
 
         // Rule 3: Low face confidence
         if (features.faceConfidence < config.minFaceConfidence) {
-            Timber.tag(TAG).v("Classify → NO_FACE (conf=%.3f < min=%.3f)",
-                features.faceConfidence, config.minFaceConfidence)
             return PadStatus.NO_FACE
         }
 
         // Rule 4: Continuous face presence
         if (features.consecutiveFaceFrames < config.minConsecutiveFaceFrames) {
-            Timber.tag(TAG).v("Classify → ANALYZING (consec=%d < min=%d)",
-                features.consecutiveFaceFrames, config.minConsecutiveFaceFrames)
             return PadStatus.ANALYZING
         }
 
@@ -80,10 +72,6 @@ class WeightedAggregator(
             deviceDetectionResult.overlapWithFace &&
             deviceDetectionResult.maxConfidence >= config.deviceConfidenceThreshold
         if (deviceFlagged) {
-            Timber.tag(TAG).d(
-                "Classify → SPOOF_SUSPECTED [device gate] (%s conf=%.3f overlap=true)",
-                deviceDetectionResult!!.deviceClass, deviceDetectionResult.maxConfidence
-            )
             return PadStatus.SPOOF_SUSPECTED
         }
 
@@ -92,10 +80,6 @@ class WeightedAggregator(
             val moireFlagged = frequencyResult.moireScore >= config.moireThreshold
             val lbpFlagged = frequencyResult.lbpScreenScore >= config.lbpScreenThreshold
             if (moireFlagged && lbpFlagged) {
-                Timber.tag(TAG).d(
-                    "Classify → SPOOF_SUSPECTED [frequency gate] (moire=%.3f lbp=%.3f)",
-                    frequencyResult.moireScore, frequencyResult.lbpScreenScore
-                )
                 return PadStatus.SPOOF_SUSPECTED
             }
         }
@@ -105,8 +89,6 @@ class WeightedAggregator(
         val hasTextureData = textureResult != null
         val texturePasses = textureGenuine >= config.textureGenuineThreshold
         if (hasTextureData && !texturePasses) {
-            Timber.tag(TAG).d("Classify → SPOOF_SUSPECTED [texture gate] (genuine=%.3f < threshold=%.3f)",
-                textureGenuine, config.textureGenuineThreshold)
             return PadStatus.SPOOF_SUSPECTED
         }
 
@@ -115,10 +97,6 @@ class WeightedAggregator(
         val cdcnScore = depthResult?.cdcnDepthScore
         val hasCdcnData = cdcnScore != null
         if (hasCdcnData && cdcnScore!! < config.depthFlatnessThreshold) {
-            Timber.tag(TAG).d(
-                "Classify → SPOOF_SUSPECTED [CDCN gate] (cdcn=%.3f < threshold=%.3f)",
-                cdcnScore, config.depthFlatnessThreshold
-            )
             return PadStatus.SPOOF_SUSPECTED
         }
 
@@ -126,26 +104,15 @@ class WeightedAggregator(
         if (photometricResult != null &&
             photometricResult.combinedScore < config.photometricMinScore
         ) {
-            Timber.tag(TAG).d(
-                "Classify → SPOOF_SUSPECTED [photometric gate] (combined=%.3f < threshold=%.3f)",
-                photometricResult.combinedScore, config.photometricMinScore
-            )
             return PadStatus.SPOOF_SUSPECTED
         }
 
         // Rule 10: All available signals pass → LIVE
         if (texturePasses) {
-            Timber.tag(TAG).d(
-                "Classify → LIVE (texture=%.3f, mn3=%s, cdcn=%s)",
-                textureGenuine,
-                mn3Score?.let { "%.3f".format(it) } ?: "n/a",
-                cdcnScore?.let { "%.3f".format(it) } ?: "n/a"
-            )
             return PadStatus.LIVE
         }
 
         // Rule 11: Fallback
-        Timber.tag(TAG).v("Classify → ANALYZING (fallback)")
         return PadStatus.ANALYZING
     }
 
@@ -187,7 +154,5 @@ class WeightedAggregator(
         }
     }
 
-    companion object {
-        private const val TAG = "PAD"
-    }
+    companion object
 }

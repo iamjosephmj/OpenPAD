@@ -28,7 +28,6 @@ import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import timber.log.Timber
 import java.util.concurrent.Executor
 
 internal class PadViewModel : ViewModel() {
@@ -57,7 +56,6 @@ internal class PadViewModel : ViewModel() {
         val p = pipeline ?: return
         challengeManager = p.createChallengeManager()
         _ui.update { it.copy(isInitialized = true, currentScreen = SdkScreen.INTRO) }
-        Timber.tag(TAG).d("ViewModel initialized from SDK pipeline")
     }
 
     fun bindCamera(context: Context, lifecycleOwner: LifecycleOwner, analysisExecutor: Executor) {
@@ -276,14 +274,12 @@ internal class PadViewModel : ViewModel() {
                     val embB = pair.second.embedding
                     if (embA != null && embB != null) {
                         val similarity = MobileFaceNetAnalyzer.cosineSimilarity(embA, embB)
-                        Timber.tag(TAG).d("Face consistency: similarity=%.3f", similarity)
                         similarity >= config.faceConsistencyThreshold
                     } else true
                 } else true
             } else true
 
             if (!faceConsistent) {
-                Timber.tag(TAG).w("FACE SWAP DETECTED")
                 val terminal = challenge.handleSpoof()
                 spoofAttemptCount++
                 outcome = PadOutcome.SpoofFailed(spoofAttemptCount)
@@ -306,11 +302,6 @@ internal class PadViewModel : ViewModel() {
             val threshold = (config.genuineProbabilityThreshold +
                 spoofAttemptCount * config.spoofAttemptPenaltyPerCount)
                 .coerceAtMost(config.maxGenuineProbabilityThreshold)
-
-            Timber.tag(TAG).d(
-                "Evaluation: genuineProb=%.3f, threshold=%.3f (attempts=%d)",
-                genuineProbability, threshold, spoofAttemptCount
-            )
 
             if (genuineProbability >= threshold) {
                 challenge.advanceToLive()
@@ -337,7 +328,6 @@ internal class PadViewModel : ViewModel() {
 
     private fun handleRetry() {
         val challenge = challengeManager ?: return
-        Timber.tag(TAG).d("Retry requested (attempt #%d)", spoofAttemptCount)
 
         evaluateJob?.cancel()
         evaluateJob = null
@@ -384,16 +374,10 @@ internal class PadViewModel : ViewModel() {
             (avgTexture * effectiveTextureW + avgMn3 * effectiveMn3W) / totalW
         }
 
-        Timber.tag(TAG).d(
-            "genuineProb: texture=%.3f mn3=%.3f cdcn=%s -> score=%.3f",
-            avgTexture, avgMn3, avgCdcn?.let { "%.3f".format(it) } ?: "n/a", score
-        )
-
         return score.coerceIn(0f, 1f)
     }
 
     private fun startLiveSustainTimer() {
-        Timber.tag(TAG).d("Starting LIVE sustain timer (%dms)", config.liveSustainMs)
         _ui.update {
             it.copy(
                 status = PadStatus.LIVE,
@@ -408,7 +392,6 @@ internal class PadViewModel : ViewModel() {
 
             val current = _ui.value
             if (current.status == PadStatus.LIVE && current.phase == ChallengePhase.LIVE) {
-                Timber.tag(TAG).d("LIVE sustained -> DONE")
                 outcome = PadOutcome.LiveConfirmed
                 challengeManager?.advanceToDone()
                 _ui.update {
@@ -453,7 +436,5 @@ internal class PadViewModel : ViewModel() {
         evaluateJob?.cancel()
     }
 
-    companion object {
-        private const val TAG = "PAD"
-    }
+    companion object
 }

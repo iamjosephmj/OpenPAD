@@ -4,7 +4,6 @@ import android.content.Context
 import org.tensorflow.lite.Interpreter
 import org.tensorflow.lite.gpu.CompatibilityList
 import org.tensorflow.lite.gpu.GpuDelegate
-import timber.log.Timber
 import java.io.ByteArrayInputStream
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
@@ -56,12 +55,9 @@ object ModelLoader {
                 val compat = CompatibilityList()
                 if (compat.isDelegateSupportedOnThisDevice) {
                     options.addDelegate(GpuDelegate())
-                    Timber.tag("ModelLoader").d("GPU delegate enabled")
-                } else {
-                    Timber.tag("ModelLoader").d("GPU delegate not supported on this device")
                 }
-            } catch (e: Exception) {
-                Timber.tag("ModelLoader").d("GPU delegate unavailable, using CPU (%s)", e.message)
+            } catch (@Suppress("TooGenericExceptionCaught") e: Exception) {
+                // GPU delegate unavailable; CPU fallback
             }
         }
         return options
