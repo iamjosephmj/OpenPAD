@@ -2,7 +2,6 @@ package com.openpad.core.frequency
 
 import android.graphics.Bitmap
 import com.openpad.core.detection.FaceDetection
-import timber.log.Timber
 import kotlin.math.abs
 import kotlin.math.ln
 import kotlin.math.sqrt
@@ -42,11 +41,6 @@ class LbpScreenDetector {
                 focusUniformityScore * WEIGHT_FOCUS +
                 colorDistScore * WEIGHT_COLOR
             ).coerceIn(0f, 1f)
-
-        Timber.tag(TAG).v(
-            "Screen: score=%.3f band=%.3f focus=%.3f color=%.3f",
-            screenScore, bandingScore, focusUniformityScore, colorDistScore
-        )
 
         return LbpResult(
             screenScore = screenScore,
@@ -298,7 +292,6 @@ class LbpScreenDetector {
     }
 
     companion object {
-        private const val TAG = "PAD"
         private const val CROP_SIZE = 64
 
         // Banding detection

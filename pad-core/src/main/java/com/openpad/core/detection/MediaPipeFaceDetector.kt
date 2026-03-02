@@ -4,7 +4,6 @@ import android.content.Context
 import android.graphics.Bitmap
 import com.openpad.core.model.ModelLoader
 import org.tensorflow.lite.Interpreter
-import timber.log.Timber
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
 import kotlin.math.exp
@@ -146,7 +145,6 @@ class MediaPipeFaceDetector(context: Context) : FaceDetector {
             }
         }
 
-        Timber.tag(TAG).d("Generated %d anchors", anchors.size)
         return anchors
     }
 
@@ -185,7 +183,6 @@ class MediaPipeFaceDetector(context: Context) : FaceDetector {
     private data class Anchor(val cx: Float, val cy: Float, val w: Float, val h: Float)
 
     companion object {
-        private const val TAG = "PAD"
         private const val MODEL_PATH = "models/face_detection.pad"
         private const val INPUT_SIZE = 128
         private const val NUM_ANCHORS = 896

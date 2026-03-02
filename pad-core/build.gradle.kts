@@ -75,8 +75,6 @@ dependencies {
     // Activity
     implementation(libs.activity.compose)
 
-    // Logging
-    implementation(libs.timber)
     implementation(libs.core.ktx)
 
     // Test

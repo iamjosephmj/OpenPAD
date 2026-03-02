@@ -1,7 +1,5 @@
 package com.openpad.core.aggregation
 
-import timber.log.Timber
-
 /**
  * Hysteresis state machine for PAD status transitions.
  *
@@ -73,12 +71,5 @@ class StateStabilizer(initial: PadStatus = PadStatus.ANALYZING) {
         current = newStatus
         candidate = newStatus
         consecutive = 0
-        if (prev != newStatus) {
-            Timber.tag(TAG).d("Stabilizer: %s → %s", prev, newStatus)
-        }
-    }
-
-    companion object {
-        private const val TAG = "PAD"
     }
 }
