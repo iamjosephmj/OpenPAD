@@ -2,31 +2,13 @@
  * Unit tests for opad_classify, opad_compute_aggregate_score, opad_stabilizer_*.
  */
 
-#include <openpad/aggregation.h>
-#include <openpad/types.h>
-#include <gtest/gtest.h>
-
 extern "C" {
-OpadPadStatus opad_classify(const OpadConfig* config,
-                             const OpadTextureInput* texture,
-                             const OpadDepthInput* depth,
-                             const OpadFrequencyInput* frequency,
-                             const OpadDeviceInput* device,
-                             const OpadPhotometricInput* photometric,
-                             const OpadTemporalFeatures* temporal);
-float opad_compute_aggregate_score(const OpadConfig* config,
-                                    const OpadTextureInput* texture,
-                                    const OpadDepthInput* depth,
-                                    const OpadDeviceInput* device);
-OpadStateStabilizer* opad_stabilizer_create(OpadPadStatus initial);
-void opad_stabilizer_destroy(OpadStateStabilizer* s);
-OpadPadStatus opad_stabilizer_update(OpadStateStabilizer* s,
-                                      OpadPadStatus candidate,
-                                      int32_t enter_consecutive,
-                                      int32_t exit_consecutive);
-void opad_stabilizer_reset(OpadStateStabilizer* s);
-void opad_config_default(OpadConfig* out);
+#include <openpad/aggregation.h>
+#include <openpad/config.h>
+#include <openpad/types.h>
 }
+
+#include <gtest/gtest.h>
 
 TEST(Aggregation, ClassifyNullTemporalReturnsAnalyzing) {
     OpadConfig cfg;

@@ -2,18 +2,13 @@
  * Unit tests for opad_ring_* functions.
  */
 
+extern "C" {
 #include <openpad/types.h>
 #include "ringbuf.h"
+}
+
 #include <cmath>
 #include <gtest/gtest.h>
-
-extern "C" {
-void opad_ring_init(OpadRingBuf* rb, size_t cap);
-void opad_ring_push(OpadRingBuf* rb, float v);
-float opad_ring_get(const OpadRingBuf* rb, size_t i);
-void opad_ring_clear(OpadRingBuf* rb);
-float opad_ring_variance(const OpadRingBuf* rb);
-}
 
 TEST(RingBuf, Init) {
     OpadRingBuf rb;
@@ -87,7 +82,7 @@ TEST(RingBuf, Variance) {
     opad_ring_push(&rb, 4.0f);
 
     float var = opad_ring_variance(&rb);
-    float expected = 4.0f / 3.0f;  // mean=10/3, variance of [2,4,4]
+    float expected = 4.0f / 3.0f;
     EXPECT_NEAR(expected, var, 1e-5f);
 }
 

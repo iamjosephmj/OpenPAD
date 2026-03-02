@@ -2,15 +2,13 @@
  * Unit tests for opad_config_default and opad_config_parse.
  */
 
+extern "C" {
 #include <openpad/config.h>
 #include <openpad/types.h>
+}
+
 #include <cstring>
 #include <gtest/gtest.h>
-
-extern "C" {
-void opad_config_default(OpadConfig* out);
-bool opad_config_parse(const uint8_t* bytes, size_t len, OpadConfig* out);
-}
 
 TEST(Config, DefaultValues) {
     OpadConfig cfg;
@@ -43,7 +41,6 @@ TEST(Config, ParseValidBuffer) {
     uint8_t buf[172];
     std::memset(buf, 0, sizeof(buf));
 
-    // Write a few values at known offsets (little-endian)
     float f = 0.75f;
     std::memcpy(buf + 0, &f, 4);
     int32_t i = 10;
