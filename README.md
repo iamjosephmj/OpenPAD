@@ -4,6 +4,10 @@ On-device Presentation Attack Detection (face liveness) for Android. Detects fac
 
 **Requirements**: Android 8.0+ (API 26), front-facing camera.
 
+<p align="center">
+  <img src="resources/pad.gif" width="300" alt="OpenPAD demo"/>
+</p>
+
 ---
 
 ## Integration Guide
