@@ -486,7 +486,7 @@ pad-open/
 | Phone screen (video replay) | Moderate | Depth + texture + LBP |
 | High-PPI OLED replay | Moderate | Depth + device detection + photometric |
 | Face swap mid-challenge | Strong | Face embedding consistency (MobileFaceNet) |
-| 3D printed/silicone mask | Weak | No depth sensing from single RGB camera |
+| 3D printed/silicone mask | Weak (training in progress) | Texture + photometric; training data collection underway |
 
 ---
 
@@ -501,7 +501,7 @@ pad-open/
 
 ## Known Limitations
 
-1. **Single RGB camera** -- no hardware depth sensing. 3D mask attacks cannot be reliably detected.
+1. **Single RGB camera** -- no hardware depth sensing. 3D mask attacks (silicone, paper, 3D-printed) have limited detection. Training data is being collected to improve mask detection via texture and photometric signals.
 2. **Single fixed challenge** -- "move closer" is predictable. Randomized multi-challenge is on the roadmap.
 3. **Client-side only** -- all decisions on-device. A rooted device can bypass the pipeline.
 4. **Model weights are obfuscated, not encrypted** -- XOR scrambling deters casual extraction but is not cryptographically secure.
