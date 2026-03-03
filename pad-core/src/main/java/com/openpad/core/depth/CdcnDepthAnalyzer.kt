@@ -9,6 +9,21 @@ import java.nio.ByteBuffer
 import java.nio.ByteOrder
 
 /**
+ * Result from a single CDCN inference pass.
+ *
+ * @param depthScore Clamped mean of depth map [0..1].
+ * @param variance Variance placeholder (reserved for future quadrant variance use).
+ * @param rawMean Raw mean of depth map (unclamped).
+ * @param characteristics Full depth statistics computed from the 32x32 map.
+ */
+internal data class CdcnInferenceResult(
+    val depthScore: Float,
+    val variance: Float,
+    val rawMean: Float,
+    val characteristics: DepthCharacteristics
+)
+
+/**
  * Low-level model runner for MN3 (fast binary classifier) and CDCN (depth map).
  *
  * Loads both models independently. Exposes [analyzeMn3] and [analyzeCdcn] as
@@ -79,10 +94,13 @@ class CdcnDepthAnalyzer(context: Context) : DepthAnalyzer {
     override fun analyze(bitmap: Bitmap, faceBbox: FaceDetection.BBox): DepthResult {
         val (real, spoof) = analyzeMn3(bitmap, faceBbox)
         return if (hasCdcn) {
-            val (cdcnScore, cdcnVar, cdcnMean) = analyzeCdcn(bitmap, faceBbox)
+            val cdcnResult = analyzeCdcn(bitmap, faceBbox)
             DepthResult.fromBoth(
                 mn3Real = real, mn3Spoof = spoof,
-                cdcnScore = cdcnScore, cdcnVariance = cdcnVar, cdcnMean = cdcnMean
+                cdcnScore = cdcnResult.depthScore,
+                cdcnVariance = cdcnResult.variance,
+                cdcnMean = cdcnResult.rawMean,
+                characteristics = cdcnResult.characteristics
             )
         } else {
             DepthResult.fromMn3Only(mn3Real = real, mn3Spoof = spoof)
@@ -118,12 +136,21 @@ class CdcnDepthAnalyzer(context: Context) : DepthAnalyzer {
     // ---- CDCN depth map (slow, async) ----
 
     /**
-     * Run CDCN inference. Returns Triple(depthScore, variance, rawMean).
+     * Run CDCN inference. Returns [CdcnInferenceResult] with depth score, variance, raw mean,
+     * and full [DepthCharacteristics] computed from the 32x32 depth map.
      * Thread-safe: uses [cdcnInputBuffer] which is only accessed from the CDCN executor thread.
      */
-    fun analyzeCdcn(bitmap: Bitmap, faceBbox: FaceDetection.BBox): Triple<Float, Float, Float> {
+    internal fun analyzeCdcn(bitmap: Bitmap, faceBbox: FaceDetection.BBox): CdcnInferenceResult {
         if (cdcnInterpreter == null) {
-            return Triple(PLACEHOLDER_SCORE, 0f, PLACEHOLDER_SCORE)
+            return CdcnInferenceResult(
+                depthScore = PLACEHOLDER_SCORE,
+                variance = 0f,
+                rawMean = PLACEHOLDER_SCORE,
+                characteristics = DepthCharacteristics(
+                    mean = PLACEHOLDER_SCORE, standardDeviation = 0f,
+                    quadrantVariance = 0f, minDepth = PLACEHOLDER_SCORE, maxDepth = PLACEHOLDER_SCORE
+                )
+            )
         }
 
         val crop = cropFace(bitmap, faceBbox, CDCN_INPUT_SIZE, 1.2f)
@@ -132,15 +159,14 @@ class CdcnDepthAnalyzer(context: Context) : DepthAnalyzer {
         val output = Array(1) { Array(CDCN_OUTPUT_SIZE) { FloatArray(CDCN_OUTPUT_SIZE) } }
         cdcnInterpreter.run(cdcnInputBuffer, output)
 
-        var sum = 0f
-        for (y in 0 until CDCN_OUTPUT_SIZE) {
-            for (x in 0 until CDCN_OUTPUT_SIZE) {
-                sum += output[0][y][x]
-            }
-        }
-        val mean = sum / (CDCN_OUTPUT_SIZE * CDCN_OUTPUT_SIZE)
+        val characteristics = DepthCharacteristics.fromDepthMap(output[0])
 
-        return Triple(mean.coerceIn(0f, 1f), 0f, mean)
+        return CdcnInferenceResult(
+            depthScore = characteristics.mean.coerceIn(0f, 1f),
+            variance = 0f,
+            rawMean = characteristics.mean,
+            characteristics = characteristics
+        )
     }
 
     // ---- Input buffer filling ----

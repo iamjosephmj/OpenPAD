@@ -22,7 +22,6 @@ package com.openpad.core
  * - [depthGateWeight] — fast depth pre-filter
  * - [screenDetectionWeight] — phone/laptop/tablet screen in frame
  *
- * @property maxRetries Maximum retry attempts after spoof detection (0 = no retries).
  * @property livenessThreshold Minimum overall confidence to accept as live. Range [0.0, 1.0].
  * @property faceMatchThreshold Minimum similarity between checkpoint face captures. Below this = face swap. Range [0.0, 1.0].
  * @property faceDetectionConfidence Minimum confidence for face detection. Range [0.0, 1.0].
@@ -41,7 +40,6 @@ package com.openpad.core
  * @property enableDebugOverlay If true, shows real-time debug metrics during the camera phase.
  */
 data class OpenPadConfig(
-    val maxRetries: Int = 3,
     val livenessThreshold: Float = 0.70f,
     val faceMatchThreshold: Float = 0.70f,
     val faceDetectionConfidence: Float = 0.55f,
@@ -57,14 +55,17 @@ data class OpenPadConfig(
     val photometricMinScore: Float = 0.30f,
     val spoofAttemptPenalty: Float = 0.08f,
     val maxFramesPerSecond: Int = 8,
-    val enableDebugOverlay: Boolean = false
+    val enableDebugOverlay: Boolean = false,
+    /** Enable ESPCN super-resolution on face regions during the closer challenge.
+     *  The model's quality gate automatically discards enhancements that don't help. */
+    val enableFrameEnhancement: Boolean = true,
 ) {
     companion object {
         val Default = OpenPadConfig()
     }
 
     internal fun toPadConfig(): PadConfig = PadConfig(
-        maxSpoofAttempts = maxRetries,
+        maxSpoofAttempts = 0,
         genuineProbabilityThreshold = livenessThreshold,
         faceConsistencyThreshold = faceMatchThreshold,
         minFaceConfidence = faceDetectionConfidence,
@@ -79,6 +80,7 @@ data class OpenPadConfig(
         lbpScreenThreshold = screenPatternThreshold,
         photometricMinScore = photometricMinScore,
         spoofAttemptPenaltyPerCount = spoofAttemptPenalty,
-        maxFps = maxFramesPerSecond
+        maxFps = maxFramesPerSecond,
+        enableFrameEnhancement = enableFrameEnhancement
     )
 }

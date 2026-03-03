@@ -1,6 +1,7 @@
 package com.openpad.core.challenge
 
 import android.graphics.Bitmap
+import com.openpad.core.depth.DepthCharacteristics
 
 /** Phases of the challenge-response state machine. */
 enum class ChallengePhase {
@@ -27,9 +28,14 @@ data class ChallengeEvidence(
     val holdTextureScores: List<Float> = emptyList(),
     val holdMn3Scores: List<Float> = emptyList(),
     val holdCdcnScores: List<Float> = emptyList(),
-    /** Face crop captured at the end of ANALYZING phase (before challenge starts). */
+    val holdDepthCharacteristics: List<DepthCharacteristics> = emptyList(),
+    /** 112x112 face crop captured at the end of ANALYZING phase (for embedding comparison). */
     val checkpointBitmapAnalyzing: Bitmap? = null,
-    /** Face crop captured at the end of CHALLENGE_CLOSER phase (hold complete). */
+    /** 112x112 face crop captured at the end of CHALLENGE_CLOSER phase (for embedding comparison). */
     val checkpointBitmapChallenge: Bitmap? = null,
+    /** Display-quality face crop at normal distance (preserves natural face size). */
+    val displayBitmapAnalyzing: Bitmap? = null,
+    /** Display-quality face crop at close distance (preserves natural face size). */
+    val displayBitmapChallenge: Bitmap? = null,
     val completed: Boolean = false
 )

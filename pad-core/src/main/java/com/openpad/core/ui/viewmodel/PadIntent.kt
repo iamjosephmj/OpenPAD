@@ -3,13 +3,10 @@ package com.openpad.core.ui.viewmodel
 import com.openpad.core.PadResult
 
 internal sealed interface PadIntent {
-    data object OnBeginVerification : PadIntent
     data object OnScreenStarted : PadIntent
     data object OnPreviewReady : PadIntent
     data class OnAnalyzerResult(val result: PadResult) : PadIntent
     data object OnCloseClicked : PadIntent
-    data object OnRetryClicked : PadIntent
-    data object OnDone : PadIntent
     data object OnScreenDisposed : PadIntent
 }
 

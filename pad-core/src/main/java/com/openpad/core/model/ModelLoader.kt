@@ -56,8 +56,8 @@ object ModelLoader {
                 if (compat.isDelegateSupportedOnThisDevice) {
                     options.addDelegate(GpuDelegate())
                 }
-            } catch (@Suppress("TooGenericExceptionCaught") e: Exception) {
-                // GPU delegate unavailable; CPU fallback
+            } catch (@Suppress("TooGenericExceptionCaught") _: Throwable) {
+                // GPU delegate unavailable (Exception or NoClassDefFoundError); CPU fallback
             }
         }
         return options

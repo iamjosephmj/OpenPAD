@@ -63,6 +63,12 @@ add_executable(openpad_test
     test_config.cpp
     test_ringbuf.cpp
     test_aggregation.cpp
+    test_image.cpp
+    test_frequency.cpp
+    test_photometric.cpp
+    test_temporal.cpp
+    test_challenge.cpp
+    test_pipeline.cpp
 )
 target_link_libraries(openpad_test
     openpad_test_lib
@@ -71,6 +77,8 @@ target_link_libraries(openpad_test
 target_include_directories(openpad_test PRIVATE
     ${OPENPAD_ROOT}/include
     ${OPENPAD_ROOT}/src/temporal
+    ${OPENPAD_ROOT}/src/frequency
+    ${OPENPAD_ROOT}/src/photometric
 )
 
 enable_testing()

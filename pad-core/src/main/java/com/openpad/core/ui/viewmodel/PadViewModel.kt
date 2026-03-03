@@ -14,8 +14,10 @@ import com.openpad.core.OpenPad
 import com.openpad.core.OpenPadResult
 import com.openpad.core.PadResult
 import com.openpad.core.aggregation.PadStatus
+import com.openpad.core.challenge.ChallengeEvidence
 import com.openpad.core.challenge.ChallengePhase
 import com.openpad.core.challenge.ChallengeManager
+import com.openpad.core.depth.DepthCharacteristics
 import com.openpad.core.detection.FaceDetection
 import com.openpad.core.embedding.MobileFaceNetAnalyzer
 import kotlinx.coroutines.Job
@@ -49,13 +51,16 @@ internal class PadViewModel : ViewModel() {
     private var evaluateJob: Job? = null
     private var cameraBound = false
     private var spoofAttemptCount = 0
+    private var verdictDelivered = false
+    /** Snapshot of evidence taken at evaluation time, before handleSpoof can clear it. */
+    private var evidenceSnapshot: ChallengeEvidence? = null
     var outcome: PadOutcome = PadOutcome.Pending
         private set
 
     fun initFromSdk() {
         val p = pipeline ?: return
         challengeManager = p.createChallengeManager()
-        _ui.update { it.copy(isInitialized = true, currentScreen = SdkScreen.INTRO) }
+        _ui.update { it.copy(isInitialized = true, phase = ChallengePhase.ANALYZING) }
     }
 
     fun bindCamera(context: Context, lifecycleOwner: LifecycleOwner, analysisExecutor: Executor) {
@@ -99,15 +104,6 @@ internal class PadViewModel : ViewModel() {
 
     fun dispatch(intent: PadIntent) {
         when (intent) {
-            is PadIntent.OnBeginVerification -> {
-                _ui.update {
-                    it.copy(
-                        currentScreen = SdkScreen.CAMERA,
-                        phase = ChallengePhase.ANALYZING
-                    )
-                }
-            }
-
             is PadIntent.OnScreenStarted -> {
                 _ui.update { it.copy(phase = ChallengePhase.ANALYZING) }
             }
@@ -115,7 +111,7 @@ internal class PadViewModel : ViewModel() {
             is PadIntent.OnPreviewReady -> { }
 
             is PadIntent.OnAnalyzerResult -> {
-                if (_ui.value.verdictState == null && _ui.value.currentScreen == SdkScreen.CAMERA) {
+                if (!verdictDelivered) {
                     handleAnalyzerResult(intent.result)
                 }
             }
@@ -123,14 +119,6 @@ internal class PadViewModel : ViewModel() {
             is PadIntent.OnCloseClicked -> {
                 viewModelScope.launch {
                     _effects.emit(PadEffect.CloseRequested)
-                }
-            }
-
-            is PadIntent.OnRetryClicked -> handleRetry()
-
-            is PadIntent.OnDone -> {
-                viewModelScope.launch {
-                    _effects.emit(PadEffect.Done)
                 }
             }
 
@@ -213,19 +201,7 @@ internal class PadViewModel : ViewModel() {
 
             ChallengePhase.DONE -> {
                 if (challenge.phase == ChallengePhase.DONE) {
-                    outcome = PadOutcome.SpoofFailed(spoofAttemptCount)
-                    _ui.update {
-                        it.copy(
-                            phase = ChallengePhase.DONE,
-                            currentScreen = SdkScreen.VERDICT,
-                            challengeProgress = 1f,
-                            verdictState = VerdictState.SpoofDetected(
-                                attempt = spoofAttemptCount,
-                                maxAttempts = config.maxSpoofAttempts,
-                                canRetry = false
-                            )
-                        )
-                    }
+                    deliverVerdict(PadOutcome.SpoofFailed(spoofAttemptCount))
                 }
             }
         }
@@ -261,6 +237,7 @@ internal class PadViewModel : ViewModel() {
 
             val challenge = challengeManager ?: return@launch
             val ev = challenge.evidence
+            evidenceSnapshot = ev
 
             val bitmapA = ev.checkpointBitmapAnalyzing
             val bitmapB = ev.checkpointBitmapChallenge
@@ -282,19 +259,7 @@ internal class PadViewModel : ViewModel() {
             if (!faceConsistent) {
                 val terminal = challenge.handleSpoof()
                 spoofAttemptCount++
-                outcome = PadOutcome.SpoofFailed(spoofAttemptCount)
-                _ui.update {
-                    it.copy(
-                        phase = ChallengePhase.DONE,
-                        currentScreen = SdkScreen.VERDICT,
-                        challengeProgress = 1f,
-                        verdictState = VerdictState.SpoofDetected(
-                            attempt = spoofAttemptCount,
-                            maxAttempts = config.maxSpoofAttempts,
-                            canRetry = !terminal
-                        )
-                    )
-                }
+                deliverVerdict(PadOutcome.SpoofFailed(spoofAttemptCount))
                 return@launch
             }
 
@@ -309,41 +274,9 @@ internal class PadViewModel : ViewModel() {
             } else {
                 val terminal = challenge.handleSpoof()
                 spoofAttemptCount++
-                outcome = PadOutcome.SpoofFailed(spoofAttemptCount)
-                _ui.update {
-                    it.copy(
-                        phase = ChallengePhase.DONE,
-                        currentScreen = SdkScreen.VERDICT,
-                        challengeProgress = 1f,
-                        verdictState = VerdictState.SpoofDetected(
-                            attempt = spoofAttemptCount,
-                            maxAttempts = config.maxSpoofAttempts,
-                            canRetry = !terminal
-                        )
-                    )
-                }
+                deliverVerdict(PadOutcome.SpoofFailed(spoofAttemptCount))
             }
         }
-    }
-
-    private fun handleRetry() {
-        val challenge = challengeManager ?: return
-
-        evaluateJob?.cancel()
-        evaluateJob = null
-        challenge.reset()
-
-        _ui.update {
-            PadUiState(
-                currentScreen = SdkScreen.CAMERA,
-                status = PadStatus.ANALYZING,
-                phase = ChallengePhase.ANALYZING,
-                isInitialized = true,
-                verdictState = null,
-                challengeProgress = 0f
-            )
-        }
-        outcome = PadOutcome.Pending
     }
 
     private fun computeGenuineProbability(
@@ -392,17 +325,28 @@ internal class PadViewModel : ViewModel() {
 
             val current = _ui.value
             if (current.status == PadStatus.LIVE && current.phase == ChallengePhase.LIVE) {
-                outcome = PadOutcome.LiveConfirmed
                 challengeManager?.advanceToDone()
-                _ui.update {
-                    it.copy(
-                        phase = ChallengePhase.DONE,
-                        currentScreen = SdkScreen.VERDICT,
-                        messageOverride = null,
-                        verdictState = VerdictState.LiveConfirmed
-                    )
-                }
+                deliverVerdict(PadOutcome.LiveConfirmed)
             }
+        }
+    }
+
+    /** Deliver the verdict result and signal the activity to finish. */
+    private fun deliverVerdict(result: PadOutcome) {
+        if (verdictDelivered) return
+        verdictDelivered = true
+        outcome = result
+
+        _ui.update {
+            it.copy(
+                phase = ChallengePhase.DONE,
+                challengeProgress = 1f,
+                messageOverride = null
+            )
+        }
+
+        viewModelScope.launch {
+            _effects.emit(PadEffect.Done)
         }
     }
 
@@ -422,11 +366,17 @@ internal class PadViewModel : ViewModel() {
         val durationMs = System.currentTimeMillis() - OpenPad.sessionStartMs
         val isLive = outcome is PadOutcome.LiveConfirmed
         val confidence = _ui.value.lastResult?.aggregatedScore ?: 0f
+        val ev = evidenceSnapshot ?: challengeManager?.evidence
         return OpenPadResult(
             isLive = isLive,
             confidence = confidence,
             durationMs = durationMs,
-            spoofAttempts = spoofAttemptCount
+            spoofAttempts = spoofAttemptCount,
+            depthCharacteristics = ev?.holdDepthCharacteristics?.let {
+                DepthCharacteristics.average(it)
+            },
+            faceAtNormalDistance = ev?.displayBitmapAnalyzing ?: ev?.checkpointBitmapAnalyzing,
+            faceAtCloseDistance = ev?.displayBitmapChallenge ?: ev?.checkpointBitmapChallenge
         )
     }
 

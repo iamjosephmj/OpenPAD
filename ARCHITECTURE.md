@@ -164,10 +164,11 @@ LAYER 10: Challenge-Response (MovementChallenge)
     CHALLENGE_CLOSER: face area must increase 15%+ from baseline
     EVALUATING: face match check + weighted score vs threshold
     Threshold: 0.70 base, +0.08 per failed attempt (max 0.85)
-    Max 3 spoof attempts before terminal failure
+    Unlimited retries
     |
     v
-OpenPadResult (isLive, confidence, durationMs, spoofAttempts)
+OpenPadResult (isLive, confidence, durationMs, spoofAttempts,
+               depthCharacteristics, faceAtNormalDistance, faceAtCloseDistance)
 ```
 
 ---
@@ -383,7 +384,7 @@ All configurable thresholds live in `PadConfig.kt` (internal) and are mapped fro
 | `photometricMinScore` | `photometricMinScore` | 0.30 | Photometric below this flags spoof |
 | `spoofAttemptPenalty` | `spoofAttemptPenaltyPerCount` | 0.08 | Per-attempt escalation |
 | `maxFramesPerSecond` | `maxFps` | 8 | Frame processing rate |
-| `maxRetries` | `maxSpoofAttempts` | 3 | Terminal failure limit |
+| _(removed)_ | `maxSpoofAttempts` | 0 | Unlimited retries (0 = no limit) |
 
 ---
 

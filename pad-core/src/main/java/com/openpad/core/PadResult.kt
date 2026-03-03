@@ -25,9 +25,13 @@ data class PadResult(
     val photometricResult: PhotometricResult?,
     /** 112x112 face crop for checkpoint capture (null when no face detected). */
     val faceCropBitmap: Bitmap? = null,
+    /** Display-quality face crop that preserves natural face size (null when no face detected). */
+    val faceDisplayBitmap: Bitmap? = null,
     val temporalFeatures: TemporalFeatures?,
     val aggregatedScore: Float,
     val frameSimilarity: Float,
     val faceSharpness: Float,
+    /** True when ESPCN frame enhancement was applied to this frame. */
+    val enhancementApplied: Boolean = false,
     val timestampMs: Long
 )

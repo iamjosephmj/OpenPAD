@@ -90,7 +90,12 @@ data class PadConfig(
 
     // --- Timers ---
     val liveSustainMs: Long = 1000L,
-    val maxSpoofAttempts: Int = 3,
+    val maxSpoofAttempts: Int = 0,
+
+    // --- Frame enhancement ---
+    /** Enable ESPCN super-resolution on face regions during CHALLENGE_CLOSER.
+     *  The model's quality gate automatically discards enhancements that don't help. */
+    val enableFrameEnhancement: Boolean = true,
 
     // --- Frame rate ---
     val maxFps: Int = 8

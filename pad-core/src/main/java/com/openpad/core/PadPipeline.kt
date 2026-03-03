@@ -12,6 +12,8 @@ import com.openpad.core.device.DeviceDetector
 import com.openpad.core.device.SsdDeviceDetector
 import com.openpad.core.embedding.FaceEmbeddingAnalyzer
 import com.openpad.core.embedding.MobileFaceNetAnalyzer
+import com.openpad.core.enhance.EspcnFrameEnhancer
+import com.openpad.core.enhance.FrameEnhancer
 import com.openpad.core.ndk.NativeChallengeManager
 import com.openpad.core.ndk.OpenPadNative
 import com.openpad.core.texture.MiniFasNetAnalyzer
@@ -32,6 +34,7 @@ class PadPipeline private constructor(
     val depthModels: CdcnDepthAnalyzer,
     val deviceDetector: DeviceDetector,
     val embeddingAnalyzer: FaceEmbeddingAnalyzer,
+    val frameEnhancer: FrameEnhancer,
     internal val nativeChallengeManager: NativeChallengeManager,
     val config: PadConfig
 ) {
@@ -42,6 +45,7 @@ class PadPipeline private constructor(
             textureAnalyzer = textureAnalyzer,
             depthAnalyzer = depthAnalyzer,
             deviceDetector = deviceDetector,
+            frameEnhancer = frameEnhancer,
             nativeChallengeManager = nativeChallengeManager,
             config = config,
             onResult = onResult
@@ -58,6 +62,7 @@ class PadPipeline private constructor(
         depthAnalyzer.close()
         deviceDetector.close()
         embeddingAnalyzer.close()
+        frameEnhancer.close()
     }
 
     companion object {
@@ -74,6 +79,7 @@ class PadPipeline private constructor(
             val depthAnalyzer = CascadedDepthAnalyzer(depthModels, config)
             val deviceDetector = SsdDeviceDetector(appContext)
             val embeddingAnalyzer = MobileFaceNetAnalyzer(appContext)
+            val frameEnhancer = EspcnFrameEnhancer(appContext)
             val nativeChallengeManager = NativeChallengeManager()
 
             OpenPadNative.nativeInit(OpenPadNative.configToBytes(config))
@@ -85,6 +91,7 @@ class PadPipeline private constructor(
                 depthModels = depthModels,
                 deviceDetector = deviceDetector,
                 embeddingAnalyzer = embeddingAnalyzer,
+                frameEnhancer = frameEnhancer,
                 nativeChallengeManager = nativeChallengeManager,
                 config = config
             )

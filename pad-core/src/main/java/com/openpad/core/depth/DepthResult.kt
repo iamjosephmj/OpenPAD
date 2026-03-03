@@ -28,7 +28,8 @@ data class DepthResult(
     val cdcnAvailable: Boolean = false,
     val depthScore: Float,
     val depthVariance: Float = 0f,
-    val depthMapMean: Float = 0f
+    val depthMapMean: Float = 0f,
+    val depthCharacteristics: DepthCharacteristics? = null
 ) {
     companion object {
         /** Result when only MN3 ran (CDCN not yet available or not triggered). */
@@ -52,7 +53,8 @@ data class DepthResult(
             mn3Spoof: Float,
             cdcnScore: Float,
             cdcnVariance: Float,
-            cdcnMean: Float
+            cdcnMean: Float,
+            characteristics: DepthCharacteristics? = null
         ) = DepthResult(
             mn3RealScore = mn3Real,
             mn3SpoofScore = mn3Spoof,
@@ -63,7 +65,8 @@ data class DepthResult(
             cdcnAvailable = true,
             depthScore = cdcnScore,
             depthVariance = cdcnVariance,
-            depthMapMean = cdcnMean
+            depthMapMean = cdcnMean,
+            depthCharacteristics = characteristics
         )
     }
 }
