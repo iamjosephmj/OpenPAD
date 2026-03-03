@@ -5,7 +5,7 @@ plugins {
     `maven-publish`
 }
 
-val publishVersion = "1.0.0"
+val publishVersion = "1.0.5"
 val publishGroupId = "com.github.openpad"
 
 android {
