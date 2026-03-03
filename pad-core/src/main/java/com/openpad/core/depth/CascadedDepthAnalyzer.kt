@@ -26,8 +26,8 @@ class CascadedDepthAnalyzer(
 ) : DepthAnalyzer {
 
     private val cdcnExecutor = Executors.newSingleThreadExecutor()
-    private val pendingCdcn = AtomicReference<Future<Triple<Float, Float, Float>>?>(null)
-    private var cachedCdcnResult: Triple<Float, Float, Float>? = null
+    private val pendingCdcn = AtomicReference<Future<CdcnInferenceResult>?>(null)
+    private var cachedCdcnResult: CdcnInferenceResult? = null
 
     override fun analyze(bitmap: Bitmap, faceBbox: FaceDetection.BBox): DepthResult {
         // Step 1: Collect previous CDCN result
@@ -42,7 +42,7 @@ class CascadedDepthAnalyzer(
         if (shouldTriggerCdcn) {
             val bitmapCopy = bitmap.copy(bitmap.config ?: Bitmap.Config.ARGB_8888, false)
             val bboxCopy = faceBbox
-            pendingCdcn.set(cdcnExecutor.submit<Triple<Float, Float, Float>> {
+            pendingCdcn.set(cdcnExecutor.submit<CdcnInferenceResult> {
                 try {
                     models.analyzeCdcn(bitmapCopy, bboxCopy)
                 } finally {
@@ -60,9 +60,10 @@ class CascadedDepthAnalyzer(
             DepthResult.fromBoth(
                 mn3Real = mn3Real,
                 mn3Spoof = mn3Spoof,
-                cdcnScore = cdcn.first,
-                cdcnVariance = cdcn.second,
-                cdcnMean = cdcn.third
+                cdcnScore = cdcn.depthScore,
+                cdcnVariance = cdcn.variance,
+                cdcnMean = cdcn.rawMean,
+                characteristics = cdcn.characteristics
             )
         } else {
             DepthResult.fromMn3Only(

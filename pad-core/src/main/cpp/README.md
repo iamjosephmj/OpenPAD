@@ -2,6 +2,8 @@
 
 Pure C implementation of the OpenPAD signal-processing pipeline: FFT moiré detection, LBP screen analysis, photometric analysis, temporal tracking, classification, and challenge-response state machine. Built with the Android NDK, 16KB page-aligned for Android 15+.
 
+Frame enhancement (ESPCN x2 super-resolution) runs in the Kotlin/TFLite layer, not in the native layer. The native pipeline receives already-enhanced bitmaps transparently.
+
 ---
 
 ## Architecture Overview
@@ -199,7 +201,6 @@ stateDiagram-v2
     CHALLENGE_CLOSER --> EVALUATING: Hold complete
     EVALUATING --> LIVE: Pass (Kotlin)
     EVALUATING --> ANALYZING: Spoof retry
-    EVALUATING --> DONE: Max attempts
     LIVE --> DONE: Sustain timer
     DONE --> [*]
 ```

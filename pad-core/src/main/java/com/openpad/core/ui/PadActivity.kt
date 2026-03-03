@@ -8,22 +8,11 @@ import androidx.activity.OnBackPressedCallback
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.animation.AnimatedContent
-import androidx.compose.animation.core.tween
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
-import androidx.compose.animation.scaleIn
-import androidx.compose.animation.scaleOut
-import androidx.compose.animation.slideInHorizontally
-import androidx.compose.animation.slideOutHorizontally
-import androidx.compose.animation.togetherWith
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
-import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.compose.LocalLifecycleOwner
@@ -35,16 +24,15 @@ import com.openpad.core.ui.theme.OpenPadTheme
 import com.openpad.core.ui.viewmodel.PadEffect
 import com.openpad.core.ui.viewmodel.PadIntent
 import com.openpad.core.ui.viewmodel.PadViewModel
-import com.openpad.core.ui.viewmodel.SdkScreen
 import kotlinx.coroutines.flow.collectLatest
 import java.util.concurrent.Executors
 
 /**
- * Internal Activity that hosts the full PAD verification flow.
+ * Internal Activity that hosts the PAD camera verification flow.
  *
  * Launched by [OpenPad.analyze]. Handles camera permission,
- * displays Intro -> Camera -> Verdict screens, and delivers
- * results back to the integrator via [OpenPad] callbacks.
+ * displays the camera screen, and delivers results back to
+ * the integrator via [OpenPad] callbacks.
  */
 class PadActivity : ComponentActivity() {
 
@@ -81,7 +69,7 @@ class PadActivity : ComponentActivity() {
 
         setContent {
             OpenPadTheme {
-                PadFlowHost(
+                PadCameraHost(
                     onDone = { handleDone() },
                     onClose = { handleClose() }
                 )
@@ -106,7 +94,7 @@ class PadActivity : ComponentActivity() {
     private var lastViewModel: PadViewModel? = null
 
     @Composable
-    private fun PadFlowHost(
+    private fun PadCameraHost(
         onDone: () -> Unit,
         onClose: () -> Unit
     ) {
@@ -123,9 +111,9 @@ class PadActivity : ComponentActivity() {
             viewModel.initFromSdk()
         }
 
-        // Bind camera when transitioning to CAMERA screen
-        LaunchedEffect(ui.currentScreen) {
-            if (ui.currentScreen == SdkScreen.CAMERA && ui.isInitialized) {
+        // Bind camera once initialized
+        LaunchedEffect(ui.isInitialized) {
+            if (ui.isInitialized) {
                 viewModel.dispatch(PadIntent.OnScreenStarted)
                 viewModel.bindCamera(context, lifecycleOwner, analysisExecutor)
             }
@@ -136,7 +124,10 @@ class PadActivity : ComponentActivity() {
             viewModel.effects.collectLatest { effect ->
                 when (effect) {
                     PadEffect.CloseRequested -> onClose()
-                    PadEffect.Done -> onDone()
+                    PadEffect.Done -> {
+                        viewModel.finish()
+                        onDone()
+                    }
                     PadEffect.FinishLiveFlow -> {
                         viewModel.finish()
                         onDone()
@@ -151,66 +142,15 @@ class PadActivity : ComponentActivity() {
             }
         }
 
-        AnimatedContent(
-            targetState = ui.currentScreen,
-            transitionSpec = {
-                when {
-                    // Intro -> Camera: slide in from right
-                    targetState == SdkScreen.CAMERA && initialState == SdkScreen.INTRO ->
-                        (fadeIn(tween(350)) + slideInHorizontally(tween(400)) { it / 4 }) togetherWith
-                            (fadeOut(tween(250)) + slideOutHorizontally(tween(350)) { -it / 4 })
-
-                    // Camera -> Verdict: gentle scale-down + fade
-                    targetState == SdkScreen.VERDICT && initialState == SdkScreen.CAMERA ->
-                        (fadeIn(tween(400, delayMillis = 100)) +
-                            scaleIn(tween(400, delayMillis = 100), initialScale = 0.92f)) togetherWith
-                            (fadeOut(tween(300)) +
-                                scaleOut(tween(300), targetScale = 1.04f))
-
-                    // Verdict -> Camera (retry): slide back from left
-                    targetState == SdkScreen.CAMERA && initialState == SdkScreen.VERDICT ->
-                        (fadeIn(tween(350)) + slideInHorizontally(tween(400)) { -it / 4 }) togetherWith
-                            (fadeOut(tween(250)) + slideOutHorizontally(tween(350)) { it / 4 })
-
-                    else ->
-                        fadeIn(tween(300)) togetherWith fadeOut(tween(250))
-                }
-            },
-            modifier = Modifier.fillMaxSize(),
-            label = "sdkScreen"
-        ) { screen ->
-            when (screen) {
-                SdkScreen.INTRO -> {
-                    IntroScreen(
-                        onBeginVerification = {
-                            viewModel.dispatch(PadIntent.OnBeginVerification)
-                        }
-                    )
-                }
-
-                SdkScreen.CAMERA -> {
-                    CameraScreen(
-                        surfaceRequest = surfaceRequest,
-                        status = ui.status,
-                        phase = ui.phase,
-                        faceBoxWidthFraction = ui.faceBoxWidthFraction,
-                        faceBoxHeightFraction = ui.faceBoxHeightFraction,
-                        challengeProgress = ui.challengeProgress,
-                        messageOverride = ui.messageOverride,
-                        onClose = { viewModel.dispatch(PadIntent.OnCloseClicked) }
-                    )
-                }
-
-                SdkScreen.VERDICT -> {
-                    VerdictScreen(
-                        verdictState = ui.verdictState ?: return@AnimatedContent,
-                        onRetry = { viewModel.dispatch(PadIntent.OnRetryClicked) },
-                        onClose = {
-                            viewModel.dispatch(PadIntent.OnDone)
-                        }
-                    )
-                }
-            }
-        }
+        CameraScreen(
+            surfaceRequest = surfaceRequest,
+            status = ui.status,
+            phase = ui.phase,
+            faceBoxWidthFraction = ui.faceBoxWidthFraction,
+            faceBoxHeightFraction = ui.faceBoxHeightFraction,
+            challengeProgress = ui.challengeProgress,
+            messageOverride = ui.messageOverride,
+            onClose = { viewModel.dispatch(PadIntent.OnCloseClicked) }
+        )
     }
 }

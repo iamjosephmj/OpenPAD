@@ -37,7 +37,7 @@ dependencies {
 
 ### 2. Initialize
 
-Call `initialize()` once at app startup (e.g. in `Application.onCreate()`). This loads all ML models asynchronously.
+Call `initialize()` once before starting verification (e.g. in `Activity.onCreate()`). This loads all ML models asynchronously.
 
 ```kotlin
 OpenPad.initialize(context) {
@@ -49,20 +49,19 @@ With custom configuration:
 
 ```kotlin
 OpenPad.initialize(
-    context = applicationContext,
+    context = this,
     config = OpenPadConfig(
         livenessThreshold = 0.70f,
-        faceMatchThreshold = 0.70f,
-        maxRetries = 3
+        faceMatchThreshold = 0.70f
     ),
     onReady = { /* ready */ },
     onError = { error -> Log.e("PAD", error.toString()) }
 )
 ```
 
-### 3a. UI Mode -- Full Verification Flow
+### 3a. UI Mode -- Camera Verification Flow
 
-Launch the built-in verification UI. The SDK handles camera, challenge-response, and verdict screens.
+Launch the built-in camera UI. The SDK handles camera, challenge-response, and delivers the result via callback. There is no intro or verdict screen -- the camera starts immediately and the activity finishes as soon as a verdict is reached. Your app decides how to present the result.
 
 ```kotlin
 OpenPad.analyze(activity, object : OpenPadListener {
@@ -115,7 +114,7 @@ session.release()
 
 ### 4. Theme Customization (UI Mode)
 
-All SDK screens use a customizable color theme. Set it before calling `analyze()`.
+The SDK camera screen uses a customizable color theme. Set it before calling `analyze()`.
 
 ```kotlin
 OpenPad.theme = OpenPadThemeConfig(
@@ -152,7 +151,6 @@ OpenPadConfig(
     // --- Verdict ---
     livenessThreshold = 0.70f,           // Minimum overall confidence to accept as live
     faceMatchThreshold = 0.70f,          // Minimum face similarity between checkpoints (face swap detection)
-    maxRetries = 3,                       // Retry attempts after spoof detection before terminal failure
     spoofAttemptPenalty = 0.08f,          // Extra threshold per consecutive failed attempt
 
     // --- Detection ---
@@ -176,7 +174,10 @@ OpenPadConfig(
 
     // --- Performance ---
     maxFramesPerSecond = 8,              // Frame processing rate
-    enableDebugOverlay = false           // Show real-time debug metrics
+    enableDebugOverlay = false,          // Show real-time debug metrics
+
+    // --- Frame Enhancement ---
+    enableFrameEnhancement = true        // ESPCN x2 super-resolution during challenge (ML quality gate)
 )
 ```
 
@@ -190,7 +191,8 @@ OpenPadConfig(
 | `OpenPadConfig` | All tunable thresholds, weights, and limits. |
 | `OpenPadThemeConfig` | UI color customization (ARGB hex longs). |
 | `OpenPadListener` | Callback interface: `onLiveConfirmed`, `onSpoofDetected`, `onError`, `onCancelled`. |
-| `OpenPadResult` | Verdict: `isLive`, `confidence`, `durationMs`, `spoofAttempts`. |
+| `OpenPadResult` | Verdict: `isLive`, `confidence`, `durationMs`, `spoofAttempts`, `depthCharacteristics`, `faceAtNormalDistance`, `faceAtCloseDistance`. |
+| `DepthCharacteristics` | 3D depth statistics from the CDCN 32x32 depth map: `mean`, `standardDeviation`, `quadrantVariance`, `minDepth`, `maxDepth`. |
 | `OpenPadError` | Sealed class: `NotInitialized`, `InitializationFailed`, `CameraUnavailable`, `PermissionDenied`, `AlreadyRunning`. |
 | `OpenPadSession` | Headless session: `frameAnalyzer`, `status`, `phase`, `challengeProgress`, `instruction`, `release()`. |
 
@@ -210,13 +212,15 @@ flowchart TB
     FD --> PHOTO[6. Photometric]
     FD --> TEMP[7. Temporal]
     FD --> EMB[8. Face Embedding]
-    TEX --> AGG[9. Aggregation]
+    FD --> ENH[9. Frame Enhancement]
+    TEX --> AGG[10. Aggregation]
     DEP --> AGG
     FREQ --> AGG
     DEV --> AGG
     PHOTO --> AGG
     TEMP --> AGG
-    EMB --> CHAL[10. Challenge]
+    ENH --> AGG
+    EMB --> CHAL[11. Challenge]
     AGG --> CHAL
     CHAL --> VERDICT[Verdict]
 ```
@@ -231,8 +235,9 @@ flowchart TB
 | 6 | Photometric (specular, chrominance, DOF, lighting) | Native C |
 | 7 | Temporal (movement, blink, similarity) | Native C |
 | 8 | Face Embedding (MobileFaceNet) | ML |
-| 9 | Aggregation (gates + stabilizer) | Native C |
-| 10 | Challenge-Response ("move closer") | Native C |
+| 9 | Frame Enhancement (ESPCN x2 super-resolution) | ML |
+| 10 | Aggregation (gates + stabilizer) | Native C |
+| 11 | Challenge-Response ("move closer") | Native C |
 
 ### Detection Layers
 
@@ -245,6 +250,7 @@ flowchart TB
 | Photometric | Specular reflections, color temperature, uniform DOF | Classical | Gate (combined score too low) |
 | Temporal | Static images, missing blinks, replay patterns | Classical | Pre-classification (frames, face presence) |
 | Face Match | Face swap mid-challenge | Learned (embedding) | Separate check at challenge evaluation |
+| Frame Enhancement | Defocus blur on face regions | Learned (ESPCN SR) | Auto-enhances during challenge; ML quality gate decides keep/discard |
 
 ### Classification Gates
 
@@ -289,7 +295,7 @@ The challenge evaluation score is a weighted sum of four ML model signals:
 | Depth map (CDCN) | 55% | Primary depth discriminator |
 | Screen detection | 10% | Replay device presence |
 
-When CDCN is unavailable, its weight redistributes to texture (2/3) and MN3 (1/3). Classical signals (frequency, photometric) act as gates but do not contribute to the continuous score.
+Dynamic weighting: if CDCN is unavailable, its weight redistributes to texture (2/3) and MN3 (1/3). Classical signals (frequency, photometric) act as gates but do not contribute to the continuous score.
 
 ### Challenge-Response Flow
 
@@ -299,24 +305,22 @@ IDLE -> ANALYZING -> POSITIONING -> CHALLENGE_CLOSER -> EVALUATING -> LIVE -> DO
 
 1. **ANALYZING** -- Wait for stable face detection
 2. **POSITIONING** -- Face must be centered and in range
-3. **CHALLENGE_CLOSER** -- User must move closer (15%+ face area increase). ML scores collected during hold phase.
+3. **CHALLENGE_CLOSER** -- User must move closer (15%+ face area increase). ML scores collected during hold phase. ESPCN super-resolution auto-enhances blurry face regions (ML quality gate decides keep/discard).
 4. **EVALUATING** -- Face match check (MobileFaceNet) + weighted score evaluation against threshold
 5. **LIVE** -- 1s sustain timer, then verdict delivered
 6. **DONE** -- Terminal state
 
-Failed attempts restart from ANALYZING with escalating threshold (+0.08 per attempt). Maximum 3 attempts before terminal failure.
+Failed attempts restart from ANALYZING with escalating threshold (+0.08 per attempt). Retries are unlimited.
 
 ### UI Flow (UI Mode)
 
+The SDK provides only the camera screen. When the challenge completes (live or spoof), the result is delivered via `OpenPadListener` and the activity finishes immediately. Intro screens, verdict screens, and retry logic are the consuming app's responsibility.
+
 ```
-IntroScreen -> CameraScreen (with FaceGuideOverlay) -> VerdictScreen
+CameraScreen (with FaceGuideOverlay) -> Result delivered via callback -> Activity finishes
 ```
 
-- **IntroScreen**: Shield icon, instructions, "Begin Verification" button
 - **CameraScreen**: Live camera preview with animated face oval, phase indicators, instruction pill, gradient scrims
-- **VerdictScreen**: Animated shield with checkmark (live) or X (spoof), confidence display, retry option
-
-Transitions use `AnimatedContent` with crossfade + slide + scale animations.
 
 ---
 
@@ -333,7 +337,8 @@ All models are stored as `.pad` files (gzip-compressed, XOR-scrambled) in `pad-c
 | `depth_map.pad` | 3.4 MB | 3.2 MB | CDCN depth map |
 | `device_detection.pad` | 4.0 MB | 2.8 MB | SSD MobileNet screen detection |
 | `face_embedding.pad` | 5.0 MB | 4.6 MB | MobileFaceNet face consistency |
-| **Total** | **21.8 MB** | **19.2 MB** | |
+| `face_enhance.pad` | 91 KB | 79 KB | ESPCN x2 face super-resolution |
+| **Total** | **21.9 MB** | **19.3 MB** | |
 
 ### Model Packing
 
@@ -359,6 +364,7 @@ At runtime, `ModelLoader.kt` reverses the process: XOR-descramble with a 32-byte
 | CDCN depth map | In-house trained | Architecture from CDCN paper (arXiv:2003.04092) |
 | SSD MobileNet V1 COCO | Apache 2.0 | TensorFlow |
 | MobileFaceNet | MIT | syaringan357 |
+| ESPCN x2 | MIT | fannymonori/TF-ESPCN |
 
 ---
 
@@ -368,8 +374,10 @@ At runtime, `ModelLoader.kt` reverses the process: XOR-descramble with a 32-byte
 pad-open/
 ├── app/                                    # Demo app
 │   └── src/main/java/com/openpad/app/
-│       ├── OpenPadApp.kt                   # Application class (initialization + theme)
-│       ├── MainActivity.kt                 # UI mode + headless mode launcher
+│       ├── OpenPadApp.kt                   # Application class (theme setup)
+│       ├── MainActivity.kt                 # UI mode + headless mode launcher + result display
+│       ├── ConfigBottomSheet.kt            # Runtime configuration editor (all OpenPadConfig params)
+│       ├── ResultBottomSheet.kt            # Verification result details (depth stats + face crops)
 │       └── HeadlessActivity.kt             # Headless integration demo
 │
 ├── pad-core/                               # SDK library module
@@ -403,7 +411,8 @@ pad-open/
 │       │   ├── CdcnDepthAnalyzer.kt        #   MN3 + CDCN cascaded inference
 │       │   ├── CascadedDepthAnalyzer.kt    #   Cascade orchestration
 │       │   ├── DepthAnalyzer.kt            #   Interface
-│       │   └── DepthResult.kt              #   Result data class
+│       │   ├── DepthResult.kt              #   Result data class
+│       │   └── DepthCharacteristics.kt     #   3D depth map statistics
 │       │
 │       ├── frequency/                      # Layer 4: Frequency analysis
 │       │   ├── FftMoireDetector.kt         #   2D FFT moire detection
@@ -431,30 +440,32 @@ pad-open/
 │       │   ├── FaceEmbeddingAnalyzer.kt    #   Interface
 │       │   └── FaceEmbeddingResult.kt      #   Result data class
 │       │
-│       ├── aggregation/                    # Layer 9: Aggregation
+│       ├── enhance/                        # Layer 9: Frame enhancement
+│       │   ├── EspcnFrameEnhancer.kt      #   ESPCN x2 super-resolution (ML quality gate)
+│       │   └── FrameEnhancer.kt           #   Interface
+│       │
+│       ├── aggregation/                    # Layer 10: Aggregation
 │       │   ├── WeightedAggregator.kt       #   Rule gates + weighted fusion
 │       │   ├── StateStabilizer.kt          #   Hysteresis state machine
 │       │   ├── ScoreAggregator.kt          #   Interface
 │       │   └── PadStatus.kt               #   Status enum
 │       │
-│       ├── challenge/                      # Layer 10: Challenge-response
+│       ├── challenge/                      # Layer 11: Challenge-response
 │       │   ├── MovementChallenge.kt        #   "Move closer" state machine
 │       │   ├── ChallengeManager.kt         #   Interface
 │       │   └── ChallengeState.kt           #   Phase enum + evidence
 │       │
 │       ├── analyzer/                       # Frame processing
 │       │   ├── PadFrameAnalyzer.kt         #   CameraX analyzer orchestration
-│       │   └── BitmapConverter.kt          #   YUV conversion, similarity, sharpness
+│       │   └── BitmapConverter.kt          #   YUV conversion, similarity
 │       │
 │       ├── model/                          # Model loading
 │       │   └── ModelLoader.kt              #   .pad decryption + TFLite loading
 │       │
-│       └── ui/                             # Built-in SDK UI
-│           ├── PadActivity.kt              #   Host activity with screen transitions
-│           ├── IntroScreen.kt              #   Welcome screen
+│       └── ui/                             # Built-in SDK UI (camera only)
+│           ├── PadActivity.kt              #   Host activity (camera + result delivery)
 │           ├── CameraScreen.kt             #   Camera preview with overlay
 │           ├── FaceGuideOverlay.kt         #   Animated face oval
-│           ├── VerdictScreen.kt            #   Result screen
 │           ├── theme/OpenPadTheme.kt       #   Compose theme (reads OpenPadThemeConfig)
 │           └── viewmodel/                  #   MVI state management
 │               ├── PadViewModel.kt
@@ -462,7 +473,8 @@ pad-open/
 │               └── PadIntent.kt
 │
 ├── scripts/
-│   └── pack_models.py                      # Gzip + XOR model packer
+│   ├── pack_models.py                      # Gzip + XOR model packer
+│   └── convert_espcn.py                    # ESPCN TF→TFLite converter + .pad packer
 │
 └── gradle/libs.versions.toml              # Dependency version catalog
 ```
@@ -493,7 +505,7 @@ pad-open/
 | CameraX | 1.4.2 | Camera preview + frame analysis |
 | Compose BOM | 2026.01.01 | UI (Material3) |
 | Lifecycle | 2.8.7 | ViewModel + Compose integration |
-| LiteRT | 1.0.1 | TFLite model inference |
+| LiteRT | 1.4.1 | TFLite model inference |
 | Timber | 5.0.1 | Logging |
 
 ---
@@ -509,13 +521,13 @@ pad-open/
 | Phone screen (video replay) | Moderate | Depth + texture + LBP |
 | High-PPI OLED replay | Moderate | Depth + device detection + photometric |
 | Face swap mid-challenge | Strong | Face embedding consistency (MobileFaceNet) |
-| 3D printed/silicone mask | Weak (training in progress) | Texture + photometric; training data collection underway |
+| 3D printed/silicone mask | Weak–Moderate | Texture + photometric; training data collection underway |
 
 ---
 
 ## Android Compatibility
 
-- **Edge-to-edge**: All SDK screens handle system bar insets correctly (status bar, navigation bar)
+- **Edge-to-edge**: The SDK camera screen handles system bar insets correctly (status bar, navigation bar)
 - **16KB page alignment**: Native libraries use `useLegacyPackaging = false` for Android 15+ compatibility
 - **Minimum SDK**: API 26 (Android 8.0)
 - **Target SDK**: API 35

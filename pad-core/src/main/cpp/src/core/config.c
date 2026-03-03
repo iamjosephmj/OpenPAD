@@ -54,7 +54,7 @@ void opad_config_default(OpadConfig* out) {
     out->challenge_stable_frames        = 2;
     out->challenge_min_frames           = 3;
     out->analyzing_stable_frames        = 2;
-    out->max_spoof_attempts             = 3;
+    out->max_spoof_attempts             = 0;
     out->max_fps                        = 8;
 }
 

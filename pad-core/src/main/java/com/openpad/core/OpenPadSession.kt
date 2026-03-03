@@ -6,6 +6,7 @@ import androidx.camera.core.ImageAnalysis
 import com.openpad.core.aggregation.PadStatus
 import com.openpad.core.challenge.ChallengeEvidence
 import com.openpad.core.challenge.ChallengePhase
+import com.openpad.core.depth.DepthCharacteristics
 import com.openpad.core.detection.FaceDetection
 import com.openpad.core.embedding.MobileFaceNetAnalyzer
 import kotlinx.coroutines.CoroutineScope
@@ -102,6 +103,8 @@ internal class OpenPadSessionImpl(
     private var spoofAttemptCount = 0
     private var sessionStartMs = System.currentTimeMillis()
     private var delivered = false
+    /** Snapshot of evidence taken at evaluation time, before handleSpoof can clear it. */
+    private var evidenceSnapshot: ChallengeEvidence? = null
 
     override val frameAnalyzer: ImageAnalysis.Analyzer =
         pipeline.createFrameAnalyzer { result -> handleResult(result) }
@@ -185,6 +188,7 @@ internal class OpenPadSessionImpl(
         if (delivered) return@launch
 
         val ev = challengeManager.evidence
+        evidenceSnapshot = ev
         val emb = pipeline.embeddingAnalyzer as? MobileFaceNetAnalyzer
         val bitmapA = ev.checkpointBitmapAnalyzing
         val bitmapB = ev.checkpointBitmapChallenge
@@ -284,11 +288,15 @@ internal class OpenPadSessionImpl(
     private fun deliverLiveResult() {
         if (delivered) return
         delivered = true
+        val ev = evidenceSnapshot ?: challengeManager.evidence
         val result = OpenPadResult(
             isLive = true,
             confidence = _challengeProgress.value,
             durationMs = System.currentTimeMillis() - sessionStartMs,
-            spoofAttempts = spoofAttemptCount
+            spoofAttempts = spoofAttemptCount,
+            depthCharacteristics = DepthCharacteristics.average(ev.holdDepthCharacteristics),
+            faceAtNormalDistance = ev.displayBitmapAnalyzing ?: ev.checkpointBitmapAnalyzing,
+            faceAtCloseDistance = ev.displayBitmapChallenge ?: ev.checkpointBitmapChallenge
         )
         _status.value = PadStatus.COMPLETED
         _phase.value = ChallengePhase.DONE
@@ -298,11 +306,15 @@ internal class OpenPadSessionImpl(
     private fun deliverSpoofResult() {
         if (delivered) return
         delivered = true
+        val ev = evidenceSnapshot ?: challengeManager.evidence
         val result = OpenPadResult(
             isLive = false,
             confidence = _challengeProgress.value,
             durationMs = System.currentTimeMillis() - sessionStartMs,
-            spoofAttempts = spoofAttemptCount
+            spoofAttempts = spoofAttemptCount,
+            depthCharacteristics = DepthCharacteristics.average(ev.holdDepthCharacteristics),
+            faceAtNormalDistance = ev.displayBitmapAnalyzing ?: ev.checkpointBitmapAnalyzing,
+            faceAtCloseDistance = ev.displayBitmapChallenge ?: ev.checkpointBitmapChallenge
         )
         _status.value = PadStatus.COMPLETED
         _phase.value = ChallengePhase.DONE

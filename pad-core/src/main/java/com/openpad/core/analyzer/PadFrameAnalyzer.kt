@@ -10,7 +10,9 @@ import com.openpad.core.depth.DepthResult
 import com.openpad.core.detection.FaceDetection
 import com.openpad.core.detection.FaceDetector
 import com.openpad.core.device.DeviceDetectionResult
+import com.openpad.core.challenge.ChallengePhase
 import com.openpad.core.device.DeviceDetector
+import com.openpad.core.enhance.FrameEnhancer
 import com.openpad.core.frequency.FrequencyResult
 import com.openpad.core.photometric.PhotometricResult
 import com.openpad.core.ndk.NativeChallengeManager
@@ -31,6 +33,7 @@ class PadFrameAnalyzer internal constructor(
     private val textureAnalyzer: TextureAnalyzer,
     private val depthAnalyzer: DepthAnalyzer,
     private val deviceDetector: DeviceDetector,
+    private val frameEnhancer: FrameEnhancer,
     private val nativeChallengeManager: NativeChallengeManager,
     private val config: PadConfig = PadConfig.Default,
     private val onResult: (PadResult) -> Unit
@@ -56,28 +59,45 @@ class PadFrameAnalyzer internal constructor(
             var depthResult: DepthResult? = null
             var deviceResult: DeviceDetectionResult? = null
             var faceCropBitmap: Bitmap? = null
+            var faceDisplayBitmap: Bitmap? = null
+            var enhancementApplied = false
+
+            // Apply frame enhancement if face is blurry during CHALLENGE_CLOSER
+            val analysisBitmap = if (detection != null && shouldEnhance(bitmap, detection.bbox)) {
+                val enhanced = frameEnhancer.enhance(bitmap, detection.bbox)
+                if (enhanced != null) {
+                    enhancementApplied = true
+                    enhanced
+                } else {
+                    bitmap
+                }
+            } else {
+                bitmap
+            }
 
             if (detection != null) {
                 val bbox = detection.bbox
-                depthResult = depthAnalyzer.analyze(bitmap, bbox)
-                textureResult = textureAnalyzer.analyze(bitmap, bbox)
-                deviceResult = deviceDetector.analyze(bitmap, bbox)
-                faceCropBitmap = cropFace(bitmap, bbox)
+                depthResult = depthAnalyzer.analyze(analysisBitmap, bbox)
+                textureResult = textureAnalyzer.analyze(analysisBitmap, bbox)
+                deviceResult = deviceDetector.analyze(analysisBitmap, bbox)
+                faceCropBitmap = cropFace(analysisBitmap, bbox)
+                faceDisplayBitmap = cropFaceForDisplay(bitmap, bbox)
             }
 
+            // Use original bitmap for frame similarity to keep temporal tracking consistent
             val frameDownsampled = BitmapConverter.downsampleToGray(bitmap)
             val faceCrop64Gray = if (detection != null) {
-                BitmapConverter.cropFaceTo64Gray(bitmap, detection.bbox)
+                BitmapConverter.cropFaceTo64Gray(analysisBitmap, detection.bbox)
             } else {
                 FloatArray(64 * 64) { 0f }
             }
             val faceCrop64Argb = if (detection != null) {
-                BitmapConverter.cropFaceTo64Argb(bitmap, detection.bbox)
+                BitmapConverter.cropFaceTo64Argb(analysisBitmap, detection.bbox)
             } else {
                 ByteArray(64 * 64 * 4)
             }
             val faceCrop80Argb = if (detection != null) {
-                BitmapConverter.cropFaceTo80Argb(bitmap, detection.bbox)
+                BitmapConverter.cropFaceTo80Argb(analysisBitmap, detection.bbox)
             } else {
                 ByteArray(80 * 80 * 4)
             }
@@ -128,6 +148,7 @@ class PadFrameAnalyzer internal constructor(
                         combinedScore = nativeOutput.photometricCombined
                     ),
                     faceCropBitmap = faceCropBitmap,
+                    faceDisplayBitmap = faceDisplayBitmap,
                     temporalFeatures = TemporalFeatures(
                         faceDetected = nativeOutput.temporalFaceDetected,
                         faceConfidence = nativeOutput.temporalFaceConfidence,
@@ -145,6 +166,7 @@ class PadFrameAnalyzer internal constructor(
                     aggregatedScore = nativeOutput.aggregatedScore,
                     frameSimilarity = nativeOutput.frameSimilarity,
                     faceSharpness = nativeOutput.faceSharpness,
+                    enhancementApplied = enhancementApplied,
                     timestampMs = now
                 ),
                 nativeOutput
@@ -173,6 +195,7 @@ class PadFrameAnalyzer internal constructor(
                     combinedScore = nativeOutput.photometricCombined
                 ),
                 faceCropBitmap = faceCropBitmap,
+                faceDisplayBitmap = faceDisplayBitmap,
                 temporalFeatures = TemporalFeatures(
                     faceDetected = nativeOutput.temporalFaceDetected,
                     faceConfidence = nativeOutput.temporalFaceConfidence,
@@ -190,6 +213,7 @@ class PadFrameAnalyzer internal constructor(
                 aggregatedScore = nativeOutput.aggregatedScore,
                 frameSimilarity = nativeOutput.frameSimilarity,
                 faceSharpness = nativeOutput.faceSharpness,
+                enhancementApplied = enhancementApplied,
                 timestampMs = now
             )
 
@@ -206,6 +230,16 @@ class PadFrameAnalyzer internal constructor(
         3 -> PadStatus.SPOOF_SUSPECTED
         4 -> PadStatus.COMPLETED
         else -> PadStatus.ANALYZING
+    }
+
+    private fun shouldEnhance(bitmap: Bitmap, bbox: FaceDetection.BBox): Boolean {
+        if (!config.enableFrameEnhancement) return false
+        if (nativeChallengeManager.phase != ChallengePhase.CHALLENGE_CLOSER) return false
+        // Skip if face is already large enough — downscaling to 128 then SR is pointless
+        val facePixelArea = bbox.width() * bitmap.width * bbox.height() * bitmap.height
+        if (facePixelArea > MAX_FACE_PIXELS_FOR_ENHANCEMENT) return false
+        // Let ESPCN decide: run the model, its quality gate discards if enhancement didn't help
+        return true
     }
 
     private fun isFaceInGuideOval(detection: FaceDetection): Boolean {
@@ -236,10 +270,34 @@ class PadFrameAnalyzer internal constructor(
         return Bitmap.createScaledBitmap(cropped, FACE_CROP_SIZE, FACE_CROP_SIZE, true)
     }
 
+    /**
+     * Crop a fixed-pixel region around the face center from the raw camera frame.
+     * Unlike [cropFace], this does NOT normalize the face to fill the output,
+     * so a closer face appears proportionally larger — preserving the distance difference
+     * between checkpoint captures.
+     */
+    private fun cropFaceForDisplay(bitmap: Bitmap, bbox: FaceDetection.BBox): Bitmap {
+        val imgW = bitmap.width
+        val imgH = bitmap.height
+        val faceCX = ((bbox.left + bbox.right) / 2f * imgW).toInt()
+        val faceCY = ((bbox.top + bbox.bottom) / 2f * imgH).toInt()
+        val half = DISPLAY_CROP_SIZE / 2
+
+        val left = (faceCX - half).coerceIn(0, imgW - 1)
+        val top = (faceCY - half).coerceIn(0, imgH - 1)
+        val right = (faceCX + half).coerceIn(left + 1, imgW)
+        val bottom = (faceCY + half).coerceIn(top + 1, imgH)
+
+        return Bitmap.createBitmap(bitmap, left, top, right - left, bottom - top)
+    }
+
     companion object {
         private const val FACE_CROP_SIZE = 112
+        private const val DISPLAY_CROP_SIZE = 224
         private const val CROP_MARGIN = 1.3f
         private const val GUIDE_OVAL_WIDTH_FRACTION = 0.65f
         private const val GUIDE_OVAL_HEIGHT_FRACTION = 0.52f
+        /** Max face pixel area for enhancement. Above this, the face is large enough already. */
+        private const val MAX_FACE_PIXELS_FOR_ENHANCEMENT = 160f * 160f
     }
 }

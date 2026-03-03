@@ -109,6 +109,11 @@ class MovementChallenge(
                             _evidence.holdCdcnScores + depthResult.cdcnDepthScore
                         } else {
                             _evidence.holdCdcnScores
+                        },
+                        holdDepthCharacteristics = if (depthResult?.depthCharacteristics != null) {
+                            _evidence.holdDepthCharacteristics + depthResult.depthCharacteristics
+                        } else {
+                            _evidence.holdDepthCharacteristics
                         }
                     )
 

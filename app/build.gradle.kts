@@ -37,7 +37,7 @@ android {
 }
 
 dependencies {
-    implementation(libs.openpad)
+    implementation(project(":pad-core"))
 
     implementation(platform(libs.compose.bom))
     implementation(libs.compose.material3)

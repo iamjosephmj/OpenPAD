@@ -4,6 +4,7 @@ import com.openpad.core.PadResult
 import com.openpad.core.challenge.ChallengeEvidence
 import com.openpad.core.challenge.ChallengeManager
 import com.openpad.core.challenge.ChallengePhase
+import com.openpad.core.depth.DepthCharacteristics
 
 /**
  * Challenge manager that delegates phase transitions to the native C layer (NDK).
@@ -21,6 +22,7 @@ internal class NativeChallengeManager : ChallengeManager {
     private val accTextureScores = mutableListOf<Float>()
     private val accMn3Scores = mutableListOf<Float>()
     private val accCdcnScores = mutableListOf<Float>()
+    private val accDepthCharacteristics = mutableListOf<DepthCharacteristics>()
     private var lastHoldFrames = 0
 
     /**
@@ -46,11 +48,14 @@ internal class NativeChallengeManager : ChallengeManager {
             accTextureScores.add(result.textureResult?.genuineScore ?: 0.5f)
             accMn3Scores.add(result.depthResult?.mn3RealScore ?: 0.5f)
             result.depthResult?.cdcnDepthScore?.let { accCdcnScores.add(it) }
+            result.depthResult?.depthCharacteristics?.let { accDepthCharacteristics.add(it) }
         }
         lastHoldFrames = nativeOutput.challengeHoldFrames
 
         val newCheckpoint1 = if (nativeOutput.captureCheckpoint1) result.faceCropBitmap else _evidence.checkpointBitmapAnalyzing
         val newCheckpoint2 = if (nativeOutput.captureCheckpoint2) result.faceCropBitmap else _evidence.checkpointBitmapChallenge
+        val newDisplay1 = if (nativeOutput.captureCheckpoint1) result.faceDisplayBitmap else _evidence.displayBitmapAnalyzing
+        val newDisplay2 = if (nativeOutput.captureCheckpoint2) result.faceDisplayBitmap else _evidence.displayBitmapChallenge
         _evidence = ChallengeEvidence(
             totalFrames = nativeOutput.challengeTotalFrames,
             holdFrames = nativeOutput.challengeHoldFrames,
@@ -59,8 +64,11 @@ internal class NativeChallengeManager : ChallengeManager {
             holdTextureScores = accTextureScores.toList(),
             holdMn3Scores = accMn3Scores.toList(),
             holdCdcnScores = accCdcnScores.toList(),
+            holdDepthCharacteristics = accDepthCharacteristics.toList(),
             checkpointBitmapAnalyzing = newCheckpoint1,
             checkpointBitmapChallenge = newCheckpoint2,
+            displayBitmapAnalyzing = newDisplay1,
+            displayBitmapChallenge = newDisplay2,
             completed = phase == ChallengePhase.EVALUATING || phase == ChallengePhase.DONE
         )
     }
@@ -102,6 +110,7 @@ internal class NativeChallengeManager : ChallengeManager {
         accTextureScores.clear()
         accMn3Scores.clear()
         accCdcnScores.clear()
+        accDepthCharacteristics.clear()
         lastHoldFrames = 0
     }
 }
