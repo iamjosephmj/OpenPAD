@@ -45,7 +45,13 @@ OpenPad.initialize(context) {
 }
 ```
 
-With custom configuration:
+With a preset configuration:
+
+```kotlin
+OpenPad.initialize(context, config = OpenPadConfig.Banking)
+```
+
+With custom parameters:
 
 ```kotlin
 OpenPad.initialize(
@@ -180,6 +186,54 @@ OpenPadConfig(
     enableFrameEnhancement = true        // ESPCN x2 super-resolution during challenge (ML quality gate)
 )
 ```
+
+---
+
+## Configuration Presets
+
+The SDK ships 10 named presets for common scenarios. Use them directly or as a starting point for fine-tuning.
+
+| Preset | Security | Speed | Use Case |
+|--------|----------|-------|----------|
+| `Default` | Balanced | Balanced | General-purpose apps |
+| `HighSecurity` | High | Standard | Identity verification, high-value transactions |
+| `FastPass` | Low | Fast | Check-in, attendance, low-risk access |
+| `Banking` | Very High | Standard | Financial services, regulatory compliance |
+| `Onboarding` | Moderate | Standard | First-time user registration (minimize drop-off) |
+| `Kiosk` | High | Standard | Fixed-mount terminals with controlled lighting |
+| `LowEndDevice` | Moderate | Fast | Budget Android phones (disables frame enhancement) |
+| `Development` | Minimal | Standard | Integration testing (debug overlay enabled) |
+| `HighThroughput` | Moderate | Very Fast | Queues, turnstiles, batch processing (15 FPS) |
+| `MaxAccuracy` | Maximum | Standard | Security-critical flows (highest false-rejection rate) |
+
+### Usage
+
+```kotlin
+// Use a preset directly
+OpenPad.initialize(context, config = OpenPadConfig.Banking)
+
+// Use a preset as a starting point, then override specific parameters
+OpenPad.initialize(
+    context = this,
+    config = OpenPadConfig.HighSecurity.copy(
+        enableDebugOverlay = true,
+        maxFramesPerSecond = 10
+    )
+)
+```
+
+### Key parameter differences from Default
+
+| Parameter | Default | HighSecurity | FastPass | Banking | MaxAccuracy |
+|-----------|---------|-------------|----------|---------|-------------|
+| `livenessThreshold` | 0.70 | 0.85 | 0.55 | 0.85 | 0.90 |
+| `faceMatchThreshold` | 0.70 | 0.80 | 0.60 | 0.82 | 0.85 |
+| `depthFlatnessMinScore` | 0.40 | 0.50 | 0.35 | 0.50 | 0.55 |
+| `photometricMinScore` | 0.30 | 0.35 | 0.25 | 0.40 | 0.45 |
+| `spoofAttemptPenalty` | 0.08 | 0.10 | 0.05 | 0.12 | 0.12 |
+| `maxFramesPerSecond` | 8 | 8 | 12 | 8 | 8 |
+| `enableFrameEnhancement` | true | true | true | true | true |
+| `enableDebugOverlay` | false | false | false | false | false |
 
 ---
 
@@ -371,7 +425,7 @@ At runtime, `ModelLoader.kt` reverses the process: XOR-descramble with a 32-byte
 ## Project Structure
 
 ```
-pad-open/
+OpenPAD/
 ├── app/                                    # Demo app
 │   └── src/main/java/com/openpad/app/
 │       ├── OpenPadApp.kt                   # Application class (theme setup)
@@ -387,13 +441,14 @@ pad-open/
 │   └── src/main/java/com/openpad/core/
 │       │
 │       ├── OpenPad.kt                      # Singleton entry point
-│       ├── OpenPadConfig.kt                # Public configuration
+│       ├── OpenPadConfig.kt                # Public configuration (10 named presets)
+│       ├── OpenPadConfigMapper.kt          # Maps public config → internal config
 │       ├── OpenPadThemeConfig.kt            # UI theme colors
 │       ├── OpenPadListener.kt              # Result callback interface
 │       ├── OpenPadResult.kt                # Verdict data class
 │       ├── OpenPadError.kt                 # Error types
 │       ├── OpenPadSession.kt               # Headless session interface + impl
-│       ├── PadConfig.kt                    # Internal pipeline thresholds
+│       ├── PadConfig.kt                    # Internal pipeline thresholds (InternalPadConfig)
 │       ├── PadPipeline.kt                  # Pipeline factory
 │       ├── PadResult.kt                    # Per-frame result
 │       │
@@ -414,12 +469,10 @@ pad-open/
 │       │   ├── DepthResult.kt              #   Result data class
 │       │   └── DepthCharacteristics.kt     #   3D depth map statistics
 │       │
-│       ├── frequency/                      # Layer 4: Frequency analysis
-│       │   ├── FftMoireDetector.kt         #   2D FFT moire detection
-│       │   ├── LbpScreenDetector.kt        #   LBP screen texture detection
+│       ├── frequency/                      # Layer 4: Frequency analysis (native C)
 │       │   ├── FrequencyAnalyzer.kt        #   Interface
-│       │   ├── FrequencyResult.kt          #   FFT result
-│       │   └── LbpResult.kt               #   LBP result
+│       │   ├── FrequencyResult.kt          #   FFT result data class
+│       │   └── LbpResult.kt               #   LBP result data class
 │       │
 │       ├── device/                         # Layer 5: Device detection
 │       │   ├── SsdDeviceDetector.kt        #   SSD MobileNet inference
@@ -448,16 +501,29 @@ pad-open/
 │       │   ├── WeightedAggregator.kt       #   Rule gates + weighted fusion
 │       │   ├── StateStabilizer.kt          #   Hysteresis state machine
 │       │   ├── ScoreAggregator.kt          #   Interface
-│       │   └── PadStatus.kt               #   Status enum
+│       │   └── PadStatus.kt               #   Status enum (with fromInt companion)
 │       │
 │       ├── challenge/                      # Layer 11: Challenge-response
 │       │   ├── MovementChallenge.kt        #   "Move closer" state machine
 │       │   ├── ChallengeManager.kt         #   Interface
 │       │   └── ChallengeState.kt           #   Phase enum + evidence
 │       │
+│       ├── evaluation/                     # Shared evaluation logic
+│       │   ├── PositioningGuidance.kt      #   Face positioning guidance messages
+│       │   ├── GenuineProbabilityCalculator.kt # Weighted ML score calculation
+│       │   ├── FaceConsistencyChecker.kt   #   Face swap detection via embeddings
+│       │   ├── ChallengeEvaluator.kt       #   Orchestrates full evaluation flow
+│       │   └── OpenPadResultFactory.kt     #   Consistent result construction
+│       │
 │       ├── analyzer/                       # Frame processing
 │       │   ├── PadFrameAnalyzer.kt         #   CameraX analyzer orchestration
-│       │   └── BitmapConverter.kt          #   YUV conversion, similarity
+│       │   ├── BitmapConverter.kt          #   YUV conversion, crops, similarity
+│       │   ├── NativeInputBuilder.kt       #   Native C input assembly
+│       │   └── PadResultMapper.kt          #   Native output → PadResult mapping
+│       │
+│       ├── ndk/                            # Native bridge
+│       │   ├── OpenPadNative.kt            #   JNI bridge + NativeFrameOutput
+│       │   └── NativeChallengeManager.kt   #   Native challenge state bridge
 │       │
 │       ├── model/                          # Model loading
 │       │   └── ModelLoader.kt              #   .pad decryption + TFLite loading
@@ -466,11 +532,14 @@ pad-open/
 │           ├── PadActivity.kt              #   Host activity (camera + result delivery)
 │           ├── CameraScreen.kt             #   Camera preview with overlay
 │           ├── FaceGuideOverlay.kt         #   Animated face oval
+│           ├── VerdictScreen.kt            #   Verdict display composable
 │           ├── theme/OpenPadTheme.kt       #   Compose theme (reads OpenPadThemeConfig)
 │           └── viewmodel/                  #   MVI state management
 │               ├── PadViewModel.kt
+│               ├── PadViewModelFactory.kt  #   ViewModel dependency injection
 │               ├── PadUiState.kt
-│               └── PadIntent.kt
+│               ├── PadIntent.kt
+│               └── VerdictState.kt         #   Verdict sealed class
 │
 ├── scripts/
 │   ├── pack_models.py                      # Gzip + XOR model packer

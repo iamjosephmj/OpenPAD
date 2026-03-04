@@ -61,7 +61,162 @@ data class OpenPadConfig(
     val enableFrameEnhancement: Boolean = true,
 ) {
     companion object {
+
+        /** Balanced security and usability for general-purpose apps. */
         val Default = OpenPadConfig()
+
+        /**
+         * Strict thresholds for high-value transactions: banking, payments,
+         * identity verification. Raises liveness and face-match thresholds,
+         * tightens depth and photometric gates. Accepts slightly higher
+         * false-rejection rate in exchange for stronger spoof resistance.
+         */
+        val HighSecurity = OpenPadConfig(
+            livenessThreshold = 0.85f,
+            faceMatchThreshold = 0.80f,
+            faceDetectionConfidence = 0.60f,
+            depthGateMinScore = 0.30f,
+            depthFlatnessMinScore = 0.50f,
+            screenDetectionMinConfidence = 0.40f,
+            moireDetectionThreshold = 0.50f,
+            screenPatternThreshold = 0.60f,
+            photometricMinScore = 0.35f,
+            spoofAttemptPenalty = 0.10f
+        )
+
+        /**
+         * Quick verification for low-risk flows: attendance, check-in,
+         * casual access. Lowers liveness threshold so legitimate users
+         * pass faster. Not suitable for financial or identity use cases.
+         */
+        val FastPass = OpenPadConfig(
+            livenessThreshold = 0.55f,
+            faceMatchThreshold = 0.60f,
+            faceDetectionConfidence = 0.50f,
+            depthFlatnessMinScore = 0.35f,
+            photometricMinScore = 0.25f,
+            spoofAttemptPenalty = 0.05f,
+            maxFramesPerSecond = 12
+        )
+
+        /**
+         * Financial-grade configuration for banking and payment apps.
+         * Stricter than [HighSecurity] with a higher per-attempt penalty
+         * and tighter photometric gate. Designed to meet regulatory
+         * expectations for remote identity verification.
+         */
+        val Banking = OpenPadConfig(
+            livenessThreshold = 0.85f,
+            faceMatchThreshold = 0.82f,
+            faceDetectionConfidence = 0.60f,
+            depthGateMinScore = 0.30f,
+            depthFlatnessMinScore = 0.50f,
+            screenDetectionMinConfidence = 0.40f,
+            moireDetectionThreshold = 0.45f,
+            screenPatternThreshold = 0.55f,
+            photometricMinScore = 0.40f,
+            spoofAttemptPenalty = 0.12f
+        )
+
+        /**
+         * Slightly relaxed thresholds for first-time user onboarding
+         * where drop-off is costly. Reduces false rejections while
+         * maintaining reasonable spoof protection. Pair with a
+         * server-side re-verification for sensitive operations.
+         */
+        val Onboarding = OpenPadConfig(
+            livenessThreshold = 0.60f,
+            faceMatchThreshold = 0.65f,
+            faceDetectionConfidence = 0.50f,
+            depthFlatnessMinScore = 0.35f,
+            photometricMinScore = 0.25f,
+            spoofAttemptPenalty = 0.06f
+        )
+
+        /**
+         * Tuned for fixed-mount kiosks and point-of-sale terminals with
+         * controlled lighting and camera distance. Raises face detection
+         * confidence (stable environment) and tightens depth gates
+         * (consistent viewing angle).
+         */
+        val Kiosk = OpenPadConfig(
+            livenessThreshold = 0.75f,
+            faceMatchThreshold = 0.75f,
+            faceDetectionConfidence = 0.65f,
+            depthGateMinScore = 0.25f,
+            depthFlatnessMinScore = 0.45f,
+            screenDetectionMinConfidence = 0.45f,
+            photometricMinScore = 0.35f,
+            maxFramesPerSecond = 10
+        )
+
+        /**
+         * Optimized for budget Android phones with limited CPU/GPU.
+         * Disables ESPCN frame enhancement, reduces frame rate to 5 FPS,
+         * and relaxes thresholds slightly to compensate for lower image
+         * quality from cheaper cameras.
+         */
+        val LowEndDevice = OpenPadConfig(
+            livenessThreshold = 0.65f,
+            faceMatchThreshold = 0.65f,
+            faceDetectionConfidence = 0.50f,
+            depthFlatnessMinScore = 0.35f,
+            photometricMinScore = 0.25f,
+            maxFramesPerSecond = 5,
+            enableFrameEnhancement = false
+        )
+
+        /**
+         * Development and integration testing preset. Enables the debug
+         * overlay showing real-time ML scores and relaxes thresholds so
+         * the pipeline reaches LIVE easily during testing. Never use
+         * this in production.
+         */
+        val Development = OpenPadConfig(
+            livenessThreshold = 0.40f,
+            faceMatchThreshold = 0.50f,
+            faceDetectionConfidence = 0.40f,
+            depthFlatnessMinScore = 0.25f,
+            photometricMinScore = 0.15f,
+            spoofAttemptPenalty = 0.02f,
+            enableDebugOverlay = true
+        )
+
+        /**
+         * Maximum processing speed for high-throughput scenarios: queues,
+         * turnstiles, batch processing. Runs at 15 FPS with relaxed face
+         * matching. Security is moderate -- suitable when combined with
+         * additional server-side verification.
+         */
+        val HighThroughput = OpenPadConfig(
+            livenessThreshold = 0.60f,
+            faceMatchThreshold = 0.60f,
+            faceDetectionConfidence = 0.50f,
+            depthFlatnessMinScore = 0.35f,
+            photometricMinScore = 0.25f,
+            spoofAttemptPenalty = 0.05f,
+            maxFramesPerSecond = 15,
+            enableFrameEnhancement = false
+        )
+
+        /**
+         * All detection gates at their strictest settings. Highest
+         * liveness threshold (0.90), tightest depth and frequency gates.
+         * Expect a higher false-rejection rate -- only use when
+         * security is the absolute priority over user experience.
+         */
+        val MaxAccuracy = OpenPadConfig(
+            livenessThreshold = 0.90f,
+            faceMatchThreshold = 0.85f,
+            faceDetectionConfidence = 0.65f,
+            depthGateMinScore = 0.35f,
+            depthFlatnessMinScore = 0.55f,
+            screenDetectionMinConfidence = 0.35f,
+            moireDetectionThreshold = 0.40f,
+            screenPatternThreshold = 0.50f,
+            photometricMinScore = 0.45f,
+            spoofAttemptPenalty = 0.12f
+        )
     }
 
     internal fun toInternal(): InternalPadConfig = OpenPadConfigMapper.toInternal(this)
