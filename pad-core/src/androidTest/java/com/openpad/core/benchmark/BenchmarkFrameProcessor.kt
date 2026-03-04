@@ -1,7 +1,7 @@
 package com.openpad.core.benchmark
 
 import android.graphics.Bitmap
-import com.openpad.core.PadConfig
+import com.openpad.core.InternalPadConfig
 import com.openpad.core.PadPipeline
 import com.openpad.core.aggregation.PadStatus
 import com.openpad.core.analyzer.BitmapConverter
@@ -15,7 +15,7 @@ import com.openpad.core.ndk.OpenPadNative
  */
 class BenchmarkFrameProcessor(
     private val pipeline: PadPipeline,
-    private val config: PadConfig = PadConfig.Default
+    private val config: InternalPadConfig = InternalPadConfig.Default
 ) {
 
     fun processFrame(bitmap: Bitmap): FrameScore {
@@ -62,8 +62,8 @@ class BenchmarkFrameProcessor(
         val elapsed = System.currentTimeMillis() - startMs
 
         return FrameScore(
-            rawStatus = padStatusFromInt(out.padStatus),
-            stableStatus = padStatusFromInt(out.padStatus),
+            rawStatus = PadStatus.fromInt(out.padStatus),
+            stableStatus = PadStatus.fromInt(out.padStatus),
             aggregatedScore = out.aggregatedScore,
             textureGenuineScore = textureResult?.genuineScore,
             textureSpoofScore = textureResult?.spoofScore,
@@ -92,15 +92,6 @@ class BenchmarkFrameProcessor(
             faceConfidence = detection?.confidence,
             processingTimeMs = elapsed
         )
-    }
-
-    private fun padStatusFromInt(v: Int): PadStatus = when (v) {
-        0 -> PadStatus.ANALYZING
-        1 -> PadStatus.NO_FACE
-        2 -> PadStatus.LIVE
-        3 -> PadStatus.SPOOF_SUSPECTED
-        4 -> PadStatus.COMPLETED
-        else -> PadStatus.ANALYZING
     }
 
     fun resetState() {

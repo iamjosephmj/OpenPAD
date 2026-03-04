@@ -125,6 +125,7 @@ class CdcnDepthAnalyzer(context: Context) : DepthAnalyzer {
 
         val crop = cropFace(bitmap, faceBbox, MN3_INPUT_SIZE, 1.4f)
         fillInputBufferMn3(crop)
+        crop.recycle()
 
         val output = Array(1) { FloatArray(MN3_NUM_CLASSES) }
         mn3Interpreter.run(mn3InputBuffer, output)
@@ -155,6 +156,7 @@ class CdcnDepthAnalyzer(context: Context) : DepthAnalyzer {
 
         val crop = cropFace(bitmap, faceBbox, CDCN_INPUT_SIZE, 1.2f)
         fillInputBufferImageNet(crop)
+        crop.recycle()
 
         val output = Array(1) { Array(CDCN_OUTPUT_SIZE) { FloatArray(CDCN_OUTPUT_SIZE) } }
         cdcnInterpreter.run(cdcnInputBuffer, output)
@@ -218,7 +220,9 @@ class CdcnDepthAnalyzer(context: Context) : DepthAnalyzer {
         val bottom = (faceCY + faceH / 2f).toInt().coerceIn(top + 1, imgH)
 
         val cropped = Bitmap.createBitmap(bitmap, left, top, right - left, bottom - top)
-        return Bitmap.createScaledBitmap(cropped, targetSize, targetSize, true)
+        val scaled = Bitmap.createScaledBitmap(cropped, targetSize, targetSize, true)
+        if (scaled !== cropped) cropped.recycle()
+        return scaled
     }
 
     private fun softmax(logits: FloatArray): FloatArray {

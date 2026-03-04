@@ -101,9 +101,9 @@ class MediaPipeFaceDetector(context: Context) : FaceDetector {
 
         val pixels = IntArray(INPUT_SIZE * INPUT_SIZE)
         scaled.getPixels(pixels, 0, INPUT_SIZE, 0, 0, INPUT_SIZE, INPUT_SIZE)
+        if (scaled !== bitmap) scaled.recycle()
 
         for (pixel in pixels) {
-            // Normalize to [-1, 1] as expected by MediaPipe models
             buffer.putFloat(((pixel shr 16 and 0xFF) / 127.5f) - 1f) // R
             buffer.putFloat(((pixel shr 8 and 0xFF) / 127.5f) - 1f)  // G
             buffer.putFloat(((pixel and 0xFF) / 127.5f) - 1f)         // B

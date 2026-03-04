@@ -1,6 +1,6 @@
 package com.openpad.core.signals
 
-import com.openpad.core.PadConfig
+import com.openpad.core.InternalPadConfig
 import com.openpad.core.detection.FaceDetection
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -14,7 +14,7 @@ class DefaultTemporalTrackerTest {
 
     @Before
     fun setup() {
-        tracker = DefaultTemporalTracker(PadConfig.Default)
+        tracker = DefaultTemporalTracker(InternalPadConfig.Default)
     }
 
     private fun face(

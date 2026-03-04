@@ -6,9 +6,9 @@ import androidx.camera.core.ImageAnalysis
 import com.openpad.core.aggregation.PadStatus
 import com.openpad.core.challenge.ChallengeEvidence
 import com.openpad.core.challenge.ChallengePhase
-import com.openpad.core.depth.DepthCharacteristics
-import com.openpad.core.detection.FaceDetection
-import com.openpad.core.embedding.MobileFaceNetAnalyzer
+import com.openpad.core.evaluation.ChallengeEvaluator
+import com.openpad.core.evaluation.OpenPadResultFactory
+import com.openpad.core.evaluation.PositioningGuidance
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -78,7 +78,7 @@ interface OpenPadSession {
 
 internal class OpenPadSessionImpl(
     private val pipeline: PadPipeline,
-    private val config: PadConfig,
+    private val config: InternalPadConfig,
     private val listener: OpenPadListener
 ) : OpenPadSession {
 
@@ -164,24 +164,8 @@ internal class OpenPadSessionImpl(
         }
     }
 
-    private fun computePositioningGuidance(result: PadResult): String? {
-        val raw = result.rawFaceDetection ?: return null
-        val inOval = result.faceDetection != null
-        if (!inOval) {
-            return when {
-                raw.centerY < 0.3f -> "Move down a little"
-                raw.centerY > 0.7f -> "Move up a little"
-                raw.centerX < 0.3f -> "Move right a little"
-                raw.centerX > 0.7f -> "Move left a little"
-                else -> "Position your face in the frame"
-            }
-        }
-        return when {
-            raw.area > config.positioningMaxFaceArea -> "Too close \u2014 move back a little"
-            raw.area < config.positioningMinFaceArea -> "Move a bit closer"
-            else -> null
-        }
-    }
+    private fun computePositioningGuidance(result: PadResult): String? =
+        PositioningGuidance.compute(result, config)
 
     private fun evaluateChallenge(): Job = scope.launch {
         delay(config.evaluatingDurationMs)
@@ -189,85 +173,32 @@ internal class OpenPadSessionImpl(
 
         val ev = challengeManager.evidence
         evidenceSnapshot = ev
-        val emb = pipeline.embeddingAnalyzer as? MobileFaceNetAnalyzer
-        val bitmapA = ev.checkpointBitmapAnalyzing
-        val bitmapB = ev.checkpointBitmapChallenge
 
-        val faceConsistent = checkFaceConsistency(bitmapA, bitmapB, emb)
+        val verdict = ChallengeEvaluator.evaluate(
+            evidence = ev,
+            config = config,
+            embeddingAnalyzer = pipeline.embeddingAnalyzer,
+            spoofAttemptCount = spoofAttemptCount
+        )
 
-        if (!faceConsistent) {
-            val terminal = challengeManager.handleSpoof()
-            spoofAttemptCount++
-            if (terminal) {
-                deliverSpoofResult()
-            } else {
-                _challengeProgress.value = 0f
-                _instruction.value = "Try again"
+        when (verdict) {
+            ChallengeEvaluator.Verdict.LIVE -> {
+                challengeManager.advanceToLive()
+                startLiveSustainTimer()
             }
-            return@launch
-        }
-
-        val genuineProbability = computeGenuineProbability(ev)
-        val threshold = (config.genuineProbabilityThreshold +
-            spoofAttemptCount * config.spoofAttemptPenaltyPerCount)
-            .coerceAtMost(config.maxGenuineProbabilityThreshold)
-
-        if (genuineProbability >= threshold) {
-            challengeManager.advanceToLive()
-            startLiveSustainTimer()
-        } else {
-            val terminal = challengeManager.handleSpoof()
-            spoofAttemptCount++
-            if (terminal) {
-                deliverSpoofResult()
-            } else {
-                _challengeProgress.value = 0f
-                _instruction.value = "Verification failed \u2014 trying again"
+            ChallengeEvaluator.Verdict.SPOOF_FACE_SWAP,
+            ChallengeEvaluator.Verdict.SPOOF_LOW_SCORE -> {
+                val terminal = challengeManager.handleSpoof()
+                spoofAttemptCount++
+                if (terminal) {
+                    deliverSpoofResult()
+                } else {
+                    _challengeProgress.value = 0f
+                    _instruction.value = if (verdict == ChallengeEvaluator.Verdict.SPOOF_FACE_SWAP)
+                        "Try again" else "Verification failed \u2014 trying again"
+                }
             }
         }
-    }
-
-    private fun checkFaceConsistency(
-        bitmapA: android.graphics.Bitmap?,
-        bitmapB: android.graphics.Bitmap?,
-        emb: MobileFaceNetAnalyzer?
-    ): Boolean {
-        if (bitmapA == null || bitmapB == null || emb == null) return true
-        val fullBbox = FaceDetection.BBox(0f, 0f, 1f, 1f)
-        val pair = emb.analyzePair(bitmapA, fullBbox, bitmapB, fullBbox) ?: return true
-        val embA = pair.first.embedding ?: return true
-        val embB = pair.second.embedding ?: return true
-        val similarity = MobileFaceNetAnalyzer.cosineSimilarity(embA, embB)
-        return similarity >= config.faceConsistencyThreshold
-    }
-
-    private fun computeGenuineProbability(ev: ChallengeEvidence): Float {
-        val avgTexture = if (ev.holdTextureScores.isNotEmpty()) {
-            ev.holdTextureScores.average().toFloat()
-        } else 0.5f
-
-        val avgMn3 = if (ev.holdMn3Scores.isNotEmpty()) {
-            ev.holdMn3Scores.average().toFloat()
-        } else 0.5f
-
-        val avgCdcn = if (ev.holdCdcnScores.isNotEmpty()) {
-            ev.holdCdcnScores.average().toFloat()
-        } else null
-
-        val score = if (avgCdcn != null) {
-            val totalW = config.textureWeight + config.mn3Weight + config.cdcnWeight
-            (avgTexture * config.textureWeight +
-                avgMn3 * config.mn3Weight +
-                avgCdcn * config.cdcnWeight) / totalW
-        } else {
-            val cdcnRedist = config.cdcnWeight
-            val effectiveTextureW = config.textureWeight + cdcnRedist * 2f / 3f
-            val effectiveMn3W = config.mn3Weight + cdcnRedist * 1f / 3f
-            val totalW = effectiveTextureW + effectiveMn3W
-            (avgTexture * effectiveTextureW + avgMn3 * effectiveMn3W) / totalW
-        }
-
-        return score.coerceIn(0f, 1f)
     }
 
     private fun startLiveSustainTimer() {
@@ -289,14 +220,12 @@ internal class OpenPadSessionImpl(
         if (delivered) return
         delivered = true
         val ev = evidenceSnapshot ?: challengeManager.evidence
-        val result = OpenPadResult(
+        val result = OpenPadResultFactory.create(
             isLive = true,
             confidence = _challengeProgress.value,
-            durationMs = System.currentTimeMillis() - sessionStartMs,
-            spoofAttempts = spoofAttemptCount,
-            depthCharacteristics = DepthCharacteristics.average(ev.holdDepthCharacteristics),
-            faceAtNormalDistance = ev.displayBitmapAnalyzing ?: ev.checkpointBitmapAnalyzing,
-            faceAtCloseDistance = ev.displayBitmapChallenge ?: ev.checkpointBitmapChallenge
+            sessionStartMs = sessionStartMs,
+            spoofAttemptCount = spoofAttemptCount,
+            evidence = ev
         )
         _status.value = PadStatus.COMPLETED
         _phase.value = ChallengePhase.DONE
@@ -307,14 +236,12 @@ internal class OpenPadSessionImpl(
         if (delivered) return
         delivered = true
         val ev = evidenceSnapshot ?: challengeManager.evidence
-        val result = OpenPadResult(
+        val result = OpenPadResultFactory.create(
             isLive = false,
             confidence = _challengeProgress.value,
-            durationMs = System.currentTimeMillis() - sessionStartMs,
-            spoofAttempts = spoofAttemptCount,
-            depthCharacteristics = DepthCharacteristics.average(ev.holdDepthCharacteristics),
-            faceAtNormalDistance = ev.displayBitmapAnalyzing ?: ev.checkpointBitmapAnalyzing,
-            faceAtCloseDistance = ev.displayBitmapChallenge ?: ev.checkpointBitmapChallenge
+            sessionStartMs = sessionStartMs,
+            spoofAttemptCount = spoofAttemptCount,
+            evidence = ev
         )
         _status.value = PadStatus.COMPLETED
         _phase.value = ChallengePhase.DONE

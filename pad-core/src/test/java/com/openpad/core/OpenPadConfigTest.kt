@@ -45,7 +45,7 @@ class OpenPadConfigTest {
             spoofAttemptPenalty = 0.10f,
             maxFramesPerSecond = 10
         )
-        val padConfig = config.toPadConfig()
+        val padConfig = config.toInternal()
         assertEquals(0.80f, padConfig.genuineProbabilityThreshold)
         assertEquals(0.75f, padConfig.faceConsistencyThreshold)
         assertEquals(0.60f, padConfig.minFaceConfidence)
@@ -65,7 +65,7 @@ class OpenPadConfigTest {
 
     @Test
     fun toPadConfigDefaultsMatch() {
-        val padConfig = OpenPadConfig.Default.toPadConfig()
+        val padConfig = OpenPadConfig.Default.toInternal()
         assertEquals(0.55f, padConfig.minFaceConfidence)
         assertEquals(0.15f, padConfig.textureWeight)
         assertEquals(0.20f, padConfig.mn3Weight)

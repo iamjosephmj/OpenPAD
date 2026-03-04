@@ -10,16 +10,17 @@ import androidx.core.content.ContextCompat
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.openpad.core.OpenPad
 import com.openpad.core.OpenPadResult
+import com.openpad.core.OpenPadThemeConfig
+import com.openpad.core.PadPipeline
 import com.openpad.core.PadResult
 import com.openpad.core.aggregation.PadStatus
 import com.openpad.core.challenge.ChallengeEvidence
 import com.openpad.core.challenge.ChallengePhase
 import com.openpad.core.challenge.ChallengeManager
-import com.openpad.core.depth.DepthCharacteristics
-import com.openpad.core.detection.FaceDetection
-import com.openpad.core.embedding.MobileFaceNetAnalyzer
+import com.openpad.core.evaluation.ChallengeEvaluator
+import com.openpad.core.evaluation.OpenPadResultFactory
+import com.openpad.core.evaluation.PositioningGuidance
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -32,10 +33,14 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import java.util.concurrent.Executor
 
-internal class PadViewModel : ViewModel() {
+internal class PadViewModel(
+    private val pipeline: PadPipeline,
+    private val sessionStartMs: Long,
+    val callback: PadSessionCallback,
+    val themeConfig: OpenPadThemeConfig
+) : ViewModel() {
 
-    private val pipeline get() = OpenPad.pipeline
-    private val config get() = pipeline?.config ?: com.openpad.core.PadConfig.Default
+    private val config get() = pipeline.config
 
     private val _ui = MutableStateFlow(PadUiState())
     val ui: StateFlow<PadUiState> = _ui.asStateFlow()
@@ -58,8 +63,7 @@ internal class PadViewModel : ViewModel() {
         private set
 
     fun initFromSdk() {
-        val p = pipeline ?: return
-        challengeManager = p.createChallengeManager()
+        challengeManager = pipeline.createChallengeManager()
         _ui.update { it.copy(isInitialized = true, phase = ChallengePhase.ANALYZING) }
     }
 
@@ -81,13 +85,10 @@ internal class PadViewModel : ViewModel() {
                 .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
                 .build()
 
-            val p = pipeline
-            if (p != null) {
-                val analyzer = p.createFrameAnalyzer { result ->
-                    dispatch(PadIntent.OnAnalyzerResult(result))
-                }
-                imageAnalysis.setAnalyzer(analysisExecutor, analyzer)
+            val analyzer = pipeline.createFrameAnalyzer { result ->
+                dispatch(PadIntent.OnAnalyzerResult(result))
             }
+            imageAnalysis.setAnalyzer(analysisExecutor, analyzer)
 
             val cameraSelector = CameraSelector.Builder()
                 .requireLensFacing(CameraSelector.LENS_FACING_FRONT)
@@ -137,7 +138,7 @@ internal class PadViewModel : ViewModel() {
         val newPhase = challenge.onFrame(result)
 
         when (newPhase) {
-            ChallengePhase.IDLE -> { }
+            ChallengePhase.IDLE -> Unit
 
             ChallengePhase.ANALYZING -> {
                 _ui.update {
@@ -207,29 +208,8 @@ internal class PadViewModel : ViewModel() {
         }
     }
 
-    private fun computePositioningGuidance(result: PadResult): String? {
-        val raw = result.rawFaceDetection ?: return null
-
-        val inOval = result.faceDetection != null
-        if (!inOval) {
-            val cx = raw.centerX
-            val cy = raw.centerY
-            return when {
-                cy < 0.3f -> "Move down a little"
-                cy > 0.7f -> "Move up a little"
-                cx < 0.3f -> "Move right a little"
-                cx > 0.7f -> "Move left a little"
-                else -> "Position your face in the frame"
-            }
-        }
-
-        val area = raw.area
-        return when {
-            area > config.positioningMaxFaceArea -> "Too close \u2014 move back a little"
-            area < config.positioningMinFaceArea -> "Move a bit closer"
-            else -> null
-        }
-    }
+    private fun computePositioningGuidance(result: PadResult): String? =
+        PositioningGuidance.compute(result, config)
 
     private fun evaluateChallenge(): Job {
         return viewModelScope.launch {
@@ -239,75 +219,26 @@ internal class PadViewModel : ViewModel() {
             val ev = challenge.evidence
             evidenceSnapshot = ev
 
-            val bitmapA = ev.checkpointBitmapAnalyzing
-            val bitmapB = ev.checkpointBitmapChallenge
-            val emb = pipeline?.embeddingAnalyzer as? MobileFaceNetAnalyzer
+            val verdict = ChallengeEvaluator.evaluate(
+                evidence = ev,
+                config = config,
+                embeddingAnalyzer = pipeline.embeddingAnalyzer,
+                spoofAttemptCount = spoofAttemptCount
+            )
 
-            val faceConsistent = if (bitmapA != null && bitmapB != null && emb != null) {
-                val fullBbox = FaceDetection.BBox(0f, 0f, 1f, 1f)
-                val pair = emb.analyzePair(bitmapA, fullBbox, bitmapB, fullBbox)
-                if (pair != null) {
-                    val embA = pair.first.embedding
-                    val embB = pair.second.embedding
-                    if (embA != null && embB != null) {
-                        val similarity = MobileFaceNetAnalyzer.cosineSimilarity(embA, embB)
-                        similarity >= config.faceConsistencyThreshold
-                    } else true
-                } else true
-            } else true
-
-            if (!faceConsistent) {
-                val terminal = challenge.handleSpoof()
-                spoofAttemptCount++
-                deliverVerdict(PadOutcome.SpoofFailed(spoofAttemptCount))
-                return@launch
-            }
-
-            val genuineProbability = computeGenuineProbability(ev)
-            val threshold = (config.genuineProbabilityThreshold +
-                spoofAttemptCount * config.spoofAttemptPenaltyPerCount)
-                .coerceAtMost(config.maxGenuineProbabilityThreshold)
-
-            if (genuineProbability >= threshold) {
-                challenge.advanceToLive()
-                startLiveSustainTimer()
-            } else {
-                val terminal = challenge.handleSpoof()
-                spoofAttemptCount++
-                deliverVerdict(PadOutcome.SpoofFailed(spoofAttemptCount))
+            when (verdict) {
+                ChallengeEvaluator.Verdict.LIVE -> {
+                    challenge.advanceToLive()
+                    startLiveSustainTimer()
+                }
+                ChallengeEvaluator.Verdict.SPOOF_FACE_SWAP,
+                ChallengeEvaluator.Verdict.SPOOF_LOW_SCORE -> {
+                    challenge.handleSpoof()
+                    spoofAttemptCount++
+                    deliverVerdict(PadOutcome.SpoofFailed(spoofAttemptCount))
+                }
             }
         }
-    }
-
-    private fun computeGenuineProbability(
-        ev: com.openpad.core.challenge.ChallengeEvidence
-    ): Float {
-        val avgTexture = if (ev.holdTextureScores.isNotEmpty()) {
-            ev.holdTextureScores.average().toFloat()
-        } else 0.5f
-
-        val avgMn3 = if (ev.holdMn3Scores.isNotEmpty()) {
-            ev.holdMn3Scores.average().toFloat()
-        } else 0.5f
-
-        val avgCdcn = if (ev.holdCdcnScores.isNotEmpty()) {
-            ev.holdCdcnScores.average().toFloat()
-        } else null
-
-        val score = if (avgCdcn != null) {
-            val totalW = config.textureWeight + config.mn3Weight + config.cdcnWeight
-            (avgTexture * config.textureWeight +
-                avgMn3 * config.mn3Weight +
-                avgCdcn * config.cdcnWeight) / totalW
-        } else {
-            val cdcnRedist = config.cdcnWeight
-            val effectiveTextureW = config.textureWeight + cdcnRedist * 2f / 3f
-            val effectiveMn3W = config.mn3Weight + cdcnRedist * 1f / 3f
-            val totalW = effectiveTextureW + effectiveMn3W
-            (avgTexture * effectiveTextureW + avgMn3 * effectiveMn3W) / totalW
-        }
-
-        return score.coerceIn(0f, 1f)
     }
 
     private fun startLiveSustainTimer() {
@@ -363,20 +294,15 @@ internal class PadViewModel : ViewModel() {
     }
 
     fun buildSdkResult(): OpenPadResult {
-        val durationMs = System.currentTimeMillis() - OpenPad.sessionStartMs
         val isLive = outcome is PadOutcome.LiveConfirmed
         val confidence = _ui.value.lastResult?.aggregatedScore ?: 0f
         val ev = evidenceSnapshot ?: challengeManager?.evidence
-        return OpenPadResult(
+        return OpenPadResultFactory.create(
             isLive = isLive,
             confidence = confidence,
-            durationMs = durationMs,
-            spoofAttempts = spoofAttemptCount,
-            depthCharacteristics = ev?.holdDepthCharacteristics?.let {
-                DepthCharacteristics.average(it)
-            },
-            faceAtNormalDistance = ev?.displayBitmapAnalyzing ?: ev?.checkpointBitmapAnalyzing,
-            faceAtCloseDistance = ev?.displayBitmapChallenge ?: ev?.checkpointBitmapChallenge
+            sessionStartMs = sessionStartMs,
+            spoofAttemptCount = spoofAttemptCount,
+            evidence = ev
         )
     }
 
@@ -384,6 +310,13 @@ internal class PadViewModel : ViewModel() {
         super.onCleared()
         liveTimer?.cancel()
         evaluateJob?.cancel()
+        evidenceSnapshot?.let { ev ->
+            ev.checkpointBitmapAnalyzing?.recycle()
+            ev.checkpointBitmapChallenge?.recycle()
+            ev.displayBitmapAnalyzing?.recycle()
+            ev.displayBitmapChallenge?.recycle()
+        }
+        evidenceSnapshot = null
     }
 
     companion object

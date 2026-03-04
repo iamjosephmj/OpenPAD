@@ -1,6 +1,6 @@
 package com.openpad.core.signals
 
-import com.openpad.core.PadConfig
+import com.openpad.core.InternalPadConfig
 import com.openpad.core.detection.FaceDetection
 import kotlin.math.sqrt
 
@@ -15,7 +15,7 @@ import kotlin.math.sqrt
  * - Consecutive face frame count
  */
 class DefaultTemporalTracker(
-    private val config: PadConfig = PadConfig.Default
+    private val config: InternalPadConfig = InternalPadConfig.Default
 ) : TemporalSignalTracker {
 
     private val centerXHistory = ArrayDeque<Float>()

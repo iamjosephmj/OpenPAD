@@ -15,15 +15,17 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.platform.LocalContext
 import androidx.core.content.ContextCompat
+import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.openpad.core.OpenPad
 import com.openpad.core.OpenPadError
 import com.openpad.core.ui.theme.OpenPadTheme
 import com.openpad.core.ui.viewmodel.PadEffect
 import com.openpad.core.ui.viewmodel.PadIntent
+import com.openpad.core.ui.viewmodel.PadSessionCallback
 import com.openpad.core.ui.viewmodel.PadViewModel
+import com.openpad.core.ui.viewmodel.PadViewModelFactory
 import kotlinx.coroutines.flow.collectLatest
 import java.util.concurrent.Executors
 
@@ -36,11 +38,13 @@ import java.util.concurrent.Executors
  */
 class PadActivity : ComponentActivity() {
 
+    private var sessionCallback: PadSessionCallback? = null
+
     private val permissionLauncher = registerForActivityResult(
         ActivityResultContracts.RequestPermission()
     ) { granted ->
         if (!granted) {
-            OpenPad.deliverError(OpenPadError.PermissionDenied())
+            sessionCallback?.onError(OpenPadError.PermissionDenied())
             finish()
         }
     }
@@ -49,11 +53,12 @@ class PadActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
 
-        if (OpenPad.pipeline == null) {
-            OpenPad.deliverError(OpenPadError.NotInitialized())
+        val factory = PadViewModelFactory.pending
+        if (factory == null) {
             finish()
             return
         }
+        PadViewModelFactory.pending = null
 
         onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
             override fun handleOnBackPressed() {
@@ -70,6 +75,7 @@ class PadActivity : ComponentActivity() {
         setContent {
             OpenPadTheme {
                 PadCameraHost(
+                    factory = factory,
                     onDone = { handleDone() },
                     onClose = { handleClose() }
                 )
@@ -78,16 +84,15 @@ class PadActivity : ComponentActivity() {
     }
 
     private fun handleDone() {
-        val vm = lastViewModel
-        if (vm != null) {
-            val result = vm.buildSdkResult()
-            OpenPad.deliverResult(result)
-        }
+        val vm = lastViewModel ?: return
+        val result = vm.buildSdkResult()
+        vm.callback.onResult(result)
         finish()
     }
 
     private fun handleClose() {
-        OpenPad.deliverCancelled()
+        val vm = lastViewModel
+        vm?.callback?.onCancelled() ?: sessionCallback?.onCancelled()
         finish()
     }
 
@@ -95,11 +100,13 @@ class PadActivity : ComponentActivity() {
 
     @Composable
     private fun PadCameraHost(
+        factory: PadViewModelFactory,
         onDone: () -> Unit,
         onClose: () -> Unit
     ) {
-        val viewModel: PadViewModel = viewModel()
+        val viewModel: PadViewModel = viewModel(factory = factory)
         lastViewModel = viewModel
+        sessionCallback = viewModel.callback
 
         val ui by viewModel.ui.collectAsStateWithLifecycle()
         val surfaceRequest by viewModel.surfaceRequest.collectAsStateWithLifecycle()

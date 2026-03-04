@@ -35,25 +35,30 @@ class PhotometricAnalyzer {
         val crop = cropFace(bitmap, faceBbox, CROP_SIZE, 1.0f)
         val widerCrop = cropFace(bitmap, faceBbox, CROP_SIZE, 1.6f)
 
-        val specularScore = analyzeSpecularHighlights(crop)
-        val chrominanceScore = analyzeChrominanceSpread(crop)
-        val edgeDofScore = analyzeEdgeDofGradient(crop, widerCrop)
-        val lightingScore = analyzeLightingConsistency(crop)
+        try {
+            val specularScore = analyzeSpecularHighlights(crop)
+            val chrominanceScore = analyzeChrominanceSpread(crop)
+            val edgeDofScore = analyzeEdgeDofGradient(crop, widerCrop)
+            val lightingScore = analyzeLightingConsistency(crop)
 
-        val combinedScore = (
-            specularScore * WEIGHT_SPECULAR +
-                chrominanceScore * WEIGHT_CHROMINANCE +
-                edgeDofScore * WEIGHT_EDGE_DOF +
-                lightingScore * WEIGHT_LIGHTING
-            ).coerceIn(0f, 1f)
+            val combinedScore = (
+                specularScore * WEIGHT_SPECULAR +
+                    chrominanceScore * WEIGHT_CHROMINANCE +
+                    edgeDofScore * WEIGHT_EDGE_DOF +
+                    lightingScore * WEIGHT_LIGHTING
+                ).coerceIn(0f, 1f)
 
-        return PhotometricResult(
-            specularScore = specularScore,
-            chrominanceScore = chrominanceScore,
-            edgeDofScore = edgeDofScore,
-            lightingScore = lightingScore,
-            combinedScore = combinedScore
-        )
+            return PhotometricResult(
+                specularScore = specularScore,
+                chrominanceScore = chrominanceScore,
+                edgeDofScore = edgeDofScore,
+                lightingScore = lightingScore,
+                combinedScore = combinedScore
+            )
+        } finally {
+            crop.recycle()
+            widerCrop.recycle()
+        }
     }
 
     // ---- Signal 1: Specular Highlight Analysis ----
@@ -421,7 +426,9 @@ class PhotometricAnalyzer {
         val bottom = (faceCY + faceH / 2f).toInt().coerceIn(top + 1, imgH)
 
         val cropped = Bitmap.createBitmap(bitmap, left, top, right - left, bottom - top)
-        return Bitmap.createScaledBitmap(cropped, targetSize, targetSize, true)
+        val scaled = Bitmap.createScaledBitmap(cropped, targetSize, targetSize, true)
+        if (scaled !== cropped) cropped.recycle()
+        return scaled
     }
 
     companion object {
