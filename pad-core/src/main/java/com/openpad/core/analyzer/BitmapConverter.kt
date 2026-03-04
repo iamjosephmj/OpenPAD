@@ -29,7 +29,9 @@ object BitmapConverter {
             val rotation = image.imageInfo.rotationDegrees
             if (rotation != 0) {
                 val matrix = Matrix().apply { postRotate(rotation.toFloat()) }
-                Bitmap.createBitmap(bitmap, 0, 0, bitmap.width, bitmap.height, matrix, true)
+                val rotated = Bitmap.createBitmap(bitmap, 0, 0, bitmap.width, bitmap.height, matrix, true)
+                bitmap.recycle()
+                rotated
             } else {
                 bitmap
             }
@@ -95,6 +97,7 @@ object BitmapConverter {
         val small = Bitmap.createScaledBitmap(bitmap, size, size, true)
         val pixels = IntArray(size * size)
         small.getPixels(pixels, 0, size, 0, 0, size, size)
+        if (small !== bitmap) small.recycle()
         return FloatArray(pixels.size) { i ->
             val c = pixels[i]
             ((c shr 16 and 0xFF) * 0.299f + (c shr 8 and 0xFF) * 0.587f + (c and 0xFF) * 0.114f) / 255f
@@ -130,9 +133,11 @@ object BitmapConverter {
 
         val faceCrop = Bitmap.createBitmap(bitmap, l, t, cropW, cropH)
         val scaled = Bitmap.createScaledBitmap(faceCrop, SHARPNESS_SIZE, SHARPNESS_SIZE, true)
+        if (scaled !== faceCrop) faceCrop.recycle()
 
         val pixels = IntArray(SHARPNESS_SIZE * SHARPNESS_SIZE)
         scaled.getPixels(pixels, 0, SHARPNESS_SIZE, 0, 0, SHARPNESS_SIZE, SHARPNESS_SIZE)
+        scaled.recycle()
         val gray = FloatArray(pixels.size) { i ->
             val c = pixels[i]
             (c shr 16 and 0xFF) * 0.299f + (c shr 8 and 0xFF) * 0.587f + (c and 0xFF) * 0.114f
@@ -186,12 +191,60 @@ object BitmapConverter {
 
     private const val SIMILARITY_SIZE = 32
     private const val SHARPNESS_SIZE = 64
+    private const val FACE_CROP_SIZE = 112
+    private const val DISPLAY_CROP_SIZE = 224
+    private const val CROP_MARGIN = 1.3f
+
+    /**
+     * Crop and scale face to a square [FACE_CROP_SIZE]x[FACE_CROP_SIZE] bitmap.
+     * The face is expanded by [CROP_MARGIN] to include some context.
+     */
+    fun cropFace(bitmap: Bitmap, bbox: com.openpad.core.detection.FaceDetection.BBox): Bitmap {
+        val imgW = bitmap.width
+        val imgH = bitmap.height
+        val faceCX = (bbox.left + bbox.right) / 2f * imgW
+        val faceCY = (bbox.top + bbox.bottom) / 2f * imgH
+        val faceW = bbox.width() * imgW * CROP_MARGIN
+        val faceH = bbox.height() * imgH * CROP_MARGIN
+        val side = maxOf(faceW, faceH)
+
+        val left = (faceCX - side / 2f).toInt().coerceIn(0, imgW - 1)
+        val top = (faceCY - side / 2f).toInt().coerceIn(0, imgH - 1)
+        val right = (faceCX + side / 2f).toInt().coerceIn(left + 1, imgW)
+        val bottom = (faceCY + side / 2f).toInt().coerceIn(top + 1, imgH)
+
+        val cropped = Bitmap.createBitmap(bitmap, left, top, right - left, bottom - top)
+        val scaled = Bitmap.createScaledBitmap(cropped, FACE_CROP_SIZE, FACE_CROP_SIZE, true)
+        if (scaled !== cropped) cropped.recycle()
+        return scaled
+    }
+
+    /**
+     * Crop a fixed-pixel region around the face center from the raw camera frame.
+     * Unlike [cropFace], this does NOT normalize the face to fill the output,
+     * so a closer face appears proportionally larger.
+     */
+    fun cropFaceForDisplay(bitmap: Bitmap, bbox: com.openpad.core.detection.FaceDetection.BBox): Bitmap {
+        val imgW = bitmap.width
+        val imgH = bitmap.height
+        val faceCX = ((bbox.left + bbox.right) / 2f * imgW).toInt()
+        val faceCY = ((bbox.top + bbox.bottom) / 2f * imgH).toInt()
+        val half = DISPLAY_CROP_SIZE / 2
+
+        val left = (faceCX - half).coerceIn(0, imgW - 1)
+        val top = (faceCY - half).coerceIn(0, imgH - 1)
+        val right = (faceCX + half).coerceIn(left + 1, imgW)
+        val bottom = (faceCY + half).coerceIn(top + 1, imgH)
+
+        return Bitmap.createBitmap(bitmap, left, top, right - left, bottom - top)
+    }
 
     /** Crop face to 64x64 grayscale float array for native FFT. Values in [0,1]. */
     fun cropFaceTo64Gray(bitmap: Bitmap, bbox: com.openpad.core.detection.FaceDetection.BBox): FloatArray {
         val crop = cropFaceToSize(bitmap, bbox, 64, 1.0f)
         val pixels = IntArray(64 * 64)
         crop.getPixels(pixels, 0, 64, 0, 0, 64, 64)
+        crop.recycle()
         return FloatArray(64 * 64) { i ->
             val c = pixels[i]
             ((c shr 16 and 0xFF) * 0.299f + (c shr 8 and 0xFF) * 0.587f + (c and 0xFF) * 0.114f) / 255f
@@ -203,6 +256,7 @@ object BitmapConverter {
         val crop = cropFaceToSize(bitmap, bbox, 64, 1.0f)
         val pixels = IntArray(64 * 64)
         crop.getPixels(pixels, 0, 64, 0, 0, 64, 64)
+        crop.recycle()
         val out = ByteArray(64 * 64 * 4)
         for (i in pixels.indices) {
             val c = pixels[i]
@@ -219,6 +273,7 @@ object BitmapConverter {
         val crop = cropFaceToSize(bitmap, bbox, 80, 1.0f)
         val pixels = IntArray(80 * 80)
         crop.getPixels(pixels, 0, 80, 0, 0, 80, 80)
+        crop.recycle()
         val out = ByteArray(80 * 80 * 4)
         for (i in pixels.indices) {
             val c = pixels[i]
@@ -249,6 +304,8 @@ object BitmapConverter {
         val bottom = (faceCY + faceH / 2f).toInt().coerceIn(top + 1, imgH)
 
         val cropped = Bitmap.createBitmap(bitmap, left, top, right - left, bottom - top)
-        return Bitmap.createScaledBitmap(cropped, targetSize, targetSize, true)
+        val scaled = Bitmap.createScaledBitmap(cropped, targetSize, targetSize, true)
+        if (scaled !== cropped) cropped.recycle()
+        return scaled
     }
 }

@@ -141,6 +141,18 @@ Java_com_openpad_core_ndk_OpenPadNative_nativeInit(
 }
 
 JNIEXPORT void JNICALL
+Java_com_openpad_core_ndk_OpenPadNative_nativeDestroy(
+    JNIEnv* env, jclass clazz) {
+    (void)env; (void)clazz;
+    pthread_mutex_lock(&g_mutex);
+    if (g_pipeline) {
+        opad_pipeline_destroy(g_pipeline);
+        g_pipeline = NULL;
+    }
+    pthread_mutex_unlock(&g_mutex);
+}
+
+JNIEXPORT void JNICALL
 Java_com_openpad_core_ndk_OpenPadNative_nativeReset(
     JNIEnv* env, jclass clazz) {
     (void)env; (void)clazz;

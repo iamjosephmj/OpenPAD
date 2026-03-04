@@ -1,6 +1,6 @@
 package com.openpad.core.ndk
 
-import com.openpad.core.PadConfig
+import com.openpad.core.InternalPadConfig
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
 
@@ -20,6 +20,11 @@ object OpenPadNative {
      * Initialize the pipeline with config. Must be called before [nativeAnalyzeFrame].
      */
     external fun nativeInit(configBytes: ByteArray)
+
+    /**
+     * Destroy the native pipeline and free all associated memory.
+     */
+    external fun nativeDestroy()
 
     /**
      * Reset pipeline state (e.g. when starting a new session).
@@ -42,10 +47,10 @@ object OpenPadNative {
     external fun nativeAnalyzeFrame(inputBytes: ByteArray): ByteArray
 
     /**
-     * Serialize PadConfig to the byte format expected by nativeInit.
+     * Serialize InternalPadConfig to the byte format expected by nativeInit.
      * Layout: 21 f32 (bytes 0-83), padding (bytes 84-127), 11 i32 (bytes 128-171).
      */
-    fun configToBytes(config: PadConfig): ByteArray {
+    fun configToBytes(config: InternalPadConfig): ByteArray {
         val buf = ByteBuffer.allocate(172).order(ByteOrder.LITTLE_ENDIAN)
         buf.putFloat(config.minFaceConfidence)          // 0
         buf.putFloat(config.textureGenuineThreshold)    // 4

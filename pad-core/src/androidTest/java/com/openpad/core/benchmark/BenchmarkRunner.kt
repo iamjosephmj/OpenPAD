@@ -3,7 +3,7 @@ package com.openpad.core.benchmark
 import android.util.Log
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
-import com.openpad.core.PadConfig
+import com.openpad.core.InternalPadConfig
 import com.openpad.core.PadPipeline
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -51,7 +51,7 @@ class BenchmarkRunner {
         Log.i(TAG, "Results output: $resultsDir")
 
         // Initialize pipeline
-        val config = PadConfig.Default
+        val config = InternalPadConfig.Default
         val pipeline = PadPipeline.create(context, config)
         val processor = BenchmarkFrameProcessor(pipeline, config)
         val loader = DatasetLoader(baseDir)

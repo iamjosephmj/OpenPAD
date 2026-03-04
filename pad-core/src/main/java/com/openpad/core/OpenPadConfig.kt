@@ -64,23 +64,5 @@ data class OpenPadConfig(
         val Default = OpenPadConfig()
     }
 
-    internal fun toPadConfig(): PadConfig = PadConfig(
-        maxSpoofAttempts = 0,
-        genuineProbabilityThreshold = livenessThreshold,
-        faceConsistencyThreshold = faceMatchThreshold,
-        minFaceConfidence = faceDetectionConfidence,
-        textureWeight = textureAnalysisWeight,
-        mn3Weight = depthGateWeight,
-        cdcnWeight = depthAnalysisWeight,
-        deviceWeight = screenDetectionWeight,
-        mn3GateThreshold = depthGateMinScore,
-        depthFlatnessThreshold = depthFlatnessMinScore,
-        deviceConfidenceThreshold = screenDetectionMinConfidence,
-        moireThreshold = moireDetectionThreshold,
-        lbpScreenThreshold = screenPatternThreshold,
-        photometricMinScore = photometricMinScore,
-        spoofAttemptPenaltyPerCount = spoofAttemptPenalty,
-        maxFps = maxFramesPerSecond,
-        enableFrameEnhancement = enableFrameEnhancement
-    )
+    internal fun toInternal(): InternalPadConfig = OpenPadConfigMapper.toInternal(this)
 }

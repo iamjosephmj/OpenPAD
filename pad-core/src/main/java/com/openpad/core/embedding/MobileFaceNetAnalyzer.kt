@@ -76,7 +76,7 @@ class MobileFaceNetAnalyzer(context: Context) : FaceEmbeddingAnalyzer {
      * Returns a pair of embeddings (both L2-normalized).
      * Returns null if either crop is null or model is in placeholder mode.
      */
-    fun analyzePair(
+    override fun analyzePair(
         bitmapA: Bitmap, bboxA: FaceDetection.BBox,
         bitmapB: Bitmap, bboxB: FaceDetection.BBox
     ): Pair<FaceEmbeddingResult, FaceEmbeddingResult>? {
@@ -101,6 +101,9 @@ class MobileFaceNetAnalyzer(context: Context) : FaceEmbeddingAnalyzer {
             FaceEmbeddingResult(embedding = l2Normalize(output[1]))
         )
     }
+
+    override fun cosineSimilarity(a: FloatArray, b: FloatArray): Float =
+        Companion.cosineSimilarity(a, b)
 
     override fun close() {
         interpreter?.close()

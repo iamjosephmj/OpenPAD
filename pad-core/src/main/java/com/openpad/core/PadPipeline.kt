@@ -36,7 +36,7 @@ class PadPipeline private constructor(
     val embeddingAnalyzer: FaceEmbeddingAnalyzer,
     val frameEnhancer: FrameEnhancer,
     internal val nativeChallengeManager: NativeChallengeManager,
-    val config: PadConfig
+    val config: InternalPadConfig
 ) {
     /** Create a CameraX ImageAnalysis.Analyzer wired to the full pipeline. */
     fun createFrameAnalyzer(onResult: (PadResult) -> Unit): PadFrameAnalyzer {
@@ -63,6 +63,7 @@ class PadPipeline private constructor(
         deviceDetector.close()
         embeddingAnalyzer.close()
         frameEnhancer.close()
+        OpenPadNative.nativeDestroy()
     }
 
     companion object {
@@ -70,7 +71,7 @@ class PadPipeline private constructor(
          * Build a fully-initialized pipeline.
          * Must be called on a background thread (model loading blocks).
          */
-        fun create(context: Context, config: PadConfig = PadConfig.Default): PadPipeline {
+        fun create(context: Context, config: InternalPadConfig = InternalPadConfig.Default): PadPipeline {
             val appContext = context.applicationContext
 
             val faceDetector = MediaPipeFaceDetector(appContext)

@@ -5,6 +5,9 @@ import android.content.Context
 import android.content.Intent
 import android.os.Handler
 import android.os.Looper
+import com.openpad.core.ui.PadActivity
+import com.openpad.core.ui.viewmodel.PadSessionCallback
+import com.openpad.core.ui.viewmodel.PadViewModelFactory
 import java.util.concurrent.Executors
 import java.util.concurrent.atomic.AtomicBoolean
 
@@ -49,7 +52,10 @@ object OpenPad {
     internal var sdkConfig: OpenPadConfig = OpenPadConfig.Default
         private set
 
+    @Volatile
     internal var activeListener: OpenPadListener? = null
+
+    @Volatile
     internal var sessionStartMs: Long = 0L
 
     private val initializing = AtomicBoolean(false)
@@ -99,7 +105,7 @@ object OpenPad {
 
         initExecutor.execute {
             try {
-                val p = PadPipeline.create(context.applicationContext, config.toPadConfig())
+                val p = PadPipeline.create(context.applicationContext, config.toInternal())
                 pipeline = p
                 mainHandler.post(onReady)
             } catch (@Suppress("TooGenericExceptionCaught") e: Exception) {
@@ -124,7 +130,8 @@ object OpenPad {
         activity: Activity,
         listener: OpenPadListener
     ) {
-        if (pipeline == null) {
+        val p = pipeline
+        if (p == null) {
             listener.onError(OpenPadError.NotInitialized())
             return
         }
@@ -137,7 +144,26 @@ object OpenPad {
         activeListener = listener
         sessionStartMs = System.currentTimeMillis()
 
-        val intent = Intent(activity, com.openpad.core.ui.PadActivity::class.java)
+        val callback = object : PadSessionCallback {
+            override fun onResult(result: OpenPadResult) {
+                deliverResult(result)
+            }
+            override fun onError(error: OpenPadError) {
+                deliverError(error)
+            }
+            override fun onCancelled() {
+                deliverCancelled()
+            }
+        }
+
+        PadViewModelFactory.pending = PadViewModelFactory(
+            pipeline = p,
+            sessionStartMs = sessionStartMs,
+            callback = callback,
+            theme = theme
+        )
+
+        val intent = Intent(activity, PadActivity::class.java)
         activity.startActivity(intent)
     }
 
@@ -165,7 +191,7 @@ object OpenPad {
             return null
         }
 
-        return OpenPadSessionImpl(p, sdkConfig.toPadConfig(), listener)
+        return OpenPadSessionImpl(p, sdkConfig.toInternal(), listener)
     }
 
     /**
@@ -177,6 +203,7 @@ object OpenPad {
         pipeline?.close()
         pipeline = null
         activeListener = null
+        initExecutor.shutdownNow()
     }
 
     internal fun deliverResult(result: OpenPadResult) {

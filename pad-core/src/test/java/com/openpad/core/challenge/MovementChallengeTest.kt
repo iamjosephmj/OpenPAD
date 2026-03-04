@@ -1,6 +1,6 @@
 package com.openpad.core.challenge
 
-import com.openpad.core.PadConfig
+import com.openpad.core.InternalPadConfig
 import com.openpad.core.PadResult
 import com.openpad.core.aggregation.PadStatus
 import com.openpad.core.detection.FaceDetection
@@ -14,7 +14,7 @@ class MovementChallengeTest {
 
     @Before
     fun setup() {
-        challenge = MovementChallenge(PadConfig.Default)
+        challenge = MovementChallenge(InternalPadConfig.Default)
     }
 
     private fun padResult(
@@ -61,7 +61,7 @@ class MovementChallengeTest {
 
     @Test
     fun analyzingWithFaceStableFramesTransitionsToChallengeCloser() {
-        val config = PadConfig(analyzingStableFrames = 2)
+        val config = InternalPadConfig(analyzingStableFrames = 2)
         val ch = MovementChallenge(config)
         val f = face(area = 0.1f)
 

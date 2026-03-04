@@ -1,6 +1,6 @@
 package com.openpad.core.aggregation
 
-import com.openpad.core.PadConfig
+import com.openpad.core.InternalPadConfig
 import com.openpad.core.depth.DepthResult
 import com.openpad.core.device.DeviceDetectionResult
 import com.openpad.core.frequency.FrequencyResult
@@ -33,7 +33,7 @@ import com.openpad.core.texture.TextureResult
  * 11. Fallback → ANALYZING
  */
 class WeightedAggregator(
-    private val config: PadConfig = PadConfig.Default
+    private val config: InternalPadConfig = InternalPadConfig.Default
 ) : ScoreAggregator {
 
     override fun classify(

@@ -1,6 +1,6 @@
 package com.openpad.core.challenge
 
-import com.openpad.core.PadConfig
+import com.openpad.core.InternalPadConfig
 import com.openpad.core.PadResult
 import com.openpad.core.aggregation.PadStatus
 import kotlin.math.abs
@@ -16,7 +16,7 @@ import kotlin.math.abs
  * Probabilistic evaluation with spoof attempt tracking.
  */
 class MovementChallenge(
-    private val config: PadConfig = PadConfig.Default
+    private val config: InternalPadConfig = InternalPadConfig.Default
 ) : ChallengeManager {
 
     override var phase: ChallengePhase = ChallengePhase.IDLE

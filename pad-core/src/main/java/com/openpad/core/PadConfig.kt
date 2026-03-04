@@ -1,12 +1,16 @@
 package com.openpad.core
 
 /**
- * All configurable thresholds for the Open-PAD pipeline.
+ * Internal configuration with all thresholds for the Open-PAD pipeline.
+ *
+ * This is the internal representation -- consumers use [OpenPadConfig] which
+ * maps to this via [OpenPadConfigMapper.toInternal].
  *
  * Classification uses ML models (texture, depth, device) and classical signal
  * processing (frequency, photometric) as sequential decision gates.
  */
-data class PadConfig(
+@ConsistentCopyVisibility
+data class InternalPadConfig internal constructor(
     // --- Face detection ---
     val minFaceConfidence: Float = 0.55f,
 
@@ -101,6 +105,6 @@ data class PadConfig(
     val maxFps: Int = 8
 ) {
     companion object {
-        val Default = PadConfig()
+        val Default = InternalPadConfig()
     }
 }

@@ -3,11 +3,11 @@ package com.openpad.core
 import org.junit.Assert.assertEquals
 import org.junit.Test
 
-class PadConfigTest {
+class InternalPadConfigTest {
 
     @Test
     fun defaultValuesMatchExpected() {
-        val config = PadConfig.Default
+        val config = InternalPadConfig.Default
 
         assertEquals(0.55f, config.minFaceConfidence)
         assertEquals(0.5f, config.textureGenuineThreshold)
@@ -31,7 +31,7 @@ class PadConfigTest {
 
     @Test
     fun customConfigPreservesValues() {
-        val config = PadConfig(
+        val config = InternalPadConfig(
             minFaceConfidence = 0.7f,
             textureGenuineThreshold = 0.6f,
             minFramesForDecision = 5

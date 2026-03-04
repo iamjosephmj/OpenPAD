@@ -1,7 +1,7 @@
 package com.openpad.core.depth
 
 import android.graphics.Bitmap
-import com.openpad.core.PadConfig
+import com.openpad.core.InternalPadConfig
 import com.openpad.core.detection.FaceDetection
 import java.util.concurrent.Executors
 import java.util.concurrent.Future
@@ -22,7 +22,7 @@ import java.util.concurrent.atomic.AtomicReference
  */
 class CascadedDepthAnalyzer(
     private val models: CdcnDepthAnalyzer,
-    private val config: PadConfig
+    private val config: InternalPadConfig
 ) : DepthAnalyzer {
 
     private val cdcnExecutor = Executors.newSingleThreadExecutor()
@@ -89,10 +89,19 @@ class CascadedDepthAnalyzer(
     }
 
     override fun close() {
-        pendingCdcn.getAndSet(null)?.cancel(true)
+        val future = pendingCdcn.getAndSet(null)
+        if (future != null && !future.isDone) {
+            try {
+                future.get(CLOSE_TIMEOUT_MS, java.util.concurrent.TimeUnit.MILLISECONDS)
+            } catch (_: Exception) {
+                future.cancel(true)
+            }
+        }
         cdcnExecutor.shutdownNow()
         models.close()
     }
 
-    companion object
+    companion object {
+        private const val CLOSE_TIMEOUT_MS = 2000L
+    }
 }

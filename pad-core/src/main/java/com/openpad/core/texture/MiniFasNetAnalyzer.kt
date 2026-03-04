@@ -67,7 +67,9 @@ class MiniFasNetAnalyzer(
         // Step 1: Run 3-scale inference
         val scaleScores = SCALE_CONFIGS.zip(models).map { (config, interpreter) ->
             val crop = cropFaceAtScale(bitmap, faceBbox, config.scale)
-            runModel(interpreter, crop)
+            val scores = runModel(interpreter, crop)
+            crop.recycle()
+            scores
         }
 
         // Step 2: Average scores across scales
@@ -187,7 +189,9 @@ class MiniFasNetAnalyzer(
         val bottom = (faceCY + cropH / 2f).toInt().coerceIn(top + 1, imgH)
 
         val cropped = Bitmap.createBitmap(bitmap, left, top, right - left, bottom - top)
-        return Bitmap.createScaledBitmap(cropped, INPUT_SIZE, INPUT_SIZE, true)
+        val scaled = Bitmap.createScaledBitmap(cropped, INPUT_SIZE, INPUT_SIZE, true)
+        if (scaled !== cropped) cropped.recycle()
+        return scaled
     }
 
     // ---- Private: reflection probe ----
@@ -223,7 +227,9 @@ class MiniFasNetAnalyzer(
                 bottom = (faceBbox.bottom + dy).coerceIn(0f, 1f)
             )
             val crop = cropFaceAtScale(bitmap, offsetBbox, 1.0f)
-            runModel(interpreter, crop)[1] // genuine score (index 1 in Silent-Face)
+            val result = runModel(interpreter, crop)[1] // genuine score (index 1 in Silent-Face)
+            crop.recycle()
+            result
         }
 
         val mean = scores.average().toFloat()
