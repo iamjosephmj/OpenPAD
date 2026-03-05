@@ -54,6 +54,7 @@ internal class PadViewModel(
     private var challengeManager: ChallengeManager? = null
     private var liveTimer: Job? = null
     private var evaluateJob: Job? = null
+    private var challengeTimeoutJob: Job? = null
     private var cameraBound = false
     private var spoofAttemptCount = 0
     private var verdictDelivered = false
@@ -63,7 +64,7 @@ internal class PadViewModel(
         private set
 
     fun initFromSdk() {
-        challengeManager = pipeline.createChallengeManager()
+        challengeManager = pipeline.createChallengeManager().also { it.reset() }
         _ui.update { it.copy(isInitialized = true, phase = ChallengePhase.ANALYZING) }
     }
 
@@ -141,6 +142,7 @@ internal class PadViewModel(
             ChallengePhase.IDLE -> Unit
 
             ChallengePhase.ANALYZING -> {
+                cancelChallengeTimeout()
                 _ui.update {
                     it.copy(
                         phase = ChallengePhase.ANALYZING,
@@ -163,6 +165,7 @@ internal class PadViewModel(
             }
 
             ChallengePhase.CHALLENGE_CLOSER -> {
+                startChallengeTimeoutIfNeeded()
                 val ev = challenge.evidence
                 val msg = if (ev.maxAreaIncrease >= config.challengeCloserMinIncrease) {
                     "Hold still\u2026"
@@ -186,6 +189,7 @@ internal class PadViewModel(
             }
 
             ChallengePhase.EVALUATING -> {
+                cancelChallengeTimeout()
                 _ui.update {
                     it.copy(
                         phase = ChallengePhase.EVALUATING,
@@ -201,6 +205,7 @@ internal class PadViewModel(
             ChallengePhase.LIVE -> { }
 
             ChallengePhase.DONE -> {
+                cancelChallengeTimeout()
                 if (challenge.phase == ChallengePhase.DONE) {
                     deliverVerdict(PadOutcome.SpoofFailed(spoofAttemptCount))
                 }
@@ -237,6 +242,49 @@ internal class PadViewModel(
                     spoofAttemptCount++
                     deliverVerdict(PadOutcome.SpoofFailed(spoofAttemptCount))
                 }
+            }
+        }
+    }
+
+    private fun startChallengeTimeoutIfNeeded() {
+        if (config.challengeTimeoutMs <= 0L) return
+        if (challengeTimeoutJob?.isActive == true) return
+        challengeTimeoutJob = viewModelScope.launch {
+            delay(config.challengeTimeoutMs)
+            if (!verdictDelivered) onChallengeTimeout()
+        }
+    }
+
+    private fun cancelChallengeTimeout() {
+        challengeTimeoutJob?.cancel()
+        challengeTimeoutJob = null
+    }
+
+    private fun onChallengeTimeout() {
+        if (verdictDelivered) return
+        val challenge = challengeManager ?: return
+        val ev = challenge.evidence
+        val lastFaceCrop = _ui.value.lastResult?.faceCropBitmap
+        val timeoutEvidence = if (ev.checkpointBitmapChallenge == null && lastFaceCrop != null) {
+            ev.copy(checkpointBitmapChallenge = lastFaceCrop)
+        } else ev
+        evidenceSnapshot = timeoutEvidence
+
+        val verdict = ChallengeEvaluator.evaluate(
+            evidence = timeoutEvidence,
+            config = config,
+            embeddingAnalyzer = pipeline.embeddingAnalyzer,
+            spoofAttemptCount = spoofAttemptCount
+        )
+
+        when (verdict) {
+            ChallengeEvaluator.Verdict.LIVE -> {
+                challenge.advanceToLive()
+                startLiveSustainTimer()
+            }
+            ChallengeEvaluator.Verdict.SPOOF_FACE_SWAP,
+            ChallengeEvaluator.Verdict.SPOOF_LOW_SCORE -> {
+                deliverVerdict(PadOutcome.SpoofFailed(spoofAttemptCount))
             }
         }
     }
@@ -310,13 +358,21 @@ internal class PadViewModel(
         super.onCleared()
         liveTimer?.cancel()
         evaluateJob?.cancel()
-        evidenceSnapshot?.let { ev ->
-            ev.checkpointBitmapAnalyzing?.recycle()
-            ev.checkpointBitmapChallenge?.recycle()
-            ev.displayBitmapAnalyzing?.recycle()
-            ev.displayBitmapChallenge?.recycle()
-        }
+        challengeTimeoutJob?.cancel()
+
+        evidenceSnapshot?.recycleBitmaps()
         evidenceSnapshot = null
+
+        // reset() both recycles evidence bitmaps AND replaces _evidence
+        // with a fresh empty instance, preventing the next session from
+        // inheriting recycled bitmap references via the shared manager.
+        challengeManager?.reset()
+        challengeManager = null
+
+        _ui.value.lastResult?.let { last ->
+            last.faceCropBitmap?.let { if (!it.isRecycled) it.recycle() }
+            last.faceDisplayBitmap?.let { if (!it.isRecycled) it.recycle() }
+        }
     }
 
     companion object

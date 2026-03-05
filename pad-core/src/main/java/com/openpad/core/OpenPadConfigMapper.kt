@@ -18,6 +18,7 @@ package com.openpad.core
  * - screenPatternThreshold -> lbpScreenThreshold
  * - spoofAttemptPenalty -> spoofAttemptPenaltyPerCount
  * - maxFramesPerSecond -> maxFps
+ * - challengeTimeoutMs -> challengeTimeoutMs
  */
 internal object OpenPadConfigMapper {
 
@@ -38,6 +39,17 @@ internal object OpenPadConfigMapper {
         photometricMinScore = config.photometricMinScore,
         spoofAttemptPenaltyPerCount = config.spoofAttemptPenalty,
         maxFps = config.maxFramesPerSecond,
-        enableFrameEnhancement = config.enableFrameEnhancement
+        enableFrameEnhancement = config.enableFrameEnhancement,
+        staticFrameThreshold = config.staticFrameThreshold,
+        minMotionVariance = config.minMotionVariance,
+        lowLightThreshold = config.lowLightThreshold,
+        lowLightRelaxation = config.lowLightRelaxation,
+        screenReflectionConfidenceThreshold = config.screenReflectionMinConfidence,
+        screenReflectionMinSignals = config.screenReflectionMinSignals,
+        screenReflectionWeight = config.screenReflectionWeight,
+        challengeTimeoutMs = config.challengeTimeoutMs,
+        enablePreprocessing = config.enablePreprocessing,
+        preprocessingGammaTarget = config.preprocessingGammaTarget,
+        preprocessingClaheClipLimit = config.preprocessingClaheClipLimit
     )
 }

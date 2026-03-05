@@ -23,6 +23,7 @@ internal class NativeChallengeManager : ChallengeManager {
     private val accMn3Scores = mutableListOf<Float>()
     private val accCdcnScores = mutableListOf<Float>()
     private val accDepthCharacteristics = mutableListOf<DepthCharacteristics>()
+    private val accLuminances = mutableListOf<Float>()
     private var lastHoldFrames = 0
 
     /**
@@ -49,6 +50,7 @@ internal class NativeChallengeManager : ChallengeManager {
             accMn3Scores.add(result.depthResult?.mn3RealScore ?: 0.5f)
             result.depthResult?.cdcnDepthScore?.let { accCdcnScores.add(it) }
             result.depthResult?.depthCharacteristics?.let { accDepthCharacteristics.add(it) }
+            accLuminances.add(result.faceLuminance)
         }
         lastHoldFrames = nativeOutput.challengeHoldFrames
 
@@ -65,6 +67,7 @@ internal class NativeChallengeManager : ChallengeManager {
             holdMn3Scores = accMn3Scores.toList(),
             holdCdcnScores = accCdcnScores.toList(),
             holdDepthCharacteristics = accDepthCharacteristics.toList(),
+            holdLuminances = accLuminances.toList(),
             checkpointBitmapAnalyzing = newCheckpoint1,
             checkpointBitmapChallenge = newCheckpoint2,
             displayBitmapAnalyzing = newDisplay1,
@@ -93,6 +96,7 @@ internal class NativeChallengeManager : ChallengeManager {
             phase = ChallengePhase.DONE
         } else {
             phase = ChallengePhase.ANALYZING
+            _evidence.recycleBitmaps()
             _evidence = ChallengeEvidence()
             clearAccumulatedScores()
         }
@@ -102,6 +106,7 @@ internal class NativeChallengeManager : ChallengeManager {
     override fun reset() {
         OpenPadNative.nativeReset()
         phase = ChallengePhase.IDLE
+        _evidence.recycleBitmaps()
         _evidence = ChallengeEvidence()
         clearAccumulatedScores()
     }
@@ -111,6 +116,7 @@ internal class NativeChallengeManager : ChallengeManager {
         accMn3Scores.clear()
         accCdcnScores.clear()
         accDepthCharacteristics.clear()
+        accLuminances.clear()
         lastHoldFrames = 0
     }
 }

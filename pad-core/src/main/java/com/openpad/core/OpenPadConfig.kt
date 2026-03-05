@@ -38,7 +38,20 @@ package com.openpad.core
  * @property spoofAttemptPenalty Extra threshold added per consecutive failed attempt.
  * @property maxFramesPerSecond Maximum frame processing rate.
  * @property enableDebugOverlay If true, shows real-time debug metrics during the camera phase.
+ * @property staticFrameThreshold Frame similarity above this flags a static image (printed photo). Range [0.9, 1.0].
+ * @property minMotionVariance Head movement variance below this flags no involuntary micro-movements. Lower = stricter.
+ * @property lowLightThreshold Face luminance below this activates low-light adaptation (relaxed thresholds). Range [0.0, 1.0].
+ * @property lowLightRelaxation Amount subtracted from liveness threshold when low light is detected. Higher = more lenient in dim conditions.
+ * @property screenReflectionMinConfidence Minimum detection confidence for the screen-reflection model to count. Range [0.0, 1.0].
+ * @property screenReflectionMinSignals Minimum number of overlapping spoof-class detections (reflection, artifact, bezel, finger) to trigger spoof gate.
+ * @property screenReflectionWeight Scoring weight for screen-reflection detection. Default 0.08.
+ * @property challengeTimeoutMs Maximum time (ms) the user may spend in the "move closer" challenge before an automatic verdict is issued using accumulated signals. 0 = no timeout.
+ * @property enablePreprocessing If true, apply classical preprocessing (gamma correction + CLAHE) to each frame before ML inference. Improves accuracy in low-light and uneven lighting.
+ * @property preprocessingGammaTarget Target luminance for adaptive gamma correction. Set to 0 to disable gamma. Range [0.0, 1.0].
+ * @property preprocessingClaheClipLimit CLAHE clip limit controlling local contrast amplification. Set to 0 to disable CLAHE. Typical range [1.0, 4.0].
  */
+import android.content.Context
+
 data class OpenPadConfig(
     val livenessThreshold: Float = 0.70f,
     val faceMatchThreshold: Float = 0.70f,
@@ -59,8 +72,35 @@ data class OpenPadConfig(
     /** Enable ESPCN super-resolution on face regions during the closer challenge.
      *  The model's quality gate automatically discards enhancements that don't help. */
     val enableFrameEnhancement: Boolean = true,
+    val staticFrameThreshold: Float = 0.997f,
+    val minMotionVariance: Float = 0.1f,
+    val lowLightThreshold: Float = 0.40f,
+    val lowLightRelaxation: Float = 0.30f,
+    val screenReflectionMinConfidence: Float = 0.50f,
+    val screenReflectionMinSignals: Int = 2,
+    val screenReflectionWeight: Float = 0.08f,
+    val challengeTimeoutMs: Long = 5_000L,
+    val enablePreprocessing: Boolean = true,
+    val preprocessingGammaTarget: Float = 0.45f,
+    val preprocessingClaheClipLimit: Float = 2.0f,
 ) {
     companion object {
+
+        /**
+         * Auto-selects a config preset based on device hardware capabilities.
+         * Low-end devices (<=4 cores or <=3 GB RAM) get [LowEndDevice],
+         * everything else gets [Default]. Call during initialization:
+         * ```kotlin
+         * OpenPad.initialize(context, config = OpenPadConfig.forDevice(context))
+         * ```
+         */
+        fun forDevice(context: Context): OpenPadConfig {
+            return when (DeviceCapabilityDetector.detect(context)) {
+                DeviceCapabilityDetector.Tier.LOW -> LowEndDevice
+                DeviceCapabilityDetector.Tier.MID -> Default
+                DeviceCapabilityDetector.Tier.HIGH -> Default
+            }
+        }
 
         /** Balanced security and usability for general-purpose apps. */
         val Default = OpenPadConfig()
@@ -81,7 +121,14 @@ data class OpenPadConfig(
             moireDetectionThreshold = 0.50f,
             screenPatternThreshold = 0.60f,
             photometricMinScore = 0.35f,
-            spoofAttemptPenalty = 0.10f
+            spoofAttemptPenalty = 0.10f,
+            staticFrameThreshold = 0.995f,
+            minMotionVariance = 0.15f,
+            lowLightThreshold = 0.35f,
+            lowLightRelaxation = 0.20f,
+            screenReflectionMinConfidence = 0.40f,
+            screenReflectionMinSignals = 1,
+            screenReflectionWeight = 0.10f
         )
 
         /**
@@ -115,7 +162,14 @@ data class OpenPadConfig(
             moireDetectionThreshold = 0.45f,
             screenPatternThreshold = 0.55f,
             photometricMinScore = 0.40f,
-            spoofAttemptPenalty = 0.12f
+            spoofAttemptPenalty = 0.12f,
+            staticFrameThreshold = 0.995f,
+            minMotionVariance = 0.15f,
+            lowLightThreshold = 0.35f,
+            lowLightRelaxation = 0.20f,
+            screenReflectionMinConfidence = 0.40f,
+            screenReflectionMinSignals = 1,
+            screenReflectionWeight = 0.12f
         )
 
         /**
@@ -147,7 +201,13 @@ data class OpenPadConfig(
             depthFlatnessMinScore = 0.45f,
             screenDetectionMinConfidence = 0.45f,
             photometricMinScore = 0.35f,
-            maxFramesPerSecond = 10
+            maxFramesPerSecond = 10,
+            lowLightThreshold = 0.25f,
+            lowLightRelaxation = 0.10f,
+            screenReflectionMinConfidence = 0.45f,
+            screenReflectionMinSignals = 2,
+            screenReflectionWeight = 0.10f,
+            preprocessingClaheClipLimit = 1.5f
         )
 
         /**
@@ -163,7 +223,8 @@ data class OpenPadConfig(
             depthFlatnessMinScore = 0.35f,
             photometricMinScore = 0.25f,
             maxFramesPerSecond = 5,
-            enableFrameEnhancement = false
+            enableFrameEnhancement = false,
+            enablePreprocessing = false
         )
 
         /**
@@ -179,7 +240,15 @@ data class OpenPadConfig(
             depthFlatnessMinScore = 0.25f,
             photometricMinScore = 0.15f,
             spoofAttemptPenalty = 0.02f,
-            enableDebugOverlay = true
+            enableDebugOverlay = true,
+            staticFrameThreshold = 1.0f,
+            minMotionVariance = 0.0f,
+            lowLightThreshold = 0.50f,
+            lowLightRelaxation = 0.35f,
+            screenReflectionMinConfidence = 0.60f,
+            screenReflectionMinSignals = 3,
+            screenReflectionWeight = 0.05f,
+            preprocessingClaheClipLimit = 3.0f
         )
 
         /**
@@ -196,7 +265,8 @@ data class OpenPadConfig(
             photometricMinScore = 0.25f,
             spoofAttemptPenalty = 0.05f,
             maxFramesPerSecond = 15,
-            enableFrameEnhancement = false
+            enableFrameEnhancement = false,
+            enablePreprocessing = false
         )
 
         /**
@@ -215,7 +285,15 @@ data class OpenPadConfig(
             moireDetectionThreshold = 0.40f,
             screenPatternThreshold = 0.50f,
             photometricMinScore = 0.45f,
-            spoofAttemptPenalty = 0.12f
+            spoofAttemptPenalty = 0.12f,
+            staticFrameThreshold = 0.993f,
+            minMotionVariance = 0.20f,
+            lowLightThreshold = 0.30f,
+            lowLightRelaxation = 0.15f,
+            screenReflectionMinConfidence = 0.35f,
+            screenReflectionMinSignals = 1,
+            screenReflectionWeight = 0.12f,
+            preprocessingClaheClipLimit = 2.5f
         )
     }
 

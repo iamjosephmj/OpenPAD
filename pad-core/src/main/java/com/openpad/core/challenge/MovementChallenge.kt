@@ -114,7 +114,8 @@ class MovementChallenge(
                             _evidence.holdDepthCharacteristics + depthResult.depthCharacteristics
                         } else {
                             _evidence.holdDepthCharacteristics
-                        }
+                        },
+                        holdLuminances = _evidence.holdLuminances + result.faceLuminance
                     )
 
                     if (challengeHoldFrames >= config.challengeStableFrames &&
@@ -176,12 +177,14 @@ class MovementChallenge(
         challengeHoldFrames = 0
         baselineCalibrated = false
         baselineAreas.clear()
+        _evidence.recycleBitmaps()
         _evidence = ChallengeEvidence()
         return false
     }
 
     override fun reset() {
         phase = ChallengePhase.IDLE
+        _evidence.recycleBitmaps()
         _evidence = ChallengeEvidence()
         baselineArea = 0f
         baselineCalibrated = false

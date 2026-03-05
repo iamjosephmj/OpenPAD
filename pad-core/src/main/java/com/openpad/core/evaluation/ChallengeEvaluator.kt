@@ -30,7 +30,12 @@ internal object ChallengeEvaluator {
         if (!faceConsistent) return Verdict.SPOOF_FACE_SWAP
 
         val genuineProbability = GenuineProbabilityCalculator.compute(evidence, config)
-        val threshold = GenuineProbabilityCalculator.effectiveThreshold(config, spoofAttemptCount)
+        val avgLuminance = if (evidence.holdLuminances.isNotEmpty()) {
+            evidence.holdLuminances.average().toFloat()
+        } else 0.5f
+        val threshold = GenuineProbabilityCalculator.effectiveThreshold(
+            config, spoofAttemptCount, avgLuminance
+        )
 
         return if (genuineProbability >= threshold) Verdict.LIVE else Verdict.SPOOF_LOW_SCORE
     }

@@ -6,6 +6,7 @@ import com.openpad.core.aggregation.PadStatus
 import com.openpad.core.depth.DepthResult
 import com.openpad.core.detection.FaceDetection
 import com.openpad.core.device.DeviceDetectionResult
+import com.openpad.core.device.ScreenReflectionResult
 import com.openpad.core.frequency.FrequencyResult
 import com.openpad.core.ndk.NativeFrameOutput
 import com.openpad.core.photometric.PhotometricResult
@@ -27,9 +28,11 @@ internal object PadResultMapper {
         textureResult: TextureResult?,
         depthResult: DepthResult?,
         deviceResult: DeviceDetectionResult?,
+        screenReflectionResult: ScreenReflectionResult?,
         faceCropBitmap: Bitmap?,
         faceDisplayBitmap: Bitmap?,
         enhancementApplied: Boolean,
+        faceLuminance: Float,
         timestampMs: Long
     ): PadResult = PadResult(
         status = PadStatus.fromInt(nativeOutput.padStatus),
@@ -46,6 +49,7 @@ internal object PadResultMapper {
             lbpChannelCorrelation = nativeOutput.lbpChannelCorrelation
         ),
         deviceDetectionResult = deviceResult,
+        screenReflectionResult = screenReflectionResult,
         photometricResult = PhotometricResult(
             specularScore = nativeOutput.photometricSpecular,
             chrominanceScore = nativeOutput.photometricChrominance,
@@ -73,6 +77,7 @@ internal object PadResultMapper {
         frameSimilarity = nativeOutput.frameSimilarity,
         faceSharpness = nativeOutput.faceSharpness,
         enhancementApplied = enhancementApplied,
+        faceLuminance = faceLuminance,
         timestampMs = timestampMs
     )
 }

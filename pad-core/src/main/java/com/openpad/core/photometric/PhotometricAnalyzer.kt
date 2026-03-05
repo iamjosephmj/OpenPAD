@@ -427,7 +427,7 @@ class PhotometricAnalyzer {
 
         val cropped = Bitmap.createBitmap(bitmap, left, top, right - left, bottom - top)
         val scaled = Bitmap.createScaledBitmap(cropped, targetSize, targetSize, true)
-        if (scaled !== cropped) cropped.recycle()
+        if (scaled !== cropped && cropped !== bitmap) cropped.recycle()
         return scaled
     }
 

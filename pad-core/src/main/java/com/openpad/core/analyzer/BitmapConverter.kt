@@ -1,30 +1,23 @@
 package com.openpad.core.analyzer
 
 import android.graphics.Bitmap
-import android.graphics.BitmapFactory
-import android.graphics.ImageFormat
 import android.graphics.Matrix
-import android.graphics.Rect
-import android.graphics.YuvImage
 import androidx.camera.core.ImageProxy
-import java.io.ByteArrayOutputStream
 
 /**
  * Converts CameraX [ImageProxy] (YUV_420_888) to [Bitmap].
- * Ported from PadAnalyzer.imageToBitmap.
+ *
+ * Uses direct BT.601 YUV→RGB conversion instead of the lossy
+ * YUV→NV21→JPEG→Bitmap path to preserve full color fidelity.
  */
 object BitmapConverter {
 
-    private const val JPEG_QUALITY = 90
-
     fun imageToBitmap(image: ImageProxy): Bitmap? {
         return try {
-            val nv21 = yuv420ToNv21(image)
-            val yuvImage = YuvImage(nv21, ImageFormat.NV21, image.width, image.height, null)
-            val out = ByteArrayOutputStream()
-            yuvImage.compressToJpeg(Rect(0, 0, image.width, image.height), JPEG_QUALITY, out)
-            val jpegBytes = out.toByteArray()
-            val bitmap = BitmapFactory.decodeByteArray(jpegBytes, 0, jpegBytes.size) ?: return null
+            val width = image.width
+            val height = image.height
+            val pixels = yuv420ToArgbPixels(image, width, height)
+            val bitmap = Bitmap.createBitmap(pixels, width, height, Bitmap.Config.ARGB_8888)
 
             val rotation = image.imageInfo.rotationDegrees
             if (rotation != 0) {
@@ -40,57 +33,56 @@ object BitmapConverter {
         }
     }
 
-    private fun yuv420ToNv21(image: ImageProxy): ByteArray {
-        val width = image.width
-        val height = image.height
+    /**
+     * Direct YUV_420_888 → ARGB pixel conversion using BT.601 coefficients.
+     * Avoids lossy JPEG intermediate that drops ~10% of color information.
+     */
+    private fun yuv420ToArgbPixels(image: ImageProxy, width: Int, height: Int): IntArray {
         val yPlane = image.planes[0]
         val uPlane = image.planes[1]
         val vPlane = image.planes[2]
 
-        val yBuffer = yPlane.buffer
-        val uBuffer = uPlane.buffer
-        val vBuffer = vPlane.buffer
-
-        val ySize = width * height
-        val uvSize = width * height / 2
-        val nv21 = ByteArray(ySize + uvSize)
+        val yBuf = yPlane.buffer
+        val uBuf = uPlane.buffer
+        val vBuf = vPlane.buffer
 
         val yRowStride = yPlane.rowStride
         val yPixelStride = yPlane.pixelStride
-        var pos = 0
-        if (yRowStride == width && yPixelStride == 1) {
-            yBuffer.get(nv21, 0, ySize)
-            pos = ySize
-        } else {
-            for (row in 0 until height) {
-                for (col in 0 until width) {
-                    nv21[pos++] = yBuffer.get(row * yRowStride + col * yPixelStride)
-                }
+        val uvRowStride = uPlane.rowStride
+        val uvPixelStride = uPlane.pixelStride
+
+        val pixels = IntArray(width * height)
+
+        for (row in 0 until height) {
+            val yRowOffset = row * yRowStride
+            val uvRowOffset = (row shr 1) * uvRowStride
+            for (col in 0 until width) {
+                val y = (yBuf.get(yRowOffset + col * yPixelStride).toInt() and 0xFF)
+                val uvCol = (col shr 1) * uvPixelStride
+                val u = (uBuf.get(uvRowOffset + uvCol).toInt() and 0xFF) - 128
+                val v = (vBuf.get(uvRowOffset + uvCol).toInt() and 0xFF) - 128
+
+                var r = y + ((V_TO_R * v + ROUNDING) shr PRECISION)
+                var g = y - ((U_TO_G * u + V_TO_G * v + ROUNDING) shr PRECISION)
+                var b = y + ((U_TO_B * u + ROUNDING) shr PRECISION)
+
+                r = r.coerceIn(0, 255)
+                g = g.coerceIn(0, 255)
+                b = b.coerceIn(0, 255)
+
+                pixels[row * width + col] = (0xFF shl 24) or (r shl 16) or (g shl 8) or b
             }
         }
-
-        val uvRowStride = vPlane.rowStride
-        val uvPixelStride = vPlane.pixelStride
-        val uvHeight = height / 2
-        val uvWidth = width / 2
-
-        if (uvPixelStride == 2 && uvRowStride == width) {
-            vBuffer.position(0)
-            vBuffer.get(nv21, ySize, uvSize.coerceAtMost(vBuffer.remaining()))
-        } else {
-            var uvPos = ySize
-            for (row in 0 until uvHeight) {
-                for (col in 0 until uvWidth) {
-                    val vIdx = row * uvRowStride + col * uvPixelStride
-                    val uIdx = row * uPlane.rowStride + col * uPlane.pixelStride
-                    nv21[uvPos++] = vBuffer.get(vIdx)
-                    nv21[uvPos++] = uBuffer.get(uIdx)
-                }
-            }
-        }
-
-        return nv21
+        return pixels
     }
+
+    // BT.601 fixed-point coefficients (precision = 10 bits)
+    private const val PRECISION = 10
+    private const val ROUNDING = 1 shl (PRECISION - 1)
+    private const val V_TO_R = 1436   // 1.402 * 1024
+    private const val U_TO_G = 352    // 0.344 * 1024
+    private const val V_TO_G = 731    // 0.714 * 1024
+    private const val U_TO_B = 1815   // 1.772 * 1024
 
     /** Downsample bitmap to small grayscale float array for frame similarity. */
     fun downsampleToGray(bitmap: Bitmap, size: Int = SIMILARITY_SIZE): FloatArray {
@@ -133,7 +125,7 @@ object BitmapConverter {
 
         val faceCrop = Bitmap.createBitmap(bitmap, l, t, cropW, cropH)
         val scaled = Bitmap.createScaledBitmap(faceCrop, SHARPNESS_SIZE, SHARPNESS_SIZE, true)
-        if (scaled !== faceCrop) faceCrop.recycle()
+        if (scaled !== faceCrop && faceCrop !== bitmap) faceCrop.recycle()
 
         val pixels = IntArray(SHARPNESS_SIZE * SHARPNESS_SIZE)
         scaled.getPixels(pixels, 0, SHARPNESS_SIZE, 0, 0, SHARPNESS_SIZE, SHARPNESS_SIZE)
@@ -189,6 +181,40 @@ object BitmapConverter {
         return (sumSq / count - mean * mean).coerceAtLeast(0f)
     }
 
+    /** Average luminance of the face region, normalized to [0, 1]. */
+    fun computeFaceLuminance(
+        bitmap: Bitmap,
+        bbox: com.openpad.core.detection.FaceDetection.BBox
+    ): Float {
+        val w = bitmap.width
+        val h = bitmap.height
+        val l = (bbox.left * w).toInt().coerceIn(0, w - 1)
+        val t = (bbox.top * h).toInt().coerceIn(0, h - 1)
+        val r = (bbox.right * w).toInt().coerceIn(l + 1, w)
+        val b = (bbox.bottom * h).toInt().coerceIn(t + 1, h)
+
+        val cropW = r - l
+        val cropH = b - t
+        if (cropW < 2 || cropH < 2) return 0.5f
+
+        val crop = Bitmap.createBitmap(bitmap, l, t, cropW, cropH)
+        val sample = Bitmap.createScaledBitmap(crop, LUMINANCE_SAMPLE_SIZE, LUMINANCE_SAMPLE_SIZE, true)
+        if (sample !== crop) crop.recycle()
+
+        val pixels = IntArray(LUMINANCE_SAMPLE_SIZE * LUMINANCE_SAMPLE_SIZE)
+        sample.getPixels(pixels, 0, LUMINANCE_SAMPLE_SIZE, 0, 0, LUMINANCE_SAMPLE_SIZE, LUMINANCE_SAMPLE_SIZE)
+        sample.recycle()
+
+        var sum = 0f
+        for (c in pixels) {
+            sum += ((c shr 16 and 0xFF) * 0.299f +
+                (c shr 8 and 0xFF) * 0.587f +
+                (c and 0xFF) * 0.114f) / 255f
+        }
+        return sum / pixels.size
+    }
+
+    private const val LUMINANCE_SAMPLE_SIZE = 16
     private const val SIMILARITY_SIZE = 32
     private const val SHARPNESS_SIZE = 64
     private const val FACE_CROP_SIZE = 112
@@ -215,7 +241,7 @@ object BitmapConverter {
 
         val cropped = Bitmap.createBitmap(bitmap, left, top, right - left, bottom - top)
         val scaled = Bitmap.createScaledBitmap(cropped, FACE_CROP_SIZE, FACE_CROP_SIZE, true)
-        if (scaled !== cropped) cropped.recycle()
+        if (scaled !== cropped && cropped !== bitmap) cropped.recycle()
         return scaled
     }
 
@@ -305,7 +331,7 @@ object BitmapConverter {
 
         val cropped = Bitmap.createBitmap(bitmap, left, top, right - left, bottom - top)
         val scaled = Bitmap.createScaledBitmap(cropped, targetSize, targetSize, true)
-        if (scaled !== cropped) cropped.recycle()
+        if (scaled !== cropped && cropped !== bitmap) cropped.recycle()
         return scaled
     }
 }

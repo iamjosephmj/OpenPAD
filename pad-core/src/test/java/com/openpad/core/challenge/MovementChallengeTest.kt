@@ -29,6 +29,7 @@ class MovementChallengeTest {
         depthResult = null,
         frequencyResult = null,
         deviceDetectionResult = null,
+        screenReflectionResult = null,
         photometricResult = null,
         faceCropBitmap = faceCropBitmap,
         temporalFeatures = null,

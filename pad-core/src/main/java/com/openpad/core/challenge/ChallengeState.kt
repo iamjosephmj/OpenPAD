@@ -37,5 +37,23 @@ data class ChallengeEvidence(
     val displayBitmapAnalyzing: Bitmap? = null,
     /** Display-quality face crop at close distance (preserves natural face size). */
     val displayBitmapChallenge: Bitmap? = null,
+    /** Face luminance values collected during hold phase for ambient light adaptation. */
+    val holdLuminances: List<Float> = emptyList(),
     val completed: Boolean = false
-)
+) {
+    /**
+     * Recycle all [Bitmap] references held by this evidence and return
+     * an empty evidence with no bitmap references. Safe to call multiple
+     * times — already-recycled bitmaps are silently skipped.
+     */
+    fun recycleBitmaps() {
+        listOf(
+            checkpointBitmapAnalyzing,
+            checkpointBitmapChallenge,
+            displayBitmapAnalyzing,
+            displayBitmapChallenge
+        ).forEach { bmp ->
+            if (bmp != null && !bmp.isRecycled) bmp.recycle()
+        }
+    }
+}
