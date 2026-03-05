@@ -12,7 +12,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.openpad.core.OpenPadResult
 import com.openpad.core.OpenPadThemeConfig
-import com.openpad.core.PadPipeline
+import com.openpad.core.PadPipelineContract
 import com.openpad.core.PadResult
 import com.openpad.core.aggregation.PadStatus
 import com.openpad.core.challenge.ChallengeEvidence
@@ -21,6 +21,9 @@ import com.openpad.core.challenge.ChallengeManager
 import com.openpad.core.evaluation.ChallengeEvaluator
 import com.openpad.core.evaluation.OpenPadResultFactory
 import com.openpad.core.evaluation.PositioningGuidance
+import dagger.assisted.Assisted
+import dagger.assisted.AssistedFactory
+import dagger.assisted.AssistedInject
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -32,17 +35,27 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import java.util.concurrent.Executor
+import java.util.concurrent.atomic.AtomicBoolean
 
-internal class PadViewModel(
-    private val pipeline: PadPipeline,
-    private val sessionStartMs: Long,
-    val callback: PadSessionCallback,
-    val themeConfig: OpenPadThemeConfig
+internal class PadViewModel @AssistedInject constructor(
+    private val pipeline: PadPipelineContract,
+    @Assisted private val sessionStartMs: Long,
+    @Assisted val callback: PadSessionCallback,
+    @Assisted val themeConfig: OpenPadThemeConfig
 ) : ViewModel() {
+
+    @AssistedFactory
+    interface Factory {
+        fun create(
+            sessionStartMs: Long,
+            callback: PadSessionCallback,
+            themeConfig: OpenPadThemeConfig,
+        ): PadViewModel
+    }
 
     private val config get() = pipeline.config
 
-    private val _ui = MutableStateFlow(PadUiState())
+    private val _ui = MutableStateFlow<PadUiState>(PadUiState.Idle)
     val ui: StateFlow<PadUiState> = _ui.asStateFlow()
 
     private val _effects = MutableSharedFlow<PadEffect>(extraBufferCapacity = 8)
@@ -55,17 +68,45 @@ internal class PadViewModel(
     private var liveTimer: Job? = null
     private var evaluateJob: Job? = null
     private var challengeTimeoutJob: Job? = null
+    private var sessionTimeoutJob: Job? = null
     private var cameraBound = false
     private var spoofAttemptCount = 0
-    private var verdictDelivered = false
-    /** Snapshot of evidence taken at evaluation time, before handleSpoof can clear it. */
+    private val verdictDelivered = AtomicBoolean(false)
     private var evidenceSnapshot: ChallengeEvidence? = null
     var outcome: PadOutcome = PadOutcome.Pending
         private set
 
+    private val activeState: PadUiState.Active?
+        get() = _ui.value as? PadUiState.Active
+
+    private inline fun updateActive(transform: PadUiState.Active.() -> PadUiState.Active) {
+        _ui.update { current ->
+            when (current) {
+                is PadUiState.Active -> current.transform()
+                else -> current
+            }
+        }
+    }
+
     fun initFromSdk() {
         challengeManager = pipeline.createChallengeManager().also { it.reset() }
-        _ui.update { it.copy(isInitialized = true, phase = ChallengePhase.ANALYZING) }
+        _ui.value = PadUiState.Active(phase = ChallengePhase.ANALYZING)
+        startSessionTimeoutIfNeeded()
+    }
+
+    private fun startSessionTimeoutIfNeeded() {
+        if (config.sessionTimeoutMs <= 0L) return
+        sessionTimeoutJob = viewModelScope.launch {
+            delay(config.sessionTimeoutMs)
+            if (!verdictDelivered.get()) onSessionTimeout()
+        }
+    }
+
+    private fun onSessionTimeout() {
+        if (verdictDelivered.get()) return
+        val challenge = challengeManager ?: return
+        evidenceSnapshot = challenge.evidence
+        deliverVerdict(PadOutcome.SpoofFailed(spoofAttemptCount))
     }
 
     fun bindCamera(context: Context, lifecycleOwner: LifecycleOwner, analysisExecutor: Executor) {
@@ -107,13 +148,13 @@ internal class PadViewModel(
     fun dispatch(intent: PadIntent) {
         when (intent) {
             is PadIntent.OnScreenStarted -> {
-                _ui.update { it.copy(phase = ChallengePhase.ANALYZING) }
+                updateActive { copy(phase = ChallengePhase.ANALYZING) }
             }
 
             is PadIntent.OnPreviewReady -> { }
 
             is PadIntent.OnAnalyzerResult -> {
-                if (!verdictDelivered) {
+                if (!verdictDelivered.get()) {
                     handleAnalyzerResult(intent.result)
                 }
             }
@@ -134,7 +175,7 @@ internal class PadViewModel(
         val challenge = challengeManager ?: return
         val status = result.status
 
-        _ui.update { it.copy(status = status, lastResult = result) }
+        updateActive { copy(status = status, lastResult = result) }
 
         val newPhase = challenge.onFrame(result)
 
@@ -143,8 +184,8 @@ internal class PadViewModel(
 
             ChallengePhase.ANALYZING -> {
                 cancelChallengeTimeout()
-                _ui.update {
-                    it.copy(
+                updateActive {
+                    copy(
                         phase = ChallengePhase.ANALYZING,
                         faceBoxWidthFraction = PadUiState.DEFAULT_FACE_BOX_WIDTH_FRACTION,
                         faceBoxHeightFraction = PadUiState.DEFAULT_FACE_BOX_HEIGHT_FRACTION,
@@ -155,8 +196,8 @@ internal class PadViewModel(
             }
 
             ChallengePhase.POSITIONING -> {
-                _ui.update {
-                    it.copy(
+                updateActive {
+                    copy(
                         phase = ChallengePhase.POSITIONING,
                         challengeProgress = 0.1f,
                         messageOverride = computePositioningGuidance(result) ?: "Center your face"
@@ -177,8 +218,8 @@ internal class PadViewModel(
                     ev.holdFrames.toFloat() / config.challengeStableFrames
                 } else 0f
 
-                _ui.update {
-                    it.copy(
+                updateActive {
+                    copy(
                         phase = ChallengePhase.CHALLENGE_CLOSER,
                         faceBoxWidthFraction = PadUiState.CHALLENGE_FACE_BOX_WIDTH_FRACTION,
                         faceBoxHeightFraction = PadUiState.CHALLENGE_FACE_BOX_HEIGHT_FRACTION,
@@ -190,8 +231,8 @@ internal class PadViewModel(
 
             ChallengePhase.EVALUATING -> {
                 cancelChallengeTimeout()
-                _ui.update {
-                    it.copy(
+                updateActive {
+                    copy(
                         phase = ChallengePhase.EVALUATING,
                         challengeProgress = 0.85f,
                         messageOverride = "Evaluating\u2026"
@@ -219,6 +260,7 @@ internal class PadViewModel(
     private fun evaluateChallenge(): Job {
         return viewModelScope.launch {
             delay(config.evaluatingDurationMs)
+            if (verdictDelivered.get()) return@launch
 
             val challenge = challengeManager ?: return@launch
             val ev = challenge.evidence
@@ -238,9 +280,20 @@ internal class PadViewModel(
                 }
                 ChallengeEvaluator.Verdict.SPOOF_FACE_SWAP,
                 ChallengeEvaluator.Verdict.SPOOF_LOW_SCORE -> {
-                    challenge.handleSpoof()
+                    val terminal = challenge.handleSpoof()
                     spoofAttemptCount++
-                    deliverVerdict(PadOutcome.SpoofFailed(spoofAttemptCount))
+                    if (terminal) {
+                        deliverVerdict(PadOutcome.SpoofFailed(spoofAttemptCount))
+                    } else {
+                        evaluateJob = null
+                        updateActive {
+                            copy(
+                                challengeProgress = 0f,
+                                messageOverride = if (verdict == ChallengeEvaluator.Verdict.SPOOF_FACE_SWAP)
+                                    "Try again" else "Verification failed \u2014 trying again"
+                            )
+                        }
+                    }
                 }
             }
         }
@@ -251,7 +304,7 @@ internal class PadViewModel(
         if (challengeTimeoutJob?.isActive == true) return
         challengeTimeoutJob = viewModelScope.launch {
             delay(config.challengeTimeoutMs)
-            if (!verdictDelivered) onChallengeTimeout()
+            if (!verdictDelivered.get()) onChallengeTimeout()
         }
     }
 
@@ -261,10 +314,10 @@ internal class PadViewModel(
     }
 
     private fun onChallengeTimeout() {
-        if (verdictDelivered) return
+        if (verdictDelivered.get()) return
         val challenge = challengeManager ?: return
         val ev = challenge.evidence
-        val lastFaceCrop = _ui.value.lastResult?.faceCropBitmap
+        val lastFaceCrop = activeState?.lastResult?.faceCropBitmap
         val timeoutEvidence = if (ev.checkpointBitmapChallenge == null && lastFaceCrop != null) {
             ev.copy(checkpointBitmapChallenge = lastFaceCrop)
         } else ev
@@ -279,8 +332,8 @@ internal class PadViewModel(
 
         when (verdict) {
             ChallengeEvaluator.Verdict.LIVE -> {
-                challenge.advanceToLive()
-                startLiveSustainTimer()
+                challenge.advanceToDone()
+                deliverVerdict(PadOutcome.LiveConfirmed)
             }
             ChallengeEvaluator.Verdict.SPOOF_FACE_SWAP,
             ChallengeEvaluator.Verdict.SPOOF_LOW_SCORE -> {
@@ -290,8 +343,8 @@ internal class PadViewModel(
     }
 
     private fun startLiveSustainTimer() {
-        _ui.update {
-            it.copy(
+        updateActive {
+            copy(
                 status = PadStatus.LIVE,
                 phase = ChallengePhase.LIVE,
                 challengeProgress = 1f,
@@ -303,26 +356,24 @@ internal class PadViewModel(
             delay(config.liveSustainMs)
 
             val current = _ui.value
-            if (current.status == PadStatus.LIVE && current.phase == ChallengePhase.LIVE) {
+            if (current is PadUiState.Active &&
+                current.status == PadStatus.LIVE &&
+                current.phase == ChallengePhase.LIVE
+            ) {
                 challengeManager?.advanceToDone()
                 deliverVerdict(PadOutcome.LiveConfirmed)
             }
         }
     }
 
-    /** Deliver the verdict result and signal the activity to finish. */
     private fun deliverVerdict(result: PadOutcome) {
-        if (verdictDelivered) return
-        verdictDelivered = true
+        if (!verdictDelivered.compareAndSet(false, true)) return
         outcome = result
+        sessionTimeoutJob?.cancel()
+        challengeTimeoutJob?.cancel()
 
-        _ui.update {
-            it.copy(
-                phase = ChallengePhase.DONE,
-                challengeProgress = 1f,
-                messageOverride = null
-            )
-        }
+        val lastResult = activeState?.lastResult
+        _ui.value = PadUiState.Done(outcome = result, lastResult = lastResult)
 
         viewModelScope.launch {
             _effects.emit(PadEffect.Done)
@@ -332,18 +383,23 @@ internal class PadViewModel(
     fun finish() {
         liveTimer?.cancel()
         liveTimer = null
-        _ui.update {
-            it.copy(
-                status = PadStatus.COMPLETED,
-                phase = ChallengePhase.DONE,
-                messageOverride = null
-            )
-        }
+        val current = _ui.value
+        if (current is PadUiState.Done) return
+        val lastResult = (current as? PadUiState.Active)?.lastResult
+        _ui.value = PadUiState.Done(
+            outcome = outcome,
+            lastResult = lastResult
+        )
     }
 
     fun buildSdkResult(): OpenPadResult {
         val isLive = outcome is PadOutcome.LiveConfirmed
-        val confidence = _ui.value.lastResult?.aggregatedScore ?: 0f
+        val lastResult = when (val state = _ui.value) {
+            is PadUiState.Active -> state.lastResult
+            is PadUiState.Done -> state.lastResult
+            is PadUiState.Idle -> null
+        }
+        val confidence = lastResult?.aggregatedScore ?: 0f
         val ev = evidenceSnapshot ?: challengeManager?.evidence
         return OpenPadResultFactory.create(
             isLive = isLive,
@@ -359,17 +415,20 @@ internal class PadViewModel(
         liveTimer?.cancel()
         evaluateJob?.cancel()
         challengeTimeoutJob?.cancel()
+        sessionTimeoutJob?.cancel()
 
         evidenceSnapshot?.recycleBitmaps()
         evidenceSnapshot = null
 
-        // reset() both recycles evidence bitmaps AND replaces _evidence
-        // with a fresh empty instance, preventing the next session from
-        // inheriting recycled bitmap references via the shared manager.
         challengeManager?.reset()
         challengeManager = null
 
-        _ui.value.lastResult?.let { last ->
+        val lastResult = when (val state = _ui.value) {
+            is PadUiState.Active -> state.lastResult
+            is PadUiState.Done -> state.lastResult
+            is PadUiState.Idle -> null
+        }
+        lastResult?.let { last ->
             last.faceCropBitmap?.let { if (!it.isRecycled) it.recycle() }
             last.faceDisplayBitmap?.let { if (!it.isRecycled) it.recycle() }
         }

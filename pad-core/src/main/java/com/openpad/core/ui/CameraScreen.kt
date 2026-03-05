@@ -258,7 +258,6 @@ private fun PhaseStepDot(active: Boolean, color: Color) {
 
 private fun phaseTitle(phase: ChallengePhase, status: PadStatus): String = when {
     status == PadStatus.LIVE || status == PadStatus.COMPLETED -> "Verified"
-    status == PadStatus.SPOOF_SUSPECTED -> "Try Again"
     phase == ChallengePhase.EVALUATING -> "Evaluating..."
     phase == ChallengePhase.CHALLENGE_CLOSER -> "Move Closer"
     phase == ChallengePhase.POSITIONING -> "Positioning"
@@ -274,14 +273,12 @@ private fun InstructionPill(
     val message = messageOverride ?: when (status) {
         PadStatus.LIVE, PadStatus.COMPLETED -> null
         PadStatus.NO_FACE -> "Position your face in the frame"
-        PadStatus.SPOOF_SUSPECTED -> "Make sure nothing is covering your face"
-        PadStatus.ANALYZING -> "Hold still and look at the camera"
+        PadStatus.SPOOF_SUSPECTED, PadStatus.ANALYZING -> "Hold still and look at the camera"
     }
 
     val pillBorderColor by animateColorAsState(
         targetValue = when (status) {
             PadStatus.LIVE, PadStatus.COMPLETED -> PadColors.Success.copy(alpha = 0.25f)
-            PadStatus.SPOOF_SUSPECTED -> PadColors.Error.copy(alpha = 0.25f)
             else -> Color.White.copy(alpha = 0.08f)
         },
         animationSpec = tween(400),

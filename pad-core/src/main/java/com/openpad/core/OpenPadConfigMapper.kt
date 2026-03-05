@@ -18,12 +18,13 @@ package com.openpad.core
  * - screenPatternThreshold -> lbpScreenThreshold
  * - spoofAttemptPenalty -> spoofAttemptPenaltyPerCount
  * - maxFramesPerSecond -> maxFps
+ * - sessionTimeoutMs -> sessionTimeoutMs
  * - challengeTimeoutMs -> challengeTimeoutMs
  */
 internal object OpenPadConfigMapper {
 
     fun toInternal(config: OpenPadConfig): InternalPadConfig = InternalPadConfig(
-        maxSpoofAttempts = 0,
+        maxSpoofAttempts = config.maxSpoofAttempts,
         genuineProbabilityThreshold = config.livenessThreshold,
         faceConsistencyThreshold = config.faceMatchThreshold,
         minFaceConfidence = config.faceDetectionConfidence,
@@ -47,6 +48,7 @@ internal object OpenPadConfigMapper {
         screenReflectionConfidenceThreshold = config.screenReflectionMinConfidence,
         screenReflectionMinSignals = config.screenReflectionMinSignals,
         screenReflectionWeight = config.screenReflectionWeight,
+        sessionTimeoutMs = config.sessionTimeoutMs,
         challengeTimeoutMs = config.challengeTimeoutMs,
         enablePreprocessing = config.enablePreprocessing,
         preprocessingGammaTarget = config.preprocessingGammaTarget,

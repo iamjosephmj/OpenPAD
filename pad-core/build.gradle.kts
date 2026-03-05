@@ -1,7 +1,7 @@
 plugins {
-    alias(libs.plugins.android.library)
-    alias(libs.plugins.kotlin.android)
-    alias(libs.plugins.compose.compiler)
+    alias(libs.plugins.openpad.android.library)
+    alias(libs.plugins.openpad.android.compose)
+    alias(libs.plugins.openpad.hilt)
     `maven-publish`
 }
 
@@ -10,10 +10,8 @@ val publishGroupId = "com.github.openpad"
 
 android {
     namespace = "com.openpad.core"
-    compileSdk = 36
 
     defaultConfig {
-        minSdk = 26
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         externalNativeBuild {
             cmake {
@@ -38,19 +36,6 @@ android {
         }
     }
 
-    compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_17
-        targetCompatibility = JavaVersion.VERSION_17
-    }
-
-    kotlinOptions {
-        jvmTarget = "17"
-    }
-
-    buildFeatures {
-        compose = true
-    }
-
     testOptions {
         unitTests.isReturnDefaultValues = true
     }
@@ -67,25 +52,15 @@ dependencies {
     implementation(libs.camerax.lifecycle)
     implementation(libs.camerax.compose)
 
-    // Compose UI
-    implementation(platform(libs.compose.bom))
-    implementation(libs.compose.material3)
-    implementation(libs.compose.ui)
+    // Compose extras
     implementation(libs.compose.ui.tooling.preview)
-    implementation(libs.compose.foundation)
     debugImplementation(libs.compose.ui.tooling)
-
-    // Lifecycle + ViewModel
-    implementation(libs.lifecycle.runtime.compose)
-    implementation(libs.lifecycle.viewmodel.compose)
-
-    // Activity
-    implementation(libs.activity.compose)
 
     implementation(libs.core.ktx)
 
     // Test
     testImplementation(libs.junit)
+    testImplementation(libs.kotlinx.coroutines.test)
     androidTestImplementation(libs.test.runner)
     androidTestImplementation(libs.test.core)
     androidTestImplementation(libs.test.ext.junit)

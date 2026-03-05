@@ -37,13 +37,13 @@ class PadPipeline private constructor(
     val depthModels: CdcnDepthAnalyzer,
     val deviceDetector: DeviceDetector,
     val screenReflectionDetector: ScreenReflectionDetector,
-    val embeddingAnalyzer: FaceEmbeddingAnalyzer,
+    override val embeddingAnalyzer: FaceEmbeddingAnalyzer,
     val frameEnhancer: FrameEnhancer,
     internal val nativeChallengeManager: NativeChallengeManager,
-    val config: InternalPadConfig
-) {
+    override val config: InternalPadConfig
+) : PadPipelineContract {
     /** Create a CameraX ImageAnalysis.Analyzer wired to the full pipeline. */
-    fun createFrameAnalyzer(onResult: (PadResult) -> Unit): PadFrameAnalyzer {
+    override fun createFrameAnalyzer(onResult: (PadResult) -> Unit): PadFrameAnalyzer {
         val preprocessor = if (config.enablePreprocessing) {
             FramePreprocessor(
                 gammaTarget = config.preprocessingGammaTarget,
@@ -68,10 +68,10 @@ class PadPipeline private constructor(
     }
 
     /** Create a challenge manager for the challenge-response flow. */
-    fun createChallengeManager(): ChallengeManager = nativeChallengeManager
+    override fun createChallengeManager(): ChallengeManager = nativeChallengeManager
 
     /** Release all resources. */
-    fun close() {
+    override fun close() {
         faceDetector.close()
         textureAnalyzer.close()
         depthAnalyzer.close()
