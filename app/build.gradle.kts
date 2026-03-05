@@ -1,32 +1,16 @@
 plugins {
-    alias(libs.plugins.android.application)
-    alias(libs.plugins.kotlin.android)
-    alias(libs.plugins.compose.compiler)
+    alias(libs.plugins.openpad.android.application)
+    alias(libs.plugins.openpad.android.compose)
+    alias(libs.plugins.openpad.hilt)
 }
 
 android {
     namespace = "com.openpad.app"
-    compileSdk = 35
 
     defaultConfig {
         applicationId = "com.openpad.app"
-        minSdk = 26
-        targetSdk = 35
         versionCode = 1
         versionName = "1.0"
-    }
-
-    compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_17
-        targetCompatibility = JavaVersion.VERSION_17
-    }
-
-    kotlinOptions {
-        jvmTarget = "17"
-    }
-
-    buildFeatures {
-        compose = true
     }
 
     packaging {
@@ -34,20 +18,17 @@ android {
             useLegacyPackaging = false
         }
     }
+
+    testOptions {
+        unitTests.isReturnDefaultValues = true
+        unitTests.isIncludeAndroidResources = true
+    }
 }
 
 dependencies {
     implementation(project(":pad-core"))
 
-    implementation(platform(libs.compose.bom))
-    implementation(libs.compose.material3)
-    implementation(libs.compose.ui)
-    implementation(libs.compose.foundation)
     implementation(libs.compose.material.icons)
-
-    implementation(libs.activity.compose)
-    implementation(libs.lifecycle.runtime.compose)
-    implementation(libs.lifecycle.viewmodel.compose)
 
     implementation(libs.camerax.core)
     implementation(libs.camerax.camera2)
@@ -56,4 +37,10 @@ dependencies {
 
     implementation(libs.timber)
     implementation(libs.core.ktx)
+
+    testImplementation(libs.junit)
+    testImplementation(libs.kotlinx.coroutines.test)
+    testImplementation(libs.robolectric)
+    testImplementation(libs.test.core)
+    testImplementation(libs.test.ext.junit)
 }

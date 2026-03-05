@@ -3,8 +3,10 @@ package com.openpad.app
 import android.app.Application
 import com.openpad.core.OpenPad
 import com.openpad.core.OpenPadThemeConfig
+import dagger.hilt.android.HiltAndroidApp
 import timber.log.Timber
 
+@HiltAndroidApp
 class OpenPadApp : Application() {
     override fun onCreate() {
         super.onCreate()

@@ -5,9 +5,9 @@ import android.content.Context
 import android.content.Intent
 import android.os.Handler
 import android.os.Looper
+import com.openpad.core.di.PadSessionHolder
 import com.openpad.core.ui.PadActivity
 import com.openpad.core.ui.viewmodel.PadSessionCallback
-import com.openpad.core.ui.viewmodel.PadViewModelFactory
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 import java.util.concurrent.atomic.AtomicBoolean
@@ -39,6 +39,9 @@ import java.util.concurrent.atomic.AtomicBoolean
  *     success = 0xFF2E7D32
  * )
  * ```
+ *
+ * **Important**: The host application must be annotated with `@HiltAndroidApp`
+ * for the built-in UI mode to function correctly.
  */
 object OpenPad {
 
@@ -160,11 +163,10 @@ object OpenPad {
             }
         }
 
-        PadViewModelFactory.pending = PadViewModelFactory(
-            pipeline = p,
+        PadSessionHolder.pending = PadSessionHolder.Params(
             sessionStartMs = sessionStartMs,
             callback = callback,
-            theme = theme
+            themeConfig = theme
         )
 
         val intent = Intent(activity, PadActivity::class.java)
@@ -175,11 +177,11 @@ object OpenPad {
      * Create a headless analysis session for integrators with their own camera UI.
      *
      * The returned [OpenPadSession] provides:
-     * - [OpenPadSession.frameAnalyzer] — plug into `ImageAnalysis.setAnalyzer(...)`
-     * - [OpenPadSession.status] — current PAD status (ANALYZING, LIVE, SPOOF_SUSPECTED, ...)
-     * - [OpenPadSession.phase] — current challenge phase (ANALYZING, CHALLENGE_CLOSER, ...)
-     * - [OpenPadSession.challengeProgress] — progress in [0.0, 1.0]
-     * - [OpenPadSession.instruction] — user-facing guidance text
+     * - [OpenPadSession.frameAnalyzer] -- plug into `ImageAnalysis.setAnalyzer(...)`
+     * - [OpenPadSession.status] -- current PAD status (ANALYZING, LIVE, SPOOF_SUSPECTED, ...)
+     * - [OpenPadSession.phase] -- current challenge phase (ANALYZING, CHALLENGE_CLOSER, ...)
+     * - [OpenPadSession.challengeProgress] -- progress in [0.0, 1.0]
+     * - [OpenPadSession.instruction] -- user-facing guidance text
      *
      * The session runs the full challenge-response pipeline. When the verdict is
      * reached, exactly one callback on [listener] is invoked. Call

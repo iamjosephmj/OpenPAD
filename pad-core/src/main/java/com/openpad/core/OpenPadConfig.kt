@@ -36,6 +36,7 @@ package com.openpad.core
  * @property screenPatternThreshold LBP screen pattern score above this triggers the frequency gate. Range [0.0, 1.0].
  * @property photometricMinScore Combined photometric score below this triggers spoof detection. Range [0.0, 1.0].
  * @property spoofAttemptPenalty Extra threshold added per consecutive failed attempt.
+ * @property maxSpoofAttempts Maximum number of spoof retries before the session terminates with a spoof verdict. 0 = unlimited (not recommended). Default 2.
  * @property maxFramesPerSecond Maximum frame processing rate.
  * @property enableDebugOverlay If true, shows real-time debug metrics during the camera phase.
  * @property staticFrameThreshold Frame similarity above this flags a static image (printed photo). Range [0.9, 1.0].
@@ -45,6 +46,7 @@ package com.openpad.core
  * @property screenReflectionMinConfidence Minimum detection confidence for the screen-reflection model to count. Range [0.0, 1.0].
  * @property screenReflectionMinSignals Minimum number of overlapping spoof-class detections (reflection, artifact, bezel, finger) to trigger spoof gate.
  * @property screenReflectionWeight Scoring weight for screen-reflection detection. Default 0.08.
+ * @property sessionTimeoutMs Maximum total time (ms) for the entire verification session. If the user hasn't completed the challenge within this window the SDK delivers a verdict using whatever signals it has. 0 = no timeout. Default 8 000 ms (8 s).
  * @property challengeTimeoutMs Maximum time (ms) the user may spend in the "move closer" challenge before an automatic verdict is issued using accumulated signals. 0 = no timeout.
  * @property enablePreprocessing If true, apply classical preprocessing (gamma correction + CLAHE) to each frame before ML inference. Improves accuracy in low-light and uneven lighting.
  * @property preprocessingGammaTarget Target luminance for adaptive gamma correction. Set to 0 to disable gamma. Range [0.0, 1.0].
@@ -67,6 +69,7 @@ data class OpenPadConfig(
     val screenPatternThreshold: Float = 0.70f,
     val photometricMinScore: Float = 0.30f,
     val spoofAttemptPenalty: Float = 0.08f,
+    val maxSpoofAttempts: Int = 2,
     val maxFramesPerSecond: Int = 8,
     val enableDebugOverlay: Boolean = false,
     /** Enable ESPCN super-resolution on face regions during the closer challenge.
@@ -79,6 +82,7 @@ data class OpenPadConfig(
     val screenReflectionMinConfidence: Float = 0.50f,
     val screenReflectionMinSignals: Int = 2,
     val screenReflectionWeight: Float = 0.08f,
+    val sessionTimeoutMs: Long = 8_000L,
     val challengeTimeoutMs: Long = 5_000L,
     val enablePreprocessing: Boolean = true,
     val preprocessingGammaTarget: Float = 0.45f,

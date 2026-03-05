@@ -1,13 +1,14 @@
 package com.openpad.app
 
-import android.app.Application
 import android.content.Context
-import androidx.lifecycle.AndroidViewModel
 import com.openpad.core.OpenPad
 import com.openpad.core.OpenPadConfig
 import com.openpad.core.OpenPadError
 import com.openpad.core.OpenPadListener
 import com.openpad.core.OpenPadResult
+import androidx.lifecycle.ViewModel
+import dagger.hilt.android.lifecycle.HiltViewModel
+import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -15,18 +16,25 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
 import timber.log.Timber
+import javax.inject.Inject
 
-class MainViewModel(application: Application) : AndroidViewModel(application) {
+@HiltViewModel
+class MainViewModel @Inject constructor(
+    @ApplicationContext private val context: Context,
+) : ViewModel() {
 
-    data class UiState(
-        val sdkState: SdkState = SdkState.Initializing,
-        val config: OpenPadConfig = OpenPadConfig(),
-        val showConfig: Boolean = false,
-        val showResult: Boolean = false,
-        val lastVerification: VerificationResult? = null
-    )
+    sealed interface UiState {
+        data object Initializing : UiState
 
-    enum class SdkState { Initializing, Ready, Error }
+        data class Ready(
+            val config: OpenPadConfig = OpenPadConfig(),
+            val showConfig: Boolean = false,
+            val showResult: Boolean = false,
+            val lastVerification: VerificationResult? = null
+        ) : UiState
+
+        data class Error(val message: String) : UiState
+    }
 
     data class VerificationResult(
         val isLive: Boolean,
@@ -42,7 +50,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         data class Toast(val message: String) : SideEffect
     }
 
-    private val _state = MutableStateFlow(UiState())
+    private val _state = MutableStateFlow<UiState>(UiState.Initializing)
     val state: StateFlow<UiState> = _state.asStateFlow()
 
     private val _sideEffect = Channel<SideEffect>(Channel.BUFFERED)
@@ -50,11 +58,23 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
 
     private var appliedConfig: OpenPadConfig? = null
 
+    private val readyState: UiState.Ready?
+        get() = _state.value as? UiState.Ready
+
+    private inline fun updateReady(transform: UiState.Ready.() -> UiState.Ready) {
+        _state.update { current ->
+            when (current) {
+                is UiState.Ready -> current.transform()
+                else -> current
+            }
+        }
+    }
+
     val listener = object : OpenPadListener {
         override fun onLiveConfirmed(result: OpenPadResult) {
             Timber.d("LIVE  confidence=%.2f  duration=%dms", result.confidence, result.durationMs)
-            _state.update {
-                it.copy(
+            updateReady {
+                copy(
                     showResult = true,
                     lastVerification = VerificationResult(
                         isLive = true,
@@ -69,8 +89,8 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
 
         override fun onSpoofDetected(result: OpenPadResult) {
             Timber.d("SPOOF  confidence=%.2f  duration=%dms", result.confidence, result.durationMs)
-            _state.update {
-                it.copy(
+            updateReady {
+                copy(
                     showResult = true,
                     lastVerification = VerificationResult(
                         isLive = false,
@@ -95,37 +115,35 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
 
     fun initSdk() {
         if (OpenPad.isInitialized) {
-            _state.update { it.copy(sdkState = SdkState.Ready) }
+            _state.value = UiState.Ready(config = readyState?.config ?: OpenPadConfig())
             return
         }
-        _state.update { it.copy(sdkState = SdkState.Initializing) }
-        val ctx: Context = getApplication()
-        val cfg = _state.value.config
+        _state.value = UiState.Initializing
+        val cfg = readyState?.config ?: OpenPadConfig()
         appliedConfig = cfg
         OpenPad.initialize(
-            context = ctx,
+            context = context,
             config = cfg,
-            onReady = { _state.update { it.copy(sdkState = SdkState.Ready) } },
+            onReady = { _state.value = UiState.Ready(config = cfg) },
             onError = { error ->
-                _state.update { it.copy(sdkState = SdkState.Error) }
+                _state.value = UiState.Error("Init failed: $error")
                 _sideEffect.trySend(SideEffect.Toast("Init failed: $error"))
             }
         )
     }
 
     private fun ensureConfig() {
-        val cfg = _state.value.config
+        val cfg = readyState?.config ?: OpenPadConfig()
         if (appliedConfig == cfg && OpenPad.isInitialized) return
         OpenPad.release()
-        _state.update { it.copy(sdkState = SdkState.Initializing) }
+        _state.value = UiState.Initializing
         appliedConfig = cfg
-        val ctx: Context = getApplication()
         OpenPad.initialize(
-            context = ctx,
+            context = context,
             config = cfg,
-            onReady = { _state.update { it.copy(sdkState = SdkState.Ready) } },
+            onReady = { _state.value = UiState.Ready(config = cfg) },
             onError = { error ->
-                _state.update { it.copy(sdkState = SdkState.Error) }
+                _state.value = UiState.Error("Init failed: $error")
                 _sideEffect.trySend(SideEffect.Toast("Init failed: $error"))
             }
         )
@@ -133,29 +151,29 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
 
     fun onStartVerification() {
         ensureConfig()
-        if (_state.value.sdkState != SdkState.Ready) return
+        if (_state.value !is UiState.Ready) return
         _sideEffect.trySend(SideEffect.LaunchVerification)
     }
 
     fun onStartHeadless() {
         ensureConfig()
-        if (_state.value.sdkState != SdkState.Ready) return
+        if (_state.value !is UiState.Ready) return
         _sideEffect.trySend(SideEffect.LaunchHeadless(listener))
     }
 
     fun onConfigChange(config: OpenPadConfig) {
-        _state.update { it.copy(config = config) }
+        updateReady { copy(config = config) }
     }
 
     fun onToggleConfig(show: Boolean) {
-        _state.update { it.copy(showConfig = show) }
+        updateReady { copy(showConfig = show) }
     }
 
     fun onDismissResult() {
-        _state.update { it.copy(showResult = false) }
+        updateReady { copy(showResult = false) }
     }
 
     fun onResultTapped() {
-        _state.update { it.copy(showResult = true) }
+        updateReady { copy(showResult = true) }
     }
 }

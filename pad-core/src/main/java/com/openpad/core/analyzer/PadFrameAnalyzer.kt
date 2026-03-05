@@ -97,7 +97,7 @@ class PadFrameAnalyzer internal constructor(
                 textureResult = textureAnalyzer.analyze(analysisBitmap, bbox)
                 deviceResult = deviceDetector.analyze(analysisBitmap, bbox)
                 screenReflectionResult = screenReflectionDetector.analyze(analysisBitmap, bbox)
-                faceCropBitmap = BitmapConverter.cropFace(analysisBitmap, bbox)
+                faceCropBitmap = BitmapConverter.cropFace(bitmap, bbox)
                 faceDisplayBitmap = BitmapConverter.cropFaceForDisplay(bitmap, bbox)
                 if (framePreprocessor == null) {
                     faceLuminance = BitmapConverter.computeFaceLuminance(bitmap, bbox)

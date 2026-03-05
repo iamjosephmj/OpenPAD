@@ -32,21 +32,9 @@ google-services.json
 
 # Android Profiling
 *.hprof
-
-# Python virtual environments
-scripts/venv/
-venv/
-__pycache__/
-*.pyc
-
-# YOLOv5 clone (re-downloaded during training)
-scripts/yolov5/
-
-# Training runs (large model checkpoints)
-scripts/runs/
-
-# Model backups
-scripts/model_backups/
-
-# macOS
-.DS_Store
+/.cursor/skills/android-development/references/architecture.md
+/.cursor/skills/android-development/references/compose-patterns.md
+/.cursor/skills/android-development/references/gradle-setup.md
+/.cursor/skills/android-development/references/modularization.md
+/.cursor/skills/android-development/references/testing.md
+/.cursor/skills/android-development/SKILL.md

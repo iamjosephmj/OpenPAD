@@ -102,7 +102,10 @@ data class InternalPadConfig internal constructor(
 
     // --- Timers ---
     val liveSustainMs: Long = 1000L,
-    val maxSpoofAttempts: Int = 0,
+    val maxSpoofAttempts: Int = 2,
+    /** Maximum total time (ms) for the entire verification session.
+     *  If the session exceeds this, a verdict is forced with accumulated signals. 0 = no timeout. */
+    val sessionTimeoutMs: Long = 8_000L,
     /** Maximum time (ms) allowed in the CHALLENGE_CLOSER phase before forcing
      *  an evaluation with whatever signals have been accumulated. 0 = no timeout. */
     val challengeTimeoutMs: Long = 5_000L,

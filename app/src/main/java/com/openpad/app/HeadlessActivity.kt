@@ -60,6 +60,7 @@ import java.util.concurrent.Executors
  * pipeline via [OpenPadSession]. Status, phase, progress, and instructions
  * are observed via StateFlows and rendered in the integrator's own layout.
  */
+@dagger.hilt.android.AndroidEntryPoint
 class HeadlessActivity : ComponentActivity() {
 
     private val permissionLauncher = registerForActivityResult(
