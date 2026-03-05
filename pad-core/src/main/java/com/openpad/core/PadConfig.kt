@@ -72,6 +72,12 @@ data class InternalPadConfig internal constructor(
     /** Combined photometric score below this triggers spoof gate. Lower = stricter. */
     val photometricMinScore: Float = 0.30f,
 
+    // --- Screen reflection detection (YOLOv5n) ---
+    /** Minimum confidence for screen reflection detections to count. */
+    val screenReflectionConfidenceThreshold: Float = 0.5f,
+    /** Minimum number of overlapping spoof-class detections to trigger the gate. */
+    val screenReflectionMinSignals: Int = 2,
+
     // --- ML aggregation weights (sum to ~1.0) ---
     // CDCN is the strongest discriminator (0% EER). MN3 is a fast secondary signal.
     // MiniFASNet texture has 50% EER on print masks — kept lower.
@@ -79,6 +85,8 @@ data class InternalPadConfig internal constructor(
     val mn3Weight: Float = 0.20f,
     val cdcnWeight: Float = 0.55f,
     val deviceWeight: Float = 0.10f,
+    /** Scoring weight for the YOLOv5n screen-reflection detector. */
+    val screenReflectionWeight: Float = 0.08f,
 
     // --- Evaluation ---
     val genuineProbabilityThreshold: Float = 0.70f,
@@ -95,11 +103,53 @@ data class InternalPadConfig internal constructor(
     // --- Timers ---
     val liveSustainMs: Long = 1000L,
     val maxSpoofAttempts: Int = 0,
+    /** Maximum time (ms) allowed in the CHALLENGE_CLOSER phase before forcing
+     *  an evaluation with whatever signals have been accumulated. 0 = no timeout. */
+    val challengeTimeoutMs: Long = 5_000L,
 
     // --- Frame enhancement ---
     /** Enable ESPCN super-resolution on face regions during CHALLENGE_CLOSER.
      *  The model's quality gate automatically discards enhancements that don't help. */
     val enableFrameEnhancement: Boolean = true,
+
+    // --- Frame preprocessing ---
+    /** Enable classical preprocessing (gamma correction + CLAHE) on each frame
+     *  before ML inference. Improves accuracy in low-light and uneven lighting. */
+    val enablePreprocessing: Boolean = true,
+    /** Target luminance for adaptive gamma correction. 0 = disabled.
+     *  Values below 0.5 darken bright frames; above 0.5 brighten dark frames. */
+    val preprocessingGammaTarget: Float = 0.45f,
+    /** CLAHE clip limit controlling contrast amplification. 0 = disabled.
+     *  Higher values allow more contrast but may amplify noise. */
+    val preprocessingClaheClipLimit: Float = 2.0f,
+
+    // --- Temporal gates ---
+    /** Frame similarity above this flags a static image (printed photo).
+     *  Real people holding still typically produce 0.985-0.995; actual photos are 0.999+. */
+    val staticFrameThreshold: Float = 0.997f,
+    /** Head movement variance below this flags a motionless subject (photo/static display). */
+    val minMotionVariance: Float = 0.1f,
+
+    // --- Depth temporal variance ---
+    /** CDCN score variance below this across hold frames triggers a penalty (flat spoof). */
+    val depthScoreVarianceMin: Float = 0.001f,
+    /** Quadrant variance consistency below this triggers a penalty (uniform flat surface). */
+    val quadrantVarianceMin: Float = 0.0005f,
+    /** Multiplicative penalty applied when depth variance is suspiciously low. */
+    val depthLowVariancePenalty: Float = 0.85f,
+
+    // --- Ambient light adaptation ---
+    /** Face luminance below this is considered low-light.
+     *  Dim rooms typically measure 0.25-0.35; raise to catch moderate dimness. */
+    val lowLightThreshold: Float = 0.40f,
+    /** Face luminance above this is considered harsh-light. */
+    val brightLightThreshold: Float = 0.85f,
+    /** Threshold relaxation applied in low-light conditions.
+     *  Depth models (CDCN, MN3) degrade significantly in low light —
+     *  a larger relaxation compensates for lower genuine probability scores. */
+    val lowLightRelaxation: Float = 0.30f,
+    /** Threshold relaxation applied in harsh-light conditions. */
+    val brightLightRelaxation: Float = 0.03f,
 
     // --- Frame rate ---
     val maxFps: Int = 8

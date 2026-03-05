@@ -1,6 +1,7 @@
 package com.openpad.core
 
 import android.content.Context
+import com.openpad.core.analyzer.FramePreprocessor
 import com.openpad.core.analyzer.PadFrameAnalyzer
 import com.openpad.core.challenge.ChallengeManager
 import com.openpad.core.depth.CascadedDepthAnalyzer
@@ -9,7 +10,9 @@ import com.openpad.core.depth.DepthAnalyzer
 import com.openpad.core.detection.FaceDetector
 import com.openpad.core.detection.MediaPipeFaceDetector
 import com.openpad.core.device.DeviceDetector
+import com.openpad.core.device.ScreenReflectionDetector
 import com.openpad.core.device.SsdDeviceDetector
+import com.openpad.core.device.YoloScreenReflectionDetector
 import com.openpad.core.embedding.FaceEmbeddingAnalyzer
 import com.openpad.core.embedding.MobileFaceNetAnalyzer
 import com.openpad.core.enhance.EspcnFrameEnhancer
@@ -33,6 +36,7 @@ class PadPipeline private constructor(
     val depthAnalyzer: DepthAnalyzer,
     val depthModels: CdcnDepthAnalyzer,
     val deviceDetector: DeviceDetector,
+    val screenReflectionDetector: ScreenReflectionDetector,
     val embeddingAnalyzer: FaceEmbeddingAnalyzer,
     val frameEnhancer: FrameEnhancer,
     internal val nativeChallengeManager: NativeChallengeManager,
@@ -40,12 +44,23 @@ class PadPipeline private constructor(
 ) {
     /** Create a CameraX ImageAnalysis.Analyzer wired to the full pipeline. */
     fun createFrameAnalyzer(onResult: (PadResult) -> Unit): PadFrameAnalyzer {
+        val preprocessor = if (config.enablePreprocessing) {
+            FramePreprocessor(
+                gammaTarget = config.preprocessingGammaTarget,
+                claheClipLimit = config.preprocessingClaheClipLimit
+            )
+        } else {
+            null
+        }
+
         return PadFrameAnalyzer(
             faceDetector = faceDetector,
             textureAnalyzer = textureAnalyzer,
             depthAnalyzer = depthAnalyzer,
             deviceDetector = deviceDetector,
+            screenReflectionDetector = screenReflectionDetector,
             frameEnhancer = frameEnhancer,
+            framePreprocessor = preprocessor,
             nativeChallengeManager = nativeChallengeManager,
             config = config,
             onResult = onResult
@@ -61,6 +76,7 @@ class PadPipeline private constructor(
         textureAnalyzer.close()
         depthAnalyzer.close()
         deviceDetector.close()
+        screenReflectionDetector.close()
         embeddingAnalyzer.close()
         frameEnhancer.close()
         OpenPadNative.nativeDestroy()
@@ -79,6 +95,7 @@ class PadPipeline private constructor(
             val depthModels = CdcnDepthAnalyzer(appContext)
             val depthAnalyzer = CascadedDepthAnalyzer(depthModels, config)
             val deviceDetector = SsdDeviceDetector(appContext)
+            val screenReflectionDetector = YoloScreenReflectionDetector(appContext)
             val embeddingAnalyzer = MobileFaceNetAnalyzer(appContext)
             val frameEnhancer = EspcnFrameEnhancer(appContext)
             val nativeChallengeManager = NativeChallengeManager()
@@ -91,6 +108,7 @@ class PadPipeline private constructor(
                 depthAnalyzer = depthAnalyzer,
                 depthModels = depthModels,
                 deviceDetector = deviceDetector,
+                screenReflectionDetector = screenReflectionDetector,
                 embeddingAnalyzer = embeddingAnalyzer,
                 frameEnhancer = frameEnhancer,
                 nativeChallengeManager = nativeChallengeManager,

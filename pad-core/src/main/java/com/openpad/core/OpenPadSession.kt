@@ -100,11 +100,14 @@ internal class OpenPadSessionImpl(
 
     private var evaluateJob: Job? = null
     private var liveTimer: Job? = null
+    private var challengeTimeoutJob: Job? = null
     private var spoofAttemptCount = 0
     private var sessionStartMs = System.currentTimeMillis()
     private var delivered = false
     /** Snapshot of evidence taken at evaluation time, before handleSpoof can clear it. */
     private var evidenceSnapshot: ChallengeEvidence? = null
+    /** Most recent frame result, used as fallback checkpoint on timeout. */
+    private var lastResult: PadResult? = null
 
     override val frameAnalyzer: ImageAnalysis.Analyzer =
         pipeline.createFrameAnalyzer { result -> handleResult(result) }
@@ -112,6 +115,7 @@ internal class OpenPadSessionImpl(
     private fun handleResult(result: PadResult) {
         if (delivered) return
 
+        lastResult = result
         val newPhase = challengeManager.onFrame(result)
         _status.value = result.status
         _phase.value = newPhase
@@ -120,6 +124,7 @@ internal class OpenPadSessionImpl(
             ChallengePhase.IDLE -> {}
 
             ChallengePhase.ANALYZING -> {
+                cancelChallengeTimeout()
                 _challengeProgress.value = 0f
                 _instruction.value = computePositioningGuidance(result)
                     ?: "Hold still and look at the camera"
@@ -131,6 +136,7 @@ internal class OpenPadSessionImpl(
             }
 
             ChallengePhase.CHALLENGE_CLOSER -> {
+                startChallengeTimeoutIfNeeded()
                 val ev = challengeManager.evidence
                 val msg = if (ev.maxAreaIncrease >= config.challengeCloserMinIncrease) {
                     "Hold still\u2026"
@@ -145,6 +151,7 @@ internal class OpenPadSessionImpl(
             }
 
             ChallengePhase.EVALUATING -> {
+                cancelChallengeTimeout()
                 _challengeProgress.value = 0.85f
                 _instruction.value = "Evaluating\u2026"
                 if (evaluateJob == null || evaluateJob?.isActive != true) {
@@ -155,6 +162,7 @@ internal class OpenPadSessionImpl(
             ChallengePhase.LIVE -> {}
 
             ChallengePhase.DONE -> {
+                cancelChallengeTimeout()
                 if (!delivered && challengeManager.phase == ChallengePhase.DONE) {
                     _challengeProgress.value = 1f
                     _instruction.value = null
@@ -197,6 +205,47 @@ internal class OpenPadSessionImpl(
                     _instruction.value = if (verdict == ChallengeEvaluator.Verdict.SPOOF_FACE_SWAP)
                         "Try again" else "Verification failed \u2014 trying again"
                 }
+            }
+        }
+    }
+
+    private fun startChallengeTimeoutIfNeeded() {
+        if (config.challengeTimeoutMs <= 0L) return
+        if (challengeTimeoutJob?.isActive == true) return
+        challengeTimeoutJob = scope.launch {
+            delay(config.challengeTimeoutMs)
+            if (!delivered) onChallengeTimeout()
+        }
+    }
+
+    private fun cancelChallengeTimeout() {
+        challengeTimeoutJob?.cancel()
+        challengeTimeoutJob = null
+    }
+
+    private fun onChallengeTimeout() {
+        if (delivered) return
+        val ev = challengeManager.evidence
+        val timeoutEvidence = if (ev.checkpointBitmapChallenge == null) {
+            ev.copy(checkpointBitmapChallenge = lastResult?.faceCropBitmap)
+        } else ev
+        evidenceSnapshot = timeoutEvidence
+
+        val verdict = ChallengeEvaluator.evaluate(
+            evidence = timeoutEvidence,
+            config = config,
+            embeddingAnalyzer = pipeline.embeddingAnalyzer,
+            spoofAttemptCount = spoofAttemptCount
+        )
+
+        when (verdict) {
+            ChallengeEvaluator.Verdict.LIVE -> {
+                challengeManager.advanceToLive()
+                startLiveSustainTimer()
+            }
+            ChallengeEvaluator.Verdict.SPOOF_FACE_SWAP,
+            ChallengeEvaluator.Verdict.SPOOF_LOW_SCORE -> {
+                deliverSpoofResult()
             }
         }
     }
@@ -256,7 +305,13 @@ internal class OpenPadSessionImpl(
         }
         evaluateJob?.cancel()
         liveTimer?.cancel()
+        challengeTimeoutJob?.cancel()
         scope.cancel()
+
+        evidenceSnapshot?.recycleBitmaps()
+        evidenceSnapshot = null
+
+        challengeManager.reset()
     }
 
     companion object

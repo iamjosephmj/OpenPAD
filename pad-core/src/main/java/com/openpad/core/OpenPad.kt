@@ -8,6 +8,7 @@ import android.os.Looper
 import com.openpad.core.ui.PadActivity
 import com.openpad.core.ui.viewmodel.PadSessionCallback
 import com.openpad.core.ui.viewmodel.PadViewModelFactory
+import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 import java.util.concurrent.atomic.AtomicBoolean
 
@@ -42,7 +43,7 @@ import java.util.concurrent.atomic.AtomicBoolean
 object OpenPad {
 
     private val mainHandler = Handler(Looper.getMainLooper())
-    private val initExecutor = Executors.newSingleThreadExecutor()
+    private var initExecutor: ExecutorService = Executors.newSingleThreadExecutor()
 
     @Volatile
     internal var pipeline: PadPipeline? = null
@@ -103,6 +104,9 @@ object OpenPad {
 
         sdkConfig = config
 
+        if (initExecutor.isShutdown) {
+            initExecutor = Executors.newSingleThreadExecutor()
+        }
         initExecutor.execute {
             try {
                 val p = PadPipeline.create(context.applicationContext, config.toInternal())
@@ -203,6 +207,7 @@ object OpenPad {
         pipeline?.close()
         pipeline = null
         activeListener = null
+        initializing.set(false)
         initExecutor.shutdownNow()
     }
 

@@ -1,7 +1,10 @@
 package com.openpad.app
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -12,6 +15,8 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FilterChip
+import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
@@ -23,9 +28,11 @@ import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -34,7 +41,27 @@ import com.openpad.core.OpenPadConfig
 private val Blue = Color(0xFF2962FF)
 private val DimText = Color(0xFFB0BEC5)
 
-@OptIn(ExperimentalMaterial3Api::class)
+private data class PresetInfo(
+    val name: String,
+    val description: String,
+    val config: OpenPadConfig
+)
+
+private fun buildPresets(deviceConfig: OpenPadConfig): List<PresetInfo> = listOf(
+    PresetInfo("Auto (Device)", "Auto-selects based on device hardware capabilities", deviceConfig),
+    PresetInfo("Default", "Balanced security and usability for general-purpose apps", OpenPadConfig.Default),
+    PresetInfo("High Security", "Strict thresholds for high-value identity verification", OpenPadConfig.HighSecurity),
+    PresetInfo("Fast Pass", "Quick verification for low-risk flows like attendance", OpenPadConfig.FastPass),
+    PresetInfo("Banking", "Financial-grade with strict photometric and depth gates", OpenPadConfig.Banking),
+    PresetInfo("Onboarding", "Relaxed thresholds to reduce first-time user drop-off", OpenPadConfig.Onboarding),
+    PresetInfo("Kiosk", "Tuned for fixed-mount kiosks with controlled lighting", OpenPadConfig.Kiosk),
+    PresetInfo("Low-End Device", "Budget phones: no enhancement, 5 FPS, relaxed thresholds", OpenPadConfig.LowEndDevice),
+    PresetInfo("Development", "Debug overlay enabled, relaxed gates for integration testing", OpenPadConfig.Development),
+    PresetInfo("High Throughput", "15 FPS for queues and turnstiles, moderate security", OpenPadConfig.HighThroughput),
+    PresetInfo("Max Accuracy", "Strictest gates, highest security, higher false-rejection rate", OpenPadConfig.MaxAccuracy),
+)
+
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 @Composable
 fun ConfigBottomSheet(
     config: OpenPadConfig,
@@ -42,6 +69,9 @@ fun ConfigBottomSheet(
     onDismiss: () -> Unit
 ) {
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+    val context = LocalContext.current
+    val presets = remember { buildPresets(OpenPadConfig.forDevice(context)) }
+    val activePreset = presets.firstOrNull { it.config == config }
 
     ModalBottomSheet(
         onDismissRequest = onDismiss,
@@ -68,6 +98,41 @@ fun ConfigBottomSheet(
                 "Changes apply on the next verification run.",
                 fontSize = 13.sp,
                 color = DimText
+            )
+
+            SectionHeader("Preset")
+            FlowRow(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                presets.forEach { preset ->
+                    val selected = preset == activePreset
+                    FilterChip(
+                        selected = selected,
+                        onClick = { onConfigChange(preset.config) },
+                        label = {
+                            Text(preset.name, fontSize = 12.sp, fontWeight = FontWeight.Medium)
+                        },
+                        shape = RoundedCornerShape(20.dp),
+                        border = if (selected) null else BorderStroke(1.dp, Color.White.copy(alpha = 0.15f)),
+                        colors = FilterChipDefaults.filterChipColors(
+                            selectedContainerColor = Blue,
+                            selectedLabelColor = Color.White,
+                            containerColor = Color.Transparent,
+                            labelColor = Color.White.copy(alpha = 0.7f)
+                        )
+                    )
+                }
+            }
+
+            val description = activePreset?.description ?: "Custom configuration"
+            Spacer(Modifier.height(8.dp))
+            Text(
+                description,
+                fontSize = 12.sp,
+                color = if (activePreset != null) Blue.copy(alpha = 0.8f) else DimText,
+                fontWeight = FontWeight.Normal
             )
 
             // --- Verdict ---
@@ -141,11 +206,11 @@ fun ConfigBottomSheet(
             Spacer(Modifier.height(16.dp))
 
             OutlinedButton(
-                onClick = { onConfigChange(OpenPadConfig()) },
+                onClick = { onConfigChange(OpenPadConfig.Default) },
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(12.dp)
             ) {
-                Text("Reset to Defaults", color = Blue)
+                Text("Reset to Default Preset", color = Blue)
             }
 
             Spacer(Modifier.height(8.dp))

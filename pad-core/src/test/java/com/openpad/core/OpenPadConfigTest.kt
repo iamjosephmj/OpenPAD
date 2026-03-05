@@ -24,6 +24,9 @@ class OpenPadConfigTest {
         assertEquals(0.08f, config.spoofAttemptPenalty)
         assertEquals(8, config.maxFramesPerSecond)
         assertEquals(false, config.enableDebugOverlay)
+        assertEquals(true, config.enablePreprocessing)
+        assertEquals(0.45f, config.preprocessingGammaTarget)
+        assertEquals(2.0f, config.preprocessingClaheClipLimit)
     }
 
     @Test
@@ -72,5 +75,34 @@ class OpenPadConfigTest {
         assertEquals(0.55f, padConfig.cdcnWeight)
         assertEquals(0.10f, padConfig.deviceWeight)
         assertEquals(8, padConfig.maxFps)
+        assertEquals(true, padConfig.enablePreprocessing)
+        assertEquals(0.45f, padConfig.preprocessingGammaTarget)
+        assertEquals(2.0f, padConfig.preprocessingClaheClipLimit)
+    }
+
+    @Test
+    fun toPadConfigMapsPreprocessingFields() {
+        val config = OpenPadConfig(
+            enablePreprocessing = false,
+            preprocessingGammaTarget = 0.50f,
+            preprocessingClaheClipLimit = 3.0f
+        )
+        val padConfig = config.toInternal()
+        assertEquals(false, padConfig.enablePreprocessing)
+        assertEquals(0.50f, padConfig.preprocessingGammaTarget)
+        assertEquals(3.0f, padConfig.preprocessingClaheClipLimit)
+    }
+
+    @Test
+    fun lowEndDevicePresetDisablesPreprocessing() {
+        val config = OpenPadConfig.LowEndDevice
+        assertEquals(false, config.enablePreprocessing)
+    }
+
+    @Test
+    fun developmentPresetUsesAggressiveClahe() {
+        val config = OpenPadConfig.Development
+        assertEquals(true, config.enablePreprocessing)
+        assertEquals(3.0f, config.preprocessingClaheClipLimit)
     }
 }

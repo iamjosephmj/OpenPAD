@@ -166,12 +166,15 @@ OpenPadConfig(
     textureAnalysisWeight = 0.15f,       // Surface texture patterns (print/screen artifacts)
     depthGateWeight = 0.20f,             // Fast depth pre-filter
     depthAnalysisWeight = 0.55f,         // Full 3D depth map analysis (primary discriminator)
-    screenDetectionWeight = 0.10f,       // Phone/laptop/tablet screen in frame
+    screenDetectionWeight = 0.10f,       // Phone/laptop/tablet screen in frame (SSD)
+    screenReflectionWeight = 0.08f,      // Screen reflection multi-class signal (YOLOv5n)
 
     // --- Model Thresholds ---
     depthGateMinScore = 0.20f,           // Score to trigger full depth analysis (lower = more permissive)
     depthFlatnessMinScore = 0.40f,       // Hard cutoff: faces flatter than this are rejected
     screenDetectionMinConfidence = 0.50f, // Screen detection confidence to count as a signal
+    screenReflectionMinConfidence = 0.50f,// Screen reflection confidence threshold
+    screenReflectionMinSignals = 2,      // Minimum spoof classes detected to trigger gate
 
     // --- Classical Signal Thresholds ---
     moireDetectionThreshold = 0.60f,     // Moire score above this flags screen artifacts
@@ -262,7 +265,8 @@ flowchart TB
     FD --> TEX[2. Texture]
     FD --> DEP[3. Depth]
     FD --> FREQ[4. Frequency]
-    FD --> DEV[5. Device]
+    FD --> DEV[5a. Device]
+    FD --> SCR[5b. Screen Reflection]
     FD --> PHOTO[6. Photometric]
     FD --> TEMP[7. Temporal]
     FD --> EMB[8. Face Embedding]
@@ -271,6 +275,7 @@ flowchart TB
     DEP --> AGG
     FREQ --> AGG
     DEV --> AGG
+    SCR --> AGG
     PHOTO --> AGG
     TEMP --> AGG
     ENH --> AGG
@@ -285,7 +290,8 @@ flowchart TB
 | 2 | Texture (MiniFASNet V2 + V1SE) | ML |
 | 3 | Depth (MN3 gate → CDCN) | ML |
 | 4 | Frequency (FFT moiré + LBP) | Native C |
-| 5 | Device (SSD MobileNet) | ML |
+| 5a | Device (SSD MobileNet) | ML |
+| 5b | Screen Reflection (YOLOv5n) | ML |
 | 6 | Photometric (specular, chrominance, DOF, lighting) | Native C |
 | 7 | Temporal (movement, blink, similarity) | Native C |
 | 8 | Face Embedding (MobileFaceNet) | ML |
@@ -300,7 +306,8 @@ flowchart TB
 | Texture | Paper grain, screen sub-pixels, skin micro-texture | Learned (CNN) | Gate + ML score (15%) |
 | Depth | Flat surfaces vs 3D face geometry | Learned (CNN) | Gate + ML score (20% + 55%) |
 | Frequency | Moire patterns, screen pixel grids | Classical (FFT + LBP) | Gate (moire + LBP both flagged) |
-| Device | Phone, laptop, TV, monitor in frame | Learned (object detection) | Gate + ML score (10%) |
+| Device | Phone, laptop, TV, monitor in frame | Learned (SSD MobileNet) | Gate + ML score (10%) |
+| Screen Reflection | Fingers holding device, screen bezels, reflections, artifacts | Learned (YOLOv5n) | Gate + ML score (8%) |
 | Photometric | Specular reflections, color temperature, uniform DOF | Classical | Gate (combined score too low) |
 | Temporal | Static images, missing blinks, replay patterns | Classical | Pre-classification (frames, face presence) |
 | Face Match | Face swap mid-challenge | Learned (embedding) | Separate check at challenge evaluation |
@@ -318,7 +325,9 @@ flowchart TD
     C -->|No| NO_FACE[NO_FACE]
     C -->|Yes| D{Device overlap?}
     D -->|Yes| SPOOF[SPOOF_SUSPECTED]
-    D -->|No| E{Moiré + LBP?}
+    D -->|No| D2{Screen reflection?}
+    D2 -->|Yes| SPOOF
+    D2 -->|No| E{Moiré + LBP?}
     E -->|Yes| SPOOF
     E -->|No| F{Texture pass?}
     F -->|No| SPOOF
@@ -332,22 +341,24 @@ flowchart TD
 1. Not enough frames → ANALYZING  
 2. No face / low confidence → NO_FACE  
 3. **Device gate**: phone/laptop/TV overlapping face → SPOOF_SUSPECTED  
-4. **Frequency gate**: moire + LBP both above threshold → SPOOF_SUSPECTED  
-5. **Texture gate**: MiniFASNet genuine score below threshold → SPOOF_SUSPECTED  
-6. **CDCN depth gate**: depth below flatness threshold → SPOOF_SUSPECTED  
-7. **Photometric gate**: combined score below threshold → SPOOF_SUSPECTED  
-8. All signals pass → LIVE
+4. **Screen reflection gate**: 2+ PAD classes detected (finger, device, artifact, reflection) → SPOOF_SUSPECTED  
+5. **Frequency gate**: moire + LBP both above threshold → SPOOF_SUSPECTED  
+6. **Texture gate**: MiniFASNet genuine score below threshold → SPOOF_SUSPECTED  
+7. **CDCN depth gate**: depth below flatness threshold → SPOOF_SUSPECTED  
+8. **Photometric gate**: combined score below threshold → SPOOF_SUSPECTED  
+9. All signals pass → LIVE
 
 ### ML Aggregate Score
 
-The challenge evaluation score is a weighted sum of four ML model signals:
+The challenge evaluation score is a weighted sum of five ML model signals:
 
 | Signal | Weight | Role |
 |--------|--------|------|
 | Texture analysis | 15% | Surface micro-texture discrimination |
 | Depth gate (MN3) | 20% | Fast binary live/spoof signal |
 | Depth map (CDCN) | 55% | Primary depth discriminator |
-| Screen detection | 10% | Replay device presence |
+| Screen detection (SSD) | 10% | Replay device presence |
+| Screen reflection (YOLOv5n) | 8% | Multi-class screen replay indicator |
 
 Dynamic weighting: if CDCN is unavailable, its weight redistributes to texture (2/3) and MN3 (1/3). Classical signals (frequency, photometric) act as gates but do not contribute to the continuous score.
 
@@ -390,9 +401,10 @@ All models are stored as `.pad` files (gzip-compressed, XOR-scrambled) in `pad-c
 | `depth_gate.pad` | 5.8 MB | 5.3 MB | MN3 fast depth gate |
 | `depth_map.pad` | 3.4 MB | 3.2 MB | CDCN depth map |
 | `device_detection.pad` | 4.0 MB | 2.8 MB | SSD MobileNet screen detection |
+| `screen_reflection.pad` | 3.5 MB | 3.2 MB | YOLOv5n screen replay detection |
 | `face_embedding.pad` | 5.0 MB | 4.6 MB | MobileFaceNet face consistency |
 | `face_enhance.pad` | 91 KB | 79 KB | ESPCN x2 face super-resolution |
-| **Total** | **21.9 MB** | **19.3 MB** | |
+| **Total** | **25.4 MB** | **22.5 MB** | |
 
 ### Model Packing
 
@@ -417,8 +429,56 @@ At runtime, `ModelLoader.kt` reverses the process: XOR-descramble with a 32-byte
 | Anti-Spoof MN3 | MIT | kprokofi (PINTO Model Zoo) |
 | CDCN depth map | In-house trained | Architecture from CDCN paper (arXiv:2003.04092) |
 | SSD MobileNet V1 COCO | Apache 2.0 | TensorFlow |
+| YOLOv5n (screen reflection) | AGPL-3.0 | Ultralytics; in-house trained on PAD dataset |
 | MobileFaceNet | MIT | syaringan357 |
 | ESPCN x2 | MIT | fannymonori/TF-ESPCN |
+
+### Screen Reflection Model (YOLOv5n)
+
+The screen reflection detector is a custom-trained YOLOv5n object detection model that identifies physical indicators of screen-based presentation attacks. Unlike the SSD device detector (which detects generic device shapes), this model detects multiple PAD-specific classes simultaneously and uses their combination as a spoof signal.
+
+**Architecture**: YOLOv5n (nano) -- 1.77M parameters, 4.1 GFLOPs, 384x384 input
+
+**Classes** (5):
+
+| Class | What it detects | Spoof signal logic |
+|-------|----------------|-------------------|
+| `artifact` | Screen capture artifacts (moiré, color banding) | Counted when overlapping face |
+| `device` | Physical device frame (phone, tablet, laptop) | Always counted when detected |
+| `face` | Face displayed on a screen | Not counted (informational) |
+| `finger` | Fingers holding a device in front of camera | Always counted when detected |
+| `reflection` | Specular reflections on screen surface | Counted when overlapping face |
+
+The gate fires when **2+ spoof classes** are detected in the same frame. On a live face, the model typically detects only a `face` class. On a screen replay, it detects combinations like `finger + device + face` or `finger + reflection + face`.
+
+**Training results** (mAP on 108-image validation set):
+
+| Class | Precision | Recall | mAP@50 | mAP@50-95 |
+|-------|-----------|--------|--------|-----------|
+| All | 0.799 | 0.715 | 0.761 | 0.495 |
+| artifact | 0.766 | 0.691 | 0.757 | 0.431 |
+| device | 0.604 | 0.623 | 0.623 | 0.379 |
+| face | 0.971 | 0.975 | 0.993 | 0.812 |
+| finger | 0.853 | 0.765 | 0.824 | 0.447 |
+| reflection | 0.800 | 0.520 | 0.609 | 0.406 |
+
+**Retraining**:
+
+The training pipeline is fully self-contained. To retrain with more data or a different dataset:
+
+```bash
+cd scripts
+python3 -m venv venv
+source venv/bin/activate
+pip install torch torchvision pyyaml tensorflow
+
+# Place YOLOv5-format dataset in scripts/test.v1i.yolov5pytorch/
+python train_screen_detector.py             # full pipeline: train + export + install
+python train_screen_detector.py --epochs 300  # custom epoch count
+python train_screen_detector.py --export-only # re-export existing weights
+```
+
+The script handles dataset preparation (class remapping, val/test merge), YOLOv5 training, TFLite export, and `.pad` asset installation automatically.
 
 ---
 
@@ -474,10 +534,13 @@ OpenPAD/
 │       │   ├── FrequencyResult.kt          #   FFT result data class
 │       │   └── LbpResult.kt               #   LBP result data class
 │       │
-│       ├── device/                         # Layer 5: Device detection
+│       ├── device/                         # Layer 5: Device + screen reflection detection
 │       │   ├── SsdDeviceDetector.kt        #   SSD MobileNet inference
 │       │   ├── DeviceDetector.kt           #   Interface
-│       │   └── DeviceDetectionResult.kt    #   Result data class
+│       │   ├── DeviceDetectionResult.kt    #   Result data class
+│       │   ├── YoloScreenReflectionDetector.kt  # YOLOv5n screen replay detection (5 classes)
+│       │   ├── ScreenReflectionDetector.kt #   Interface
+│       │   └── ScreenReflectionResult.kt   #   Result data class
 │       │
 │       ├── photometric/                    # Layer 6: Photometric analysis
 │       │   ├── PhotometricAnalyzer.kt      #   Specular, chrominance, DOF, lighting
@@ -543,7 +606,9 @@ OpenPAD/
 │
 ├── scripts/
 │   ├── pack_models.py                      # Gzip + XOR model packer
-│   └── convert_espcn.py                    # ESPCN TF→TFLite converter + .pad packer
+│   ├── convert_espcn.py                    # ESPCN TF→TFLite converter + .pad packer
+│   ├── train_screen_detector.py            # YOLOv5n screen reflection training + TFLite export
+│   └── hyp.screen-reflection.yaml          # Custom hyperparameters (reference; defaults used)
 │
 └── gradle/libs.versions.toml              # Dependency version catalog
 ```
@@ -586,9 +651,9 @@ OpenPAD/
 | Printed photo (still) | Strong | Frame similarity + texture + temporal |
 | Printed photo (hand-held) | Strong | Texture + depth + DOF variance |
 | LCD screen (static) | Strong | FFT moire + LBP + texture + device detection |
-| Phone screen (static image) | Strong | Texture + depth + device detection |
-| Phone screen (video replay) | Moderate | Depth + texture + LBP |
-| High-PPI OLED replay | Moderate | Depth + device detection + photometric |
+| Phone screen (static image) | Strong | Texture + depth + device + screen reflection (finger + device classes) |
+| Phone screen (video replay) | Strong | Depth + texture + screen reflection + LBP |
+| High-PPI OLED replay | Moderate–Strong | Depth + device detection + screen reflection + photometric |
 | Face swap mid-challenge | Strong | Face embedding consistency (MobileFaceNet) |
 | 3D printed/silicone mask | Weak–Moderate | Texture + photometric; training data collection underway |
 

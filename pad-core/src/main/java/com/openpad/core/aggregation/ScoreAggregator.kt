@@ -2,6 +2,7 @@ package com.openpad.core.aggregation
 
 import com.openpad.core.depth.DepthResult
 import com.openpad.core.device.DeviceDetectionResult
+import com.openpad.core.device.ScreenReflectionResult
 import com.openpad.core.frequency.FrequencyResult
 import com.openpad.core.photometric.PhotometricResult
 import com.openpad.core.signals.TemporalFeatures
@@ -19,6 +20,7 @@ interface ScoreAggregator {
         frequencyResult: FrequencyResult?,
         deviceDetectionResult: DeviceDetectionResult?,
         photometricResult: PhotometricResult?,
-        temporalFeatures: TemporalFeatures?
+        temporalFeatures: TemporalFeatures?,
+        screenReflectionResult: ScreenReflectionResult? = null
     ): PadStatus
 }

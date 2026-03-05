@@ -6,7 +6,10 @@ import com.openpad.core.challenge.ChallengeEvidence
 /**
  * Computes the genuine probability score from challenge evidence.
  *
- * Uses a weighted average of texture, MN3, and CDCN scores.
+ * Uses a weighted average of texture, MN3, and CDCN scores, then applies
+ * penalties for suspiciously low depth score variance (flat spoofs produce
+ * near-identical depth readings across frames).
+ *
  * When CDCN is unavailable, its weight is redistributed to texture and MN3.
  */
 internal object GenuineProbabilityCalculator {
@@ -24,7 +27,7 @@ internal object GenuineProbabilityCalculator {
             ev.holdCdcnScores.average().toFloat()
         } else null
 
-        val score = if (avgCdcn != null) {
+        var score = if (avgCdcn != null) {
             val totalW = config.textureWeight + config.mn3Weight + config.cdcnWeight
             (avgTexture * config.textureWeight +
                 avgMn3 * config.mn3Weight +
@@ -37,14 +40,66 @@ internal object GenuineProbabilityCalculator {
             (avgTexture * effectiveTextureW + avgMn3 * effectiveMn3W) / totalW
         }
 
+        score *= depthVariancePenalty(ev, config)
+
         return score.coerceIn(0f, 1f)
     }
 
     /**
-     * Computes the effective threshold after applying per-attempt penalties.
+     * Multiplicative penalty when CDCN depth scores or quadrant variance
+     * show suspiciously low frame-to-frame variation. Real faces produce
+     * micro-movement-induced depth variation; flat spoofs do not.
      */
-    fun effectiveThreshold(config: InternalPadConfig, spoofAttemptCount: Int): Float =
-        (config.genuineProbabilityThreshold +
-            spoofAttemptCount * config.spoofAttemptPenaltyPerCount)
-            .coerceAtMost(config.maxGenuineProbabilityThreshold)
+    private fun depthVariancePenalty(ev: ChallengeEvidence, config: InternalPadConfig): Float {
+        var penalty = 1.0f
+
+        if (ev.holdCdcnScores.size >= 3) {
+            val cdcnVar = variance(ev.holdCdcnScores)
+            if (cdcnVar < config.depthScoreVarianceMin) {
+                penalty *= config.depthLowVariancePenalty
+            }
+        }
+
+        if (ev.holdDepthCharacteristics.size >= 3) {
+            val qvValues = ev.holdDepthCharacteristics.map { it.quadrantVariance }
+            if (variance(qvValues) < config.quadrantVarianceMin) {
+                penalty *= config.depthLowVariancePenalty
+            }
+        }
+
+        return penalty
+    }
+
+    private fun variance(values: List<Float>): Float {
+        if (values.size < 2) return 0f
+        val mean = values.average().toFloat()
+        return values.map { (it - mean) * (it - mean) }.average().toFloat()
+    }
+
+    /**
+     * Computes the effective threshold after applying per-attempt penalties
+     * and ambient light adjustment.
+     */
+    fun effectiveThreshold(
+        config: InternalPadConfig,
+        spoofAttemptCount: Int,
+        avgLuminance: Float = 0.5f
+    ): Float {
+        val base = config.genuineProbabilityThreshold +
+            spoofAttemptCount * config.spoofAttemptPenaltyPerCount
+        val lightAdj = luminanceAdjustment(avgLuminance, config)
+        return (base + lightAdj).coerceAtMost(config.maxGenuineProbabilityThreshold)
+    }
+
+    /**
+     * Adjusts the threshold based on ambient light conditions.
+     * Negative return = relax (lower) the threshold.
+     */
+    internal fun luminanceAdjustment(avgLuminance: Float, config: InternalPadConfig): Float {
+        return when {
+            avgLuminance < config.lowLightThreshold -> -config.lowLightRelaxation
+            avgLuminance > config.brightLightThreshold -> -config.brightLightRelaxation
+            else -> 0f
+        }
+    }
 }
