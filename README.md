@@ -612,22 +612,23 @@ OpenPAD/
 │       │
 │       └── ui/                             # Built-in SDK UI (camera only)
 │           ├── PadActivity.kt              #   Host activity (camera + result delivery)
+│           ├── PadRoute.kt                 #   Navigation host composable
+│           ├── IntroScreen.kt              #   Verification intro composable
 │           ├── CameraScreen.kt             #   Camera preview with overlay
 │           ├── FaceGuideOverlay.kt         #   Animated face oval
 │           ├── VerdictScreen.kt            #   Verdict display composable
 │           ├── theme/OpenPadTheme.kt       #   Compose theme (reads OpenPadThemeConfig)
 │           └── viewmodel/                  #   MVI state management
 │               ├── PadViewModel.kt
-│               ├── PadViewModelFactory.kt  #   ViewModel dependency injection
+│               ├── PadSessionCallback.kt   #   Session result callback interface
 │               ├── PadUiState.kt
 │               ├── PadIntent.kt
 │               └── VerdictState.kt         #   Verdict sealed class
 │
 ├── scripts/
-│   ├── pack_models.py                      # Gzip + XOR model packer
-│   ├── convert_espcn.py                    # ESPCN TF→TFLite converter + .pad packer
-│   ├── train_screen_detector.py            # YOLOv5n screen reflection training + TFLite export
-│   └── hyp.screen-reflection.yaml          # Custom hyperparameters (reference; defaults used)
+│   ├── pack_models.py                      # Brotli + XOR model packer
+│   ├── quantize_fp16.py                    # FP16 model quantization
+│   └── train_screen_detector.py            # YOLOv5n screen reflection training + TFLite export
 │
 └── gradle/libs.versions.toml              # Dependency version catalog
 ```
