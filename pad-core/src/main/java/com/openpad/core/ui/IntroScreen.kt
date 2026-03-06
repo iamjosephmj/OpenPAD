@@ -43,8 +43,10 @@ import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.StrokeJoin
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import com.openpad.core.R
 import com.openpad.core.ui.theme.PadColors
 import kotlinx.coroutines.delay
 
@@ -108,7 +110,7 @@ internal fun IntroScreen(
             Spacer(modifier = Modifier.height(40.dp))
 
             Text(
-                text = "Identity Verification",
+                text = stringResource(R.string.pad_intro_title),
                 style = androidx.compose.material3.MaterialTheme.typography.headlineLarge,
                 textAlign = TextAlign.Center,
                 color = PadColors.OnSurfaceHigh.copy(alpha = contentAlpha)
@@ -117,7 +119,7 @@ internal fun IntroScreen(
             Spacer(modifier = Modifier.height(16.dp))
 
             Text(
-                text = "Position your face in the frame and\nfollow the on-screen instructions",
+                text = stringResource(R.string.pad_intro_subtitle),
                 style = androidx.compose.material3.MaterialTheme.typography.bodyLarge,
                 textAlign = TextAlign.Center,
                 color = PadColors.OnSurface.copy(alpha = contentAlpha * 0.7f),
@@ -138,7 +140,7 @@ internal fun IntroScreen(
                 )
             ) {
                 Text(
-                    text = "Begin Verification",
+                    text = stringResource(R.string.pad_intro_begin),
                     style = androidx.compose.material3.MaterialTheme.typography.labelLarge
                 )
             }

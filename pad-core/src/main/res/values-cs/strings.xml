@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="pad_phase_verified">Ověřeno</string>
+    <string name="pad_phase_evaluating">Vyhodnocování…</string>
+    <string name="pad_phase_move_closer">Přibližte se</string>
+    <string name="pad_phase_positioning">Umísťování</string>
+    <string name="pad_phase_verifying_identity">Ověřování identity</string>
+    <string name="pad_instruction_position_face">Umístěte obličej do rámečku</string>
+    <string name="pad_instruction_hold_still_look">Zůstaňte v klidu a dívejte se do kamery</string>
+    <string name="pad_verdict_verified">Ověřeno</string>
+    <string name="pad_verdict_failed">Ověření selhalo</string>
+    <string name="pad_verdict_live_subtitle">Živost úspěšně potvrzena</string>
+    <string name="pad_verdict_spoof_subtitle">Podezření na podvržený útok</string>
+    <string name="pad_verdict_complete">Ověření dokončeno</string>
+    <string name="pad_verdict_unsuccessful">Ověření neúspěšné</string>
+    <string name="pad_verdict_identity_confirmed">Vaše identita byla potvrzena.</string>
+    <string name="pad_verdict_identity_failed_retry">Nepodařilo se potvrdit vaši identitu.\nPokus %1$d z %2$d</string>
+    <string name="pad_verdict_identity_failed_max">Nepodařilo se potvrdit vaši identitu.\nDosažen maximální počet pokusů.</string>
+    <string name="pad_action_done">Hotovo</string>
+    <string name="pad_action_try_again">Zkusit znovu</string>
+    <string name="pad_action_close">Zavřít</string>
+    <string name="pad_intro_title">Ověření identity</string>
+    <string name="pad_intro_subtitle">Umístěte obličej do rámečku a\npostupujte podle pokynů na obrazovce</string>
+    <string name="pad_intro_begin">Zahájit ověření</string>
+    <string name="pad_guidance_move_down">Posuňte se trochu dolů</string>
+    <string name="pad_guidance_move_up">Posuňte se trochu nahoru</string>
+    <string name="pad_guidance_move_right">Posuňte se trochu doprava</string>
+    <string name="pad_guidance_move_left">Posuňte se trochu doleva</string>
+    <string name="pad_guidance_position_face">Umístěte obličej do rámečku</string>
+    <string name="pad_guidance_too_close">Příliš blízko — trochu ustupte</string>
+    <string name="pad_guidance_move_closer">Přibližte se trochu</string>
+    <string name="pad_instruction_center_face">Vycentrujte obličej</string>
+    <string name="pad_instruction_hold_still">Zůstaňte v klidu…</string>
+    <string name="pad_instruction_move_closer">Přibližte se</string>
+    <string name="pad_instruction_evaluating">Vyhodnocování…</string>
+    <string name="pad_instruction_try_again">Zkusit znovu</string>
+    <string name="pad_instruction_verification_failed_retry">Ověření selhalo — zkouším znovu</string>
+</resources>

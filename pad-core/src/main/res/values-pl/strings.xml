@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="pad_phase_verified">Zweryfikowano</string>
+    <string name="pad_phase_evaluating">Ocenianie…</string>
+    <string name="pad_phase_move_closer">Zbliż się</string>
+    <string name="pad_phase_positioning">Pozycjonowanie</string>
+    <string name="pad_phase_verifying_identity">Weryfikacja tożsamości</string>
+    <string name="pad_instruction_position_face">Umieść twarz w ramce</string>
+    <string name="pad_instruction_hold_still_look">Nie ruszaj się i patrz w kamerę</string>
+    <string name="pad_verdict_verified">Zweryfikowano</string>
+    <string name="pad_verdict_failed">Weryfikacja nie powiodła się</string>
+    <string name="pad_verdict_live_subtitle">Żywotność potwierdzona</string>
+    <string name="pad_verdict_spoof_subtitle">Podejrzenie ataku spoofingowego</string>
+    <string name="pad_verdict_complete">Weryfikacja zakończona</string>
+    <string name="pad_verdict_unsuccessful">Weryfikacja nieudana</string>
+    <string name="pad_verdict_identity_confirmed">Twoja tożsamość została potwierdzona.</string>
+    <string name="pad_verdict_identity_failed_retry">Nie udało się potwierdzić tożsamości.\nPróba %1$d z %2$d</string>
+    <string name="pad_verdict_identity_failed_max">Nie udało się potwierdzić tożsamości.\nWyczerpano limit prób.</string>
+    <string name="pad_action_done">Gotowe</string>
+    <string name="pad_action_try_again">Spróbuj ponownie</string>
+    <string name="pad_action_close">Zamknij</string>
+    <string name="pad_intro_title">Weryfikacja tożsamości</string>
+    <string name="pad_intro_subtitle">Umieść twarz w ramce i\npostępuj zgodnie z instrukcjami na ekranie</string>
+    <string name="pad_intro_begin">Rozpocznij weryfikację</string>
+    <string name="pad_guidance_move_down">Przesuń się trochę w dół</string>
+    <string name="pad_guidance_move_up">Przesuń się trochę w górę</string>
+    <string name="pad_guidance_move_right">Przesuń się trochę w prawo</string>
+    <string name="pad_guidance_move_left">Przesuń się trochę w lewo</string>
+    <string name="pad_guidance_position_face">Umieść twarz w ramce</string>
+    <string name="pad_guidance_too_close">Za blisko — cofnij się trochę</string>
+    <string name="pad_guidance_move_closer">Zbliż się trochę</string>
+    <string name="pad_instruction_center_face">Wycentruj twarz</string>
+    <string name="pad_instruction_hold_still">Nie ruszaj się…</string>
+    <string name="pad_instruction_move_closer">Zbliż się</string>
+    <string name="pad_instruction_evaluating">Ocenianie…</string>
+    <string name="pad_instruction_try_again">Spróbuj ponownie</string>
+    <string name="pad_instruction_verification_failed_retry">Weryfikacja nie powiodła się — próbuję ponownie</string>
+</resources>

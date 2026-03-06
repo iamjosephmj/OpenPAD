@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="pad_phase_verified">Επαληθεύτηκε</string>
+    <string name="pad_phase_evaluating">Αξιολόγηση…</string>
+    <string name="pad_phase_move_closer">Πλησιάστε</string>
+    <string name="pad_phase_positioning">Τοποθέτηση</string>
+    <string name="pad_phase_verifying_identity">Επαλήθευση ταυτότητας</string>
+    <string name="pad_instruction_position_face">Τοποθετήστε το πρόσωπό σας στο πλαίσιο</string>
+    <string name="pad_instruction_hold_still_look">Μείνετε ακίνητοι και κοιτάξτε την κάμερα</string>
+    <string name="pad_verdict_verified">Επαληθεύτηκε</string>
+    <string name="pad_verdict_failed">Η επαλήθευση απέτυχε</string>
+    <string name="pad_verdict_live_subtitle">Η ζωντάνια επιβεβαιώθηκε</string>
+    <string name="pad_verdict_spoof_subtitle">Ύποπτη επίθεση πλαστοπροσωπίας</string>
+    <string name="pad_verdict_complete">Η επαλήθευση ολοκληρώθηκε</string>
+    <string name="pad_verdict_unsuccessful">Η επαλήθευση απέτυχε</string>
+    <string name="pad_verdict_identity_confirmed">Η ταυτότητά σας επιβεβαιώθηκε.</string>
+    <string name="pad_verdict_identity_failed_retry">Δεν ήταν δυνατή η επιβεβαίωση.\nΠροσπάθεια %1$d από %2$d</string>
+    <string name="pad_verdict_identity_failed_max">Δεν ήταν δυνατή η επιβεβαίωση.\nΕξαντλήθηκαν οι προσπάθειες.</string>
+    <string name="pad_action_done">Τέλος</string>
+    <string name="pad_action_try_again">Δοκιμάστε ξανά</string>
+    <string name="pad_action_close">Κλείσιμο</string>
+    <string name="pad_intro_title">Επαλήθευση ταυτότητας</string>
+    <string name="pad_intro_subtitle">Τοποθετήστε το πρόσωπό σας στο πλαίσιο και\nακολουθήστε τις οδηγίες</string>
+    <string name="pad_intro_begin">Έναρξη επαλήθευσης</string>
+    <string name="pad_guidance_move_down">Μετακινηθείτε λίγο κάτω</string>
+    <string name="pad_guidance_move_up">Μετακινηθείτε λίγο πάνω</string>
+    <string name="pad_guidance_move_right">Μετακινηθείτε λίγο δεξιά</string>
+    <string name="pad_guidance_move_left">Μετακινηθείτε λίγο αριστερά</string>
+    <string name="pad_guidance_position_face">Τοποθετήστε το πρόσωπό σας στο πλαίσιο</string>
+    <string name="pad_guidance_too_close">Πολύ κοντά — κάντε πίσω λίγο</string>
+    <string name="pad_guidance_move_closer">Πλησιάστε λίγο</string>
+    <string name="pad_instruction_center_face">Κεντράρετε το πρόσωπο</string>
+    <string name="pad_instruction_hold_still">Μείνετε ακίνητοι…</string>
+    <string name="pad_instruction_move_closer">Πλησιάστε</string>
+    <string name="pad_instruction_evaluating">Αξιολόγηση…</string>
+    <string name="pad_instruction_try_again">Δοκιμάστε ξανά</string>
+    <string name="pad_instruction_verification_failed_retry">Η επαλήθευση απέτυχε — νέα προσπάθεια</string>
+</resources>

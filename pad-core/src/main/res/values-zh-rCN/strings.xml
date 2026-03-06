@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="pad_phase_verified">已验证</string>
+    <string name="pad_phase_evaluating">评估中…</string>
+    <string name="pad_phase_move_closer">请靠近</string>
+    <string name="pad_phase_positioning">定位中</string>
+    <string name="pad_phase_verifying_identity">身份验证中</string>
+    <string name="pad_instruction_position_face">请将脸部放入框内</string>
+    <string name="pad_instruction_hold_still_look">请保持不动，看向摄像头</string>
+    <string name="pad_verdict_verified">已验证</string>
+    <string name="pad_verdict_failed">验证失败</string>
+    <string name="pad_verdict_live_subtitle">活体检测成功</string>
+    <string name="pad_verdict_spoof_subtitle">疑似伪造攻击</string>
+    <string name="pad_verdict_complete">验证完成</string>
+    <string name="pad_verdict_unsuccessful">验证未通过</string>
+    <string name="pad_verdict_identity_confirmed">您的身份已确认。</string>
+    <string name="pad_verdict_identity_failed_retry">无法确认您的身份。\n第 %1$d 次尝试，共 %2$d 次</string>
+    <string name="pad_verdict_identity_failed_max">无法确认您的身份。\n已达到最大尝试次数。</string>
+    <string name="pad_action_done">完成</string>
+    <string name="pad_action_try_again">重试</string>
+    <string name="pad_action_close">关闭</string>
+    <string name="pad_intro_title">身份验证</string>
+    <string name="pad_intro_subtitle">请将脸部放入框内，\n并按照屏幕上的指示操作</string>
+    <string name="pad_intro_begin">开始验证</string>
+    <string name="pad_guidance_move_down">稍微向下移动</string>
+    <string name="pad_guidance_move_up">稍微向上移动</string>
+    <string name="pad_guidance_move_right">稍微向右移动</string>
+    <string name="pad_guidance_move_left">稍微向左移动</string>
+    <string name="pad_guidance_position_face">请将脸部放入框内</string>
+    <string name="pad_guidance_too_close">太近了——请稍微后退</string>
+    <string name="pad_guidance_move_closer">请稍微靠近</string>
+    <string name="pad_instruction_center_face">将脸部居中</string>
+    <string name="pad_instruction_hold_still">请保持不动…</string>
+    <string name="pad_instruction_move_closer">请靠近</string>
+    <string name="pad_instruction_evaluating">评估中…</string>
+    <string name="pad_instruction_try_again">重试</string>
+    <string name="pad_instruction_verification_failed_retry">验证失败——正在重试</string>
+</resources>

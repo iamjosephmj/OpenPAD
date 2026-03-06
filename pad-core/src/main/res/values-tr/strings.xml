@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="pad_phase_verified">Doğrulandı</string>
+    <string name="pad_phase_evaluating">Değerlendiriliyor…</string>
+    <string name="pad_phase_move_closer">Yaklaşın</string>
+    <string name="pad_phase_positioning">Konumlandırma</string>
+    <string name="pad_phase_verifying_identity">Kimlik doğrulanıyor</string>
+    <string name="pad_instruction_position_face">Yüzünüzü çerçeveye yerleştirin</string>
+    <string name="pad_instruction_hold_still_look">Hareketsiz kalın ve kameraya bakın</string>
+    <string name="pad_verdict_verified">Doğrulandı</string>
+    <string name="pad_verdict_failed">Doğrulama başarısız</string>
+    <string name="pad_verdict_live_subtitle">Canlılık başarıyla onaylandı</string>
+    <string name="pad_verdict_spoof_subtitle">Sahtecilik saldırısı şüphesi</string>
+    <string name="pad_verdict_complete">Doğrulama tamamlandı</string>
+    <string name="pad_verdict_unsuccessful">Doğrulama başarısız</string>
+    <string name="pad_verdict_identity_confirmed">Kimliğiniz doğrulandı.</string>
+    <string name="pad_verdict_identity_failed_retry">Kimliğiniz doğrulanamadı.\nDeneme %1$d / %2$d</string>
+    <string name="pad_verdict_identity_failed_max">Kimliğiniz doğrulanamadı.\nMaksimum deneme sayısına ulaşıldı.</string>
+    <string name="pad_action_done">Tamam</string>
+    <string name="pad_action_try_again">Tekrar dene</string>
+    <string name="pad_action_close">Kapat</string>
+    <string name="pad_intro_title">Kimlik doğrulama</string>
+    <string name="pad_intro_subtitle">Yüzünüzü çerçeveye yerleştirin ve\nekrandaki talimatları izleyin</string>
+    <string name="pad_intro_begin">Doğrulamayı başlat</string>
+    <string name="pad_guidance_move_down">Biraz aşağı kaydırın</string>
+    <string name="pad_guidance_move_up">Biraz yukarı kaydırın</string>
+    <string name="pad_guidance_move_right">Biraz sağa kaydırın</string>
+    <string name="pad_guidance_move_left">Biraz sola kaydırın</string>
+    <string name="pad_guidance_position_face">Yüzünüzü çerçeveye yerleştirin</string>
+    <string name="pad_guidance_too_close">Çok yakın — biraz geri çekilin</string>
+    <string name="pad_guidance_move_closer">Biraz yaklaşın</string>
+    <string name="pad_instruction_center_face">Yüzünüzü ortalayın</string>
+    <string name="pad_instruction_hold_still">Hareketsiz kalın…</string>
+    <string name="pad_instruction_move_closer">Yaklaşın</string>
+    <string name="pad_instruction_evaluating">Değerlendiriliyor…</string>
+    <string name="pad_instruction_try_again">Tekrar dene</string>
+    <string name="pad_instruction_verification_failed_retry">Doğrulama başarısız — yeniden deneniyor</string>
+</resources>

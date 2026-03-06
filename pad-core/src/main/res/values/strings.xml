@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <!-- CameraScreen: phase titles -->
+    <string name="pad_phase_verified">Verified</string>
+    <string name="pad_phase_evaluating">Evaluating…</string>
+    <string name="pad_phase_move_closer">Move Closer</string>
+    <string name="pad_phase_positioning">Positioning</string>
+    <string name="pad_phase_verifying_identity">Verifying Identity</string>
+
+    <!-- CameraScreen / InstructionPill -->
+    <string name="pad_instruction_position_face">Position your face in the frame</string>
+    <string name="pad_instruction_hold_still_look">Hold still and look at the camera</string>
+
+    <!-- PadRoute: VerdictOverlay -->
+    <string name="pad_verdict_verified">Verified</string>
+    <string name="pad_verdict_failed">Verification Failed</string>
+    <string name="pad_verdict_live_subtitle">Liveness confirmed successfully</string>
+    <string name="pad_verdict_spoof_subtitle">Presentation attack suspected</string>
+
+    <!-- VerdictScreen -->
+    <string name="pad_verdict_complete">Verification Complete</string>
+    <string name="pad_verdict_unsuccessful">Verification Unsuccessful</string>
+    <string name="pad_verdict_identity_confirmed">Your identity has been confirmed.</string>
+    <string name="pad_verdict_identity_failed_retry">We couldn\u2019t confirm your identity.\nAttempt %1$d of %2$d</string>
+    <string name="pad_verdict_identity_failed_max">We couldn\u2019t confirm your identity.\nMaximum attempts reached.</string>
+    <string name="pad_action_done">Done</string>
+    <string name="pad_action_try_again">Try Again</string>
+    <string name="pad_action_close">Close</string>
+
+    <!-- IntroScreen -->
+    <string name="pad_intro_title">Identity Verification</string>
+    <string name="pad_intro_subtitle">Position your face in the frame and\nfollow the on-screen instructions</string>
+    <string name="pad_intro_begin">Begin Verification</string>
+
+    <!-- PositioningGuidance -->
+    <string name="pad_guidance_move_down">Move down a little</string>
+    <string name="pad_guidance_move_up">Move up a little</string>
+    <string name="pad_guidance_move_right">Move right a little</string>
+    <string name="pad_guidance_move_left">Move left a little</string>
+    <string name="pad_guidance_position_face">Position your face in the frame</string>
+    <string name="pad_guidance_too_close">Too close \u2014 move back a little</string>
+    <string name="pad_guidance_move_closer">Move a bit closer</string>
+
+    <!-- PadViewModel / OpenPadSession: instruction overrides -->
+    <string name="pad_instruction_center_face">Center your face</string>
+    <string name="pad_instruction_hold_still">Hold still…</string>
+    <string name="pad_instruction_move_closer">Move closer</string>
+    <string name="pad_instruction_evaluating">Evaluating…</string>
+    <string name="pad_instruction_try_again">Try again</string>
+    <string name="pad_instruction_verification_failed_retry">Verification failed \u2014 trying again</string>
+
+</resources>

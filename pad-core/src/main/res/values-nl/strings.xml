@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="pad_phase_verified">Geverifieerd</string>
+    <string name="pad_phase_evaluating">Beoordelen…</string>
+    <string name="pad_phase_move_closer">Kom dichterbij</string>
+    <string name="pad_phase_positioning">Positioneren</string>
+    <string name="pad_phase_verifying_identity">Identiteit verifiëren</string>
+    <string name="pad_instruction_position_face">Plaats uw gezicht in het kader</string>
+    <string name="pad_instruction_hold_still_look">Houd stil en kijk in de camera</string>
+    <string name="pad_verdict_verified">Geverifieerd</string>
+    <string name="pad_verdict_failed">Verificatie mislukt</string>
+    <string name="pad_verdict_live_subtitle">Levendigheid succesvol bevestigd</string>
+    <string name="pad_verdict_spoof_subtitle">Vermoedelijke spoofing-aanval</string>
+    <string name="pad_verdict_complete">Verificatie voltooid</string>
+    <string name="pad_verdict_unsuccessful">Verificatie niet geslaagd</string>
+    <string name="pad_verdict_identity_confirmed">Uw identiteit is bevestigd.</string>
+    <string name="pad_verdict_identity_failed_retry">We konden uw identiteit niet bevestigen.\nPoging %1$d van %2$d</string>
+    <string name="pad_verdict_identity_failed_max">We konden uw identiteit niet bevestigen.\nMaximaal aantal pogingen bereikt.</string>
+    <string name="pad_action_done">Klaar</string>
+    <string name="pad_action_try_again">Opnieuw proberen</string>
+    <string name="pad_action_close">Sluiten</string>
+    <string name="pad_intro_title">Identiteitsverificatie</string>
+    <string name="pad_intro_subtitle">Plaats uw gezicht in het kader en\nvolg de instructies op het scherm</string>
+    <string name="pad_intro_begin">Verificatie starten</string>
+    <string name="pad_guidance_move_down">Beweeg een beetje naar beneden</string>
+    <string name="pad_guidance_move_up">Beweeg een beetje naar boven</string>
+    <string name="pad_guidance_move_right">Beweeg een beetje naar rechts</string>
+    <string name="pad_guidance_move_left">Beweeg een beetje naar links</string>
+    <string name="pad_guidance_position_face">Plaats uw gezicht in het kader</string>
+    <string name="pad_guidance_too_close">Te dichtbij — ga een beetje terug</string>
+    <string name="pad_guidance_move_closer">Kom een beetje dichterbij</string>
+    <string name="pad_instruction_center_face">Centreer uw gezicht</string>
+    <string name="pad_instruction_hold_still">Houd stil…</string>
+    <string name="pad_instruction_move_closer">Kom dichterbij</string>
+    <string name="pad_instruction_evaluating">Beoordelen…</string>
+    <string name="pad_instruction_try_again">Opnieuw proberen</string>
+    <string name="pad_instruction_verification_failed_retry">Verificatie mislukt — opnieuw proberen</string>
+</resources>

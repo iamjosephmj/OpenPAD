@@ -1,17 +1,13 @@
 package com.openpad.core.evaluation
 
+import android.content.Context
 import com.openpad.core.InternalPadConfig
 import com.openpad.core.PadResult
+import com.openpad.core.R
 
-/**
- * Computes user-facing positioning guidance based on the current face detection.
- *
- * Shared between [PadViewModel] (UI mode) and [OpenPadSessionImpl] (headless mode)
- * to ensure consistent guidance messages.
- */
 internal object PositioningGuidance {
 
-    fun compute(result: PadResult, config: InternalPadConfig): String? {
+    fun compute(result: PadResult, config: InternalPadConfig, context: Context): String? {
         val raw = result.rawFaceDetection ?: return null
 
         val inOval = result.faceDetection != null
@@ -19,18 +15,18 @@ internal object PositioningGuidance {
             val cx = raw.centerX
             val cy = raw.centerY
             return when {
-                cy < 0.3f -> "Move down a little"
-                cy > 0.7f -> "Move up a little"
-                cx < 0.3f -> "Move right a little"
-                cx > 0.7f -> "Move left a little"
-                else -> "Position your face in the frame"
+                cy < 0.3f -> context.getString(R.string.pad_guidance_move_down)
+                cy > 0.7f -> context.getString(R.string.pad_guidance_move_up)
+                cx < 0.3f -> context.getString(R.string.pad_guidance_move_right)
+                cx > 0.7f -> context.getString(R.string.pad_guidance_move_left)
+                else -> context.getString(R.string.pad_guidance_position_face)
             }
         }
 
         val area = raw.area
         return when {
-            area > config.positioningMaxFaceArea -> "Too close \u2014 move back a little"
-            area < config.positioningMinFaceArea -> "Move a bit closer"
+            area > config.positioningMaxFaceArea -> context.getString(R.string.pad_guidance_too_close)
+            area < config.positioningMinFaceArea -> context.getString(R.string.pad_guidance_move_closer)
             else -> null
         }
     }

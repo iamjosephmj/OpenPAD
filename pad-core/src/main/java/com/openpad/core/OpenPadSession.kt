@@ -1,5 +1,6 @@
 package com.openpad.core
 
+import android.content.Context
 import android.os.Handler
 import android.os.Looper
 import androidx.camera.core.ImageAnalysis
@@ -79,7 +80,8 @@ interface OpenPadSession {
 internal class OpenPadSessionImpl(
     private val pipeline: PadPipeline,
     private val config: InternalPadConfig,
-    private val listener: OpenPadListener
+    private val listener: OpenPadListener,
+    private val context: Context
 ) : OpenPadSession {
 
     private val scope = CoroutineScope(Dispatchers.Main + SupervisorJob())
@@ -95,7 +97,7 @@ internal class OpenPadSessionImpl(
     private val _challengeProgress = MutableStateFlow(0f)
     override val challengeProgress: StateFlow<Float> = _challengeProgress.asStateFlow()
 
-    private val _instruction = MutableStateFlow<String?>("Hold still and look at the camera")
+    private val _instruction = MutableStateFlow<String?>(context.getString(R.string.pad_instruction_hold_still_look))
     override val instruction: StateFlow<String?> = _instruction.asStateFlow()
 
     private var evaluateJob: Job? = null
@@ -127,21 +129,21 @@ internal class OpenPadSessionImpl(
                 cancelChallengeTimeout()
                 _challengeProgress.value = 0f
                 _instruction.value = computePositioningGuidance(result)
-                    ?: "Hold still and look at the camera"
+                    ?: context.getString(R.string.pad_instruction_hold_still_look)
             }
 
             ChallengePhase.POSITIONING -> {
                 _challengeProgress.value = 0.1f
-                _instruction.value = computePositioningGuidance(result) ?: "Center your face"
+                _instruction.value = computePositioningGuidance(result) ?: context.getString(R.string.pad_instruction_center_face)
             }
 
             ChallengePhase.CHALLENGE_CLOSER -> {
                 startChallengeTimeoutIfNeeded()
                 val ev = challengeManager.evidence
                 val msg = if (ev.maxAreaIncrease >= config.challengeCloserMinIncrease) {
-                    "Hold still\u2026"
+                    context.getString(R.string.pad_instruction_hold_still)
                 } else {
-                    "Move closer"
+                    context.getString(R.string.pad_instruction_move_closer)
                 }
                 val holdProgress = if (config.challengeStableFrames > 0) {
                     ev.holdFrames.toFloat() / config.challengeStableFrames
@@ -153,7 +155,7 @@ internal class OpenPadSessionImpl(
             ChallengePhase.EVALUATING -> {
                 cancelChallengeTimeout()
                 _challengeProgress.value = 0.85f
-                _instruction.value = "Evaluating\u2026"
+                _instruction.value = context.getString(R.string.pad_instruction_evaluating)
                 if (evaluateJob == null || evaluateJob?.isActive != true) {
                     evaluateJob = evaluateChallenge()
                 }
@@ -173,7 +175,7 @@ internal class OpenPadSessionImpl(
     }
 
     private fun computePositioningGuidance(result: PadResult): String? =
-        PositioningGuidance.compute(result, config)
+        PositioningGuidance.compute(result, config, context)
 
     private fun evaluateChallenge(): Job = scope.launch {
         delay(config.evaluatingDurationMs)
@@ -203,7 +205,7 @@ internal class OpenPadSessionImpl(
                 } else {
                     _challengeProgress.value = 0f
                     _instruction.value = if (verdict == ChallengeEvaluator.Verdict.SPOOF_FACE_SWAP)
-                        "Try again" else "Verification failed \u2014 trying again"
+                        context.getString(R.string.pad_instruction_try_again) else context.getString(R.string.pad_instruction_verification_failed_retry)
                 }
             }
         }

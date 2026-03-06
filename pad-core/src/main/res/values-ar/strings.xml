@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="pad_phase_verified">تم التحقق</string>
+    <string name="pad_phase_evaluating">جارٍ التقييم…</string>
+    <string name="pad_phase_move_closer">اقترب أكثر</string>
+    <string name="pad_phase_positioning">تحديد الموضع</string>
+    <string name="pad_phase_verifying_identity">التحقق من الهوية</string>
+    <string name="pad_instruction_position_face">ضع وجهك في الإطار</string>
+    <string name="pad_instruction_hold_still_look">ابقَ ثابتًا وانظر إلى الكاميرا</string>
+    <string name="pad_verdict_verified">تم التحقق</string>
+    <string name="pad_verdict_failed">فشل التحقق</string>
+    <string name="pad_verdict_live_subtitle">تم تأكيد الحيوية بنجاح</string>
+    <string name="pad_verdict_spoof_subtitle">يُشتبه في هجوم انتحال</string>
+    <string name="pad_verdict_complete">اكتمل التحقق</string>
+    <string name="pad_verdict_unsuccessful">التحقق غير ناجح</string>
+    <string name="pad_verdict_identity_confirmed">تم تأكيد هويتك.</string>
+    <string name="pad_verdict_identity_failed_retry">لم نتمكن من تأكيد هويتك.\nالمحاولة %1$d من %2$d</string>
+    <string name="pad_verdict_identity_failed_max">لم نتمكن من تأكيد هويتك.\nتم الوصول إلى الحد الأقصى للمحاولات.</string>
+    <string name="pad_action_done">تم</string>
+    <string name="pad_action_try_again">حاول مرة أخرى</string>
+    <string name="pad_action_close">إغلاق</string>
+    <string name="pad_intro_title">التحقق من الهوية</string>
+    <string name="pad_intro_subtitle">ضع وجهك في الإطار واتبع\nالتعليمات على الشاشة</string>
+    <string name="pad_intro_begin">بدء التحقق</string>
+    <string name="pad_guidance_move_down">تحرك للأسفل قليلاً</string>
+    <string name="pad_guidance_move_up">تحرك للأعلى قليلاً</string>
+    <string name="pad_guidance_move_right">تحرك لليمين قليلاً</string>
+    <string name="pad_guidance_move_left">تحرك لليسار قليلاً</string>
+    <string name="pad_guidance_position_face">ضع وجهك في الإطار</string>
+    <string name="pad_guidance_too_close">قريب جدًا — تراجع قليلاً</string>
+    <string name="pad_guidance_move_closer">اقترب قليلاً</string>
+    <string name="pad_instruction_center_face">وسّط وجهك</string>
+    <string name="pad_instruction_hold_still">ابقَ ثابتًا…</string>
+    <string name="pad_instruction_move_closer">اقترب أكثر</string>
+    <string name="pad_instruction_evaluating">جارٍ التقييم…</string>
+    <string name="pad_instruction_try_again">حاول مرة أخرى</string>
+    <string name="pad_instruction_verification_failed_retry">فشل التحقق — جارٍ المحاولة مرة أخرى</string>
+</resources>

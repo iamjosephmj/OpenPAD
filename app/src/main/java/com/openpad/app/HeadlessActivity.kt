@@ -31,6 +31,7 @@ import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Shapes
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -43,6 +44,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -67,7 +69,7 @@ class HeadlessActivity : ComponentActivity() {
         ActivityResultContracts.RequestPermission()
     ) { granted ->
         if (!granted) {
-            Toast.makeText(this, "Camera permission required", Toast.LENGTH_SHORT).show()
+            Toast.makeText(this, getString(R.string.headless_camera_permission), Toast.LENGTH_SHORT).show()
             finish()
         }
     }
@@ -91,7 +93,16 @@ class HeadlessActivity : ComponentActivity() {
         val analysisExecutor = Executors.newSingleThreadExecutor()
 
         setContent {
-            MaterialTheme(colorScheme = darkColorScheme()) {
+            MaterialTheme(
+                colorScheme = darkColorScheme(),
+                shapes = Shapes(
+                    extraSmall = RoundedCornerShape(8.dp),
+                    small = RoundedCornerShape(14.dp),
+                    medium = RoundedCornerShape(20.dp),
+                    large = RoundedCornerShape(24.dp),
+                    extraLarge = RoundedCornerShape(28.dp)
+                )
+            ) {
                 HeadlessDemoScreen(
                     session = session,
                     onClose = {
@@ -191,13 +202,13 @@ private fun HeadlessDemoScreen(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    "Headless Demo",
+                    stringResource(R.string.headless_title),
                     color = Color.White,
                     fontSize = 18.sp,
                     fontWeight = FontWeight.SemiBold
                 )
                 TextButton(onClick = onClose) {
-                    Text("Close", color = Color.White.copy(alpha = 0.6f))
+                    Text(stringResource(R.string.headless_close), color = Color.White.copy(alpha = 0.6f))
                 }
             }
 
@@ -208,8 +219,8 @@ private fun HeadlessDemoScreen(
                     .padding(horizontal = 16.dp),
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                StatusBadge("Status", status.name, statusColor)
-                StatusBadge("Phase", phase.name, Color(0xFF448AFF))
+                StatusBadge(stringResource(R.string.headless_status), status.name, statusColor)
+                StatusBadge(stringResource(R.string.headless_phase), phase.name, Color(0xFF448AFF))
             }
 
             Spacer(modifier = Modifier.height(8.dp))
@@ -237,7 +248,7 @@ private fun HeadlessDemoScreen(
             ) {
                 Surface(
                     modifier = Modifier.fillMaxSize(),
-                    shape = RoundedCornerShape(20.dp),
+                    shape = RoundedCornerShape(24.dp),
                     color = Color(0xFF1E1E1E)
                 ) {
                     Box(
@@ -245,7 +256,7 @@ private fun HeadlessDemoScreen(
                         contentAlignment = Alignment.Center
                     ) {
                         Text(
-                            "Your own camera view here\n(CameraX preview not wired in this demo\nbut the analyzer IS processing frames)",
+                            stringResource(R.string.headless_camera_placeholder),
                             color = Color.White.copy(alpha = 0.4f),
                             fontSize = 13.sp,
                             textAlign = TextAlign.Center
@@ -261,11 +272,11 @@ private fun HeadlessDemoScreen(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 16.dp),
-                shape = RoundedCornerShape(16.dp),
+                shape = RoundedCornerShape(50),
                 color = Color.White.copy(alpha = 0.05f)
             ) {
                 Text(
-                    text = instruction ?: "Waiting\u2026",
+                    text = instruction ?: stringResource(R.string.headless_waiting),
                     color = Color.White.copy(alpha = if (instruction != null) 0.9f else 0.4f),
                     fontSize = 15.sp,
                     fontWeight = FontWeight.Medium,
@@ -282,7 +293,7 @@ private fun HeadlessDemoScreen(
 @Composable
 private fun StatusBadge(label: String, value: String, color: Color) {
     Surface(
-        shape = RoundedCornerShape(8.dp),
+        shape = RoundedCornerShape(14.dp),
         color = color.copy(alpha = 0.12f)
     ) {
         Column(

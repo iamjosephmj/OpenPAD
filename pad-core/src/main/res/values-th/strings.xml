@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="pad_phase_verified">ยืนยันแล้ว</string>
+    <string name="pad_phase_evaluating">กำลังประเมิน…</string>
+    <string name="pad_phase_move_closer">เข้าใกล้ขึ้น</string>
+    <string name="pad_phase_positioning">จัดตำแหน่ง</string>
+    <string name="pad_phase_verifying_identity">กำลังยืนยันตัวตน</string>
+    <string name="pad_instruction_position_face">วางใบหน้าของคุณในกรอบ</string>
+    <string name="pad_instruction_hold_still_look">อยู่นิ่งๆ และมองที่กล้อง</string>
+    <string name="pad_verdict_verified">ยืนยันแล้ว</string>
+    <string name="pad_verdict_failed">การยืนยันล้มเหลว</string>
+    <string name="pad_verdict_live_subtitle">ยืนยันความมีชีวิตสำเร็จ</string>
+    <string name="pad_verdict_spoof_subtitle">สงสัยว่ามีการปลอมแปลง</string>
+    <string name="pad_verdict_complete">การยืนยันเสร็จสมบูรณ์</string>
+    <string name="pad_verdict_unsuccessful">การยืนยันไม่สำเร็จ</string>
+    <string name="pad_verdict_identity_confirmed">ยืนยันตัวตนของคุณแล้ว</string>
+    <string name="pad_verdict_identity_failed_retry">ไม่สามารถยืนยันตัวตนของคุณได้\nความพยายาม %1$d จาก %2$d</string>
+    <string name="pad_verdict_identity_failed_max">ไม่สามารถยืนยันตัวตนของคุณได้\nครบจำนวนความพยายามสูงสุดแล้ว</string>
+    <string name="pad_action_done">เสร็จสิ้น</string>
+    <string name="pad_action_try_again">ลองอีกครั้ง</string>
+    <string name="pad_action_close">ปิด</string>
+    <string name="pad_intro_title">การยืนยันตัวตน</string>
+    <string name="pad_intro_subtitle">วางใบหน้าของคุณในกรอบและ\nทำตามคำแนะนำบนหน้าจอ</string>
+    <string name="pad_intro_begin">เริ่มการยืนยัน</string>
+    <string name="pad_guidance_move_down">เลื่อนลงเล็กน้อย</string>
+    <string name="pad_guidance_move_up">เลื่อนขึ้นเล็กน้อย</string>
+    <string name="pad_guidance_move_right">เลื่อนไปทางขวาเล็กน้อย</string>
+    <string name="pad_guidance_move_left">เลื่อนไปทางซ้ายเล็กน้อย</string>
+    <string name="pad_guidance_position_face">วางใบหน้าของคุณในกรอบ</string>
+    <string name="pad_guidance_too_close">ใกล้เกินไป — ถอยกลับเล็กน้อย</string>
+    <string name="pad_guidance_move_closer">เข้าใกล้ขึ้นเล็กน้อย</string>
+    <string name="pad_instruction_center_face">จัดใบหน้าให้อยู่ตรงกลาง</string>
+    <string name="pad_instruction_hold_still">อยู่นิ่งๆ…</string>
+    <string name="pad_instruction_move_closer">เข้าใกล้ขึ้น</string>
+    <string name="pad_instruction_evaluating">กำลังประเมิน…</string>
+    <string name="pad_instruction_try_again">ลองอีกครั้ง</string>
+    <string name="pad_instruction_verification_failed_retry">การยืนยันล้มเหลว — กำลังลองใหม่</string>
+</resources>

@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="pad_phase_verified">सत्यापित</string>
+    <string name="pad_phase_evaluating">मूल्यांकन हो रहा है…</string>
+    <string name="pad_phase_move_closer">करीब आएं</string>
+    <string name="pad_phase_positioning">स्थिति निर्धारण</string>
+    <string name="pad_phase_verifying_identity">पहचान सत्यापित हो रही है</string>
+    <string name="pad_instruction_position_face">अपना चेहरा फ़्रेम में रखें</string>
+    <string name="pad_instruction_hold_still_look">स्थिर रहें और कैमरे की ओर देखें</string>
+    <string name="pad_verdict_verified">सत्यापित</string>
+    <string name="pad_verdict_failed">सत्यापन विफल</string>
+    <string name="pad_verdict_live_subtitle">जीवंतता सफलतापूर्वक पुष्टि हुई</string>
+    <string name="pad_verdict_spoof_subtitle">स्पूफिंग हमले का संदेह</string>
+    <string name="pad_verdict_complete">सत्यापन पूर्ण</string>
+    <string name="pad_verdict_unsuccessful">सत्यापन असफल</string>
+    <string name="pad_verdict_identity_confirmed">आपकी पहचान की पुष्टि हो गई है।</string>
+    <string name="pad_verdict_identity_failed_retry">आपकी पहचान की पुष्टि नहीं हो सकी।\nप्रयास %1$d / %2$d</string>
+    <string name="pad_verdict_identity_failed_max">आपकी पहचान की पुष्टि नहीं हो सकी।\nअधिकतम प्रयास पूरे हुए।</string>
+    <string name="pad_action_done">हो गया</string>
+    <string name="pad_action_try_again">पुनः प्रयास करें</string>
+    <string name="pad_action_close">बंद करें</string>
+    <string name="pad_intro_title">पहचान सत्यापन</string>
+    <string name="pad_intro_subtitle">अपना चेहरा फ़्रेम में रखें और\nस्क्रीन पर दिए निर्देशों का पालन करें</string>
+    <string name="pad_intro_begin">सत्यापन शुरू करें</string>
+    <string name="pad_guidance_move_down">थोड़ा नीचे जाएं</string>
+    <string name="pad_guidance_move_up">थोड़ा ऊपर जाएं</string>
+    <string name="pad_guidance_move_right">थोड़ा दाएं जाएं</string>
+    <string name="pad_guidance_move_left">थोड़ा बाएं जाएं</string>
+    <string name="pad_guidance_position_face">अपना चेहरा फ़्रेम में रखें</string>
+    <string name="pad_guidance_too_close">बहुत करीब — थोड़ा पीछे जाएं</string>
+    <string name="pad_guidance_move_closer">थोड़ा करीब आएं</string>
+    <string name="pad_instruction_center_face">चेहरा केंद्र में रखें</string>
+    <string name="pad_instruction_hold_still">स्थिर रहें…</string>
+    <string name="pad_instruction_move_closer">करीब आएं</string>
+    <string name="pad_instruction_evaluating">मूल्यांकन हो रहा है…</string>
+    <string name="pad_instruction_try_again">पुनः प्रयास करें</string>
+    <string name="pad_instruction_verification_failed_retry">सत्यापन विफल — पुनः प्रयास हो रहा है</string>
+</resources>

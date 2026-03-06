@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="pad_phase_verified">Na-verify</string>
+    <string name="pad_phase_evaluating">Sinusuri…</string>
+    <string name="pad_phase_move_closer">Lumapit</string>
+    <string name="pad_phase_positioning">Pagpoposisyon</string>
+    <string name="pad_phase_verifying_identity">Vine-verify ang pagkakakilanlan</string>
+    <string name="pad_instruction_position_face">Ilagay ang iyong mukha sa frame</string>
+    <string name="pad_instruction_hold_still_look">Huwag gumalaw at tumingin sa camera</string>
+    <string name="pad_verdict_verified">Na-verify</string>
+    <string name="pad_verdict_failed">Hindi na-verify</string>
+    <string name="pad_verdict_live_subtitle">Matagumpay na nakumpirma ang pagka-buhay</string>
+    <string name="pad_verdict_spoof_subtitle">Pinaghihinalaang pekeng pag-atake</string>
+    <string name="pad_verdict_complete">Kumpleto na ang verification</string>
+    <string name="pad_verdict_unsuccessful">Hindi matagumpay</string>
+    <string name="pad_verdict_identity_confirmed">Nakumpirma ang iyong pagkakakilanlan.</string>
+    <string name="pad_verdict_identity_failed_retry">Hindi makumpirma ang pagkakakilanlan.\nPagsubok %1$d sa %2$d</string>
+    <string name="pad_verdict_identity_failed_max">Hindi makumpirma ang pagkakakilanlan.\nNaabot na ang maximum na pagsubok.</string>
+    <string name="pad_action_done">Tapos na</string>
+    <string name="pad_action_try_again">Subukan muli</string>
+    <string name="pad_action_close">Isara</string>
+    <string name="pad_intro_title">Pag-verify ng pagkakakilanlan</string>
+    <string name="pad_intro_subtitle">Ilagay ang iyong mukha sa frame at\nsundin ang mga tagubilin sa screen</string>
+    <string name="pad_intro_begin">Simulan ang verification</string>
+    <string name="pad_guidance_move_down">Gumalaw nang kaunti pababa</string>
+    <string name="pad_guidance_move_up">Gumalaw nang kaunti pataas</string>
+    <string name="pad_guidance_move_right">Gumalaw nang kaunti pakanan</string>
+    <string name="pad_guidance_move_left">Gumalaw nang kaunti pakaliwa</string>
+    <string name="pad_guidance_position_face">Ilagay ang iyong mukha sa frame</string>
+    <string name="pad_guidance_too_close">Masyadong malapit — umatras nang kaunti</string>
+    <string name="pad_guidance_move_closer">Lumapit nang kaunti</string>
+    <string name="pad_instruction_center_face">I-center ang mukha</string>
+    <string name="pad_instruction_hold_still">Huwag gumalaw…</string>
+    <string name="pad_instruction_move_closer">Lumapit</string>
+    <string name="pad_instruction_evaluating">Sinusuri…</string>
+    <string name="pad_instruction_try_again">Subukan muli</string>
+    <string name="pad_instruction_verification_failed_retry">Hindi na-verify — sinusubukan muli</string>
+</resources>

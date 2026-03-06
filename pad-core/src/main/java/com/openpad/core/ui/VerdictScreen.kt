@@ -41,9 +41,11 @@ import androidx.compose.ui.graphics.StrokeJoin
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.openpad.core.R
 import com.openpad.core.ui.theme.PadColors
 import com.openpad.core.ui.viewmodel.VerdictState
 import kotlinx.coroutines.delay
@@ -114,7 +116,7 @@ internal fun VerdictScreen(
             Spacer(modifier = Modifier.height(40.dp))
 
             Text(
-                text = if (isLive) "Verification Complete" else "Verification Unsuccessful",
+                text = if (isLive) stringResource(R.string.pad_verdict_complete) else stringResource(R.string.pad_verdict_unsuccessful),
                 fontSize = 24.sp,
                 fontWeight = FontWeight.Bold,
                 color = PadColors.OnSurfaceHigh,
@@ -125,13 +127,13 @@ internal fun VerdictScreen(
 
             Text(
                 text = if (isLive) {
-                    "Your identity has been confirmed."
+                    stringResource(R.string.pad_verdict_identity_confirmed)
                 } else {
                     val spoof = verdictState as VerdictState.SpoofDetected
                     if (spoof.canRetry) {
-                        "We couldn\u2019t confirm your identity.\nAttempt ${spoof.attempt} of ${spoof.maxAttempts}"
+                        stringResource(R.string.pad_verdict_identity_failed_retry, spoof.attempt, spoof.maxAttempts)
                     } else {
-                        "We couldn\u2019t confirm your identity.\nMaximum attempts reached."
+                        stringResource(R.string.pad_verdict_identity_failed_max)
                     }
                 },
                 fontSize = 15.sp,
@@ -155,7 +157,7 @@ internal fun VerdictScreen(
                         contentColor = Color.White
                     )
                 ) {
-                    Text("Done", fontSize = 15.sp, fontWeight = FontWeight.SemiBold)
+                    Text(stringResource(R.string.pad_action_done), fontSize = 15.sp, fontWeight = FontWeight.SemiBold)
                 }
             } else if (verdictState is VerdictState.SpoofDetected && verdictState.canRetry) {
                 Button(
@@ -169,14 +171,14 @@ internal fun VerdictScreen(
                         contentColor = Color.White
                     )
                 ) {
-                    Text("Try Again", fontSize = 15.sp, fontWeight = FontWeight.SemiBold)
+                    Text(stringResource(R.string.pad_action_try_again), fontSize = 15.sp, fontWeight = FontWeight.SemiBold)
                 }
 
                 Spacer(modifier = Modifier.height(12.dp))
 
                 TextButton(onClick = onClose) {
                     Text(
-                        "Close",
+                        stringResource(R.string.pad_action_close),
                         color = PadColors.OnSurface.copy(alpha = 0.5f),
                         fontSize = 15.sp
                     )
@@ -193,7 +195,7 @@ internal fun VerdictScreen(
                         contentColor = PadColors.OnSurface
                     )
                 ) {
-                    Text("Close", fontSize = 15.sp, fontWeight = FontWeight.SemiBold)
+                    Text(stringResource(R.string.pad_action_close), fontSize = 15.sp, fontWeight = FontWeight.SemiBold)
                 }
             }
 

@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="pad_phase_verified">Подтверждено</string>
+    <string name="pad_phase_evaluating">Оценка…</string>
+    <string name="pad_phase_move_closer">Подойдите ближе</string>
+    <string name="pad_phase_positioning">Позиционирование</string>
+    <string name="pad_phase_verifying_identity">Проверка личности</string>
+    <string name="pad_instruction_position_face">Расположите лицо в рамке</string>
+    <string name="pad_instruction_hold_still_look">Не двигайтесь и смотрите в камеру</string>
+    <string name="pad_verdict_verified">Подтверждено</string>
+    <string name="pad_verdict_failed">Проверка не пройдена</string>
+    <string name="pad_verdict_live_subtitle">Живость успешно подтверждена</string>
+    <string name="pad_verdict_spoof_subtitle">Подозрение на подделку</string>
+    <string name="pad_verdict_complete">Проверка завершена</string>
+    <string name="pad_verdict_unsuccessful">Проверка не удалась</string>
+    <string name="pad_verdict_identity_confirmed">Ваша личность подтверждена.</string>
+    <string name="pad_verdict_identity_failed_retry">Не удалось подтвердить вашу личность.\nПопытка %1$d из %2$d</string>
+    <string name="pad_verdict_identity_failed_max">Не удалось подтвердить вашу личность.\nДостигнуто максимальное количество попыток.</string>
+    <string name="pad_action_done">Готово</string>
+    <string name="pad_action_try_again">Повторить</string>
+    <string name="pad_action_close">Закрыть</string>
+    <string name="pad_intro_title">Проверка личности</string>
+    <string name="pad_intro_subtitle">Расположите лицо в рамке и\nследуйте инструкциям на экране</string>
+    <string name="pad_intro_begin">Начать проверку</string>
+    <string name="pad_guidance_move_down">Подвиньтесь немного вниз</string>
+    <string name="pad_guidance_move_up">Подвиньтесь немного вверх</string>
+    <string name="pad_guidance_move_right">Подвиньтесь немного вправо</string>
+    <string name="pad_guidance_move_left">Подвиньтесь немного влево</string>
+    <string name="pad_guidance_position_face">Расположите лицо в рамке</string>
+    <string name="pad_guidance_too_close">Слишком близко — отойдите немного</string>
+    <string name="pad_guidance_move_closer">Подойдите немного ближе</string>
+    <string name="pad_instruction_center_face">Расположите лицо по центру</string>
+    <string name="pad_instruction_hold_still">Не двигайтесь…</string>
+    <string name="pad_instruction_move_closer">Подойдите ближе</string>
+    <string name="pad_instruction_evaluating">Оценка…</string>
+    <string name="pad_instruction_try_again">Повторить</string>
+    <string name="pad_instruction_verification_failed_retry">Проверка не пройдена — повторная попытка</string>
+</resources>

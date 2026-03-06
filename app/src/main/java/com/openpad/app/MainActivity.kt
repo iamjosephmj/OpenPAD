@@ -7,8 +7,11 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Shapes
 import androidx.compose.material3.darkColorScheme
+import androidx.compose.ui.unit.dp
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -51,7 +54,16 @@ class MainActivity : ComponentActivity() {
         }
 
         setContent {
-            MaterialTheme(colorScheme = darkColorScheme()) {
+            MaterialTheme(
+                colorScheme = darkColorScheme(),
+                shapes = Shapes(
+                    extraSmall = RoundedCornerShape(8.dp),
+                    small = RoundedCornerShape(14.dp),
+                    medium = RoundedCornerShape(20.dp),
+                    large = RoundedCornerShape(24.dp),
+                    extraLarge = RoundedCornerShape(28.dp)
+                )
+            ) {
                 MainRoute(vm = vm)
             }
         }

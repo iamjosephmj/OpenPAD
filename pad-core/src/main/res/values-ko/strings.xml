@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="pad_phase_verified">인증됨</string>
+    <string name="pad_phase_evaluating">평가 중…</string>
+    <string name="pad_phase_move_closer">가까이 오세요</string>
+    <string name="pad_phase_positioning">위치 조정</string>
+    <string name="pad_phase_verifying_identity">신원 확인 중</string>
+    <string name="pad_instruction_position_face">프레임 안에 얼굴을 배치하세요</string>
+    <string name="pad_instruction_hold_still_look">가만히 있으면서 카메라를 보세요</string>
+    <string name="pad_verdict_verified">인증됨</string>
+    <string name="pad_verdict_failed">인증 실패</string>
+    <string name="pad_verdict_live_subtitle">생체 확인 완료</string>
+    <string name="pad_verdict_spoof_subtitle">위조 공격 의심</string>
+    <string name="pad_verdict_complete">인증 완료</string>
+    <string name="pad_verdict_unsuccessful">인증 실패</string>
+    <string name="pad_verdict_identity_confirmed">신원이 확인되었습니다.</string>
+    <string name="pad_verdict_identity_failed_retry">신원을 확인할 수 없습니다.\n시도 %1$d / %2$d</string>
+    <string name="pad_verdict_identity_failed_max">신원을 확인할 수 없습니다.\n최대 시도 횟수에 도달했습니다.</string>
+    <string name="pad_action_done">완료</string>
+    <string name="pad_action_try_again">다시 시도</string>
+    <string name="pad_action_close">닫기</string>
+    <string name="pad_intro_title">신원 확인</string>
+    <string name="pad_intro_subtitle">프레임 안에 얼굴을 배치하고\n화면의 안내를 따르세요</string>
+    <string name="pad_intro_begin">확인 시작</string>
+    <string name="pad_guidance_move_down">조금 아래로 이동하세요</string>
+    <string name="pad_guidance_move_up">조금 위로 이동하세요</string>
+    <string name="pad_guidance_move_right">조금 오른쪽으로 이동하세요</string>
+    <string name="pad_guidance_move_left">조금 왼쪽으로 이동하세요</string>
+    <string name="pad_guidance_position_face">프레임 안에 얼굴을 배치하세요</string>
+    <string name="pad_guidance_too_close">너무 가깝습니다 — 조금 뒤로 이동하세요</string>
+    <string name="pad_guidance_move_closer">조금 가까이 오세요</string>
+    <string name="pad_instruction_center_face">얼굴을 중앙에 맞추세요</string>
+    <string name="pad_instruction_hold_still">가만히 계세요…</string>
+    <string name="pad_instruction_move_closer">가까이 오세요</string>
+    <string name="pad_instruction_evaluating">평가 중…</string>
+    <string name="pad_instruction_try_again">다시 시도</string>
+    <string name="pad_instruction_verification_failed_retry">인증 실패 — 재시도 중</string>
+</resources>

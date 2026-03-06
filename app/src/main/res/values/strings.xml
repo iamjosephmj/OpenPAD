@@ -1,4 +1,125 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">Open PAD</string>
+
+    <!-- MainScreen: hero -->
+    <string name="main_title">OPENPAD</string>
+    <string name="main_subtitle">Presentation Attack Detection</string>
+    <string name="main_loading">Loading models…</string>
+    <string name="main_start_verification">Start Verification</string>
+    <string name="main_headless">Headless</string>
+    <string name="main_configure">Configure</string>
+    <string name="main_footer">Built with OpenPAD</string>
+    <string name="main_cd_config">Config</string>
+    <string name="main_cd_view_details">View details</string>
+
+    <!-- MainScreen: status chip -->
+    <string name="status_initializing">Initializing</string>
+    <string name="status_ready">Ready</string>
+    <string name="status_error">Error</string>
+
+    <!-- MainScreen: result card -->
+    <string name="result_live_confirmed">Live Confirmed</string>
+    <string name="result_spoof_detected">Spoof Detected</string>
+    <string name="result_confidence_format">%.0f%% confidence  ·  %,d ms</string>
+
+    <!-- ConfigBottomSheet: header -->
+    <string name="config_title">Configuration</string>
+    <string name="config_subtitle">Changes apply on the next verification run.</string>
+    <string name="config_reset">Reset to Default</string>
+
+    <!-- ConfigBottomSheet: preset names -->
+    <string name="preset_auto">Auto (Device)</string>
+    <string name="preset_auto_desc">Auto-selects based on device hardware</string>
+    <string name="preset_default">Default</string>
+    <string name="preset_default_desc">Balanced security and usability</string>
+    <string name="preset_high_security">High Security</string>
+    <string name="preset_high_security_desc">Strict thresholds for identity verification</string>
+    <string name="preset_fast_pass">Fast Pass</string>
+    <string name="preset_fast_pass_desc">Quick verification for low-risk flows</string>
+    <string name="preset_banking">Banking</string>
+    <string name="preset_banking_desc">Financial-grade with strict gates</string>
+    <string name="preset_onboarding">Onboarding</string>
+    <string name="preset_onboarding_desc">Relaxed to reduce first-time drop-off</string>
+    <string name="preset_kiosk">Kiosk</string>
+    <string name="preset_kiosk_desc">Tuned for fixed-mount kiosks</string>
+    <string name="preset_low_end">Low-End Device</string>
+    <string name="preset_low_end_desc">Budget phones, 5 FPS, relaxed</string>
+    <string name="preset_development">Development</string>
+    <string name="preset_development_desc">Debug overlay, relaxed gates</string>
+    <string name="preset_high_throughput">High Throughput</string>
+    <string name="preset_high_throughput_desc">15 FPS, moderate security</string>
+    <string name="preset_max_accuracy">Max Accuracy</string>
+    <string name="preset_max_accuracy_desc">Strictest gates, highest security</string>
+
+    <!-- ConfigBottomSheet: section titles -->
+    <string name="section_verdict">Verdict</string>
+    <string name="section_scoring_weights">Scoring Weights</string>
+    <string name="section_model_thresholds">Model Thresholds</string>
+    <string name="section_signal_thresholds">Signal Thresholds</string>
+    <string name="section_performance">Performance</string>
+
+    <!-- ConfigBottomSheet: slider labels -->
+    <string name="slider_liveness_threshold">Liveness Threshold</string>
+    <string name="slider_face_match_threshold">Face Match Threshold</string>
+    <string name="slider_face_detection_confidence">Face Detection Confidence</string>
+    <string name="slider_texture_analysis">Texture Analysis</string>
+    <string name="slider_depth_gate">Depth Gate (MN3)</string>
+    <string name="slider_depth_map">Depth Map (CDCN)</string>
+    <string name="slider_screen_detection">Screen Detection</string>
+    <string name="slider_depth_gate_min">Depth Gate Min Score</string>
+    <string name="slider_depth_flatness_min">Depth Flatness Min</string>
+    <string name="slider_screen_detection_min">Screen Detection Min Conf.</string>
+    <string name="slider_moire_detection">Moire Detection</string>
+    <string name="slider_screen_pattern">Screen Pattern (LBP)</string>
+    <string name="slider_photometric_min">Photometric Min Score</string>
+    <string name="slider_spoof_penalty">Spoof Attempt Penalty</string>
+    <string name="slider_max_fps">Max FPS</string>
+
+    <!-- ConfigBottomSheet: slider range labels -->
+    <string name="range_lenient">Lenient</string>
+    <string name="range_strict">Strict</string>
+    <string name="range_low">Low</string>
+    <string name="range_high">High</string>
+
+    <!-- ConfigBottomSheet: toggle labels -->
+    <string name="toggle_debug_overlay">Debug Overlay</string>
+    <string name="toggle_frame_enhancement">Frame Enhancement (ESPCN)</string>
+
+    <!-- ResultBottomSheet -->
+    <string name="result_title">Verification Result</string>
+    <string name="result_live">LIVE</string>
+    <string name="result_spoof">SPOOF</string>
+    <string name="result_liveness_confirmed">Liveness confirmed</string>
+    <string name="result_attack_suspected">Attack suspected</string>
+    <string name="result_confidence_pct">%.0f%%</string>
+    <string name="result_duration_format">%,d ms</string>
+    <string name="result_confidence_value">%.2f</string>
+    <string name="metric_duration">Duration</string>
+    <string name="metric_confidence">Confidence</string>
+    <string name="metric_attempts">Attempts</string>
+    <string name="section_depth_analysis">3D Depth Analysis</string>
+    <string name="depth_mean">Mean</string>
+    <string name="depth_std_dev">Std Dev</string>
+    <string name="depth_qv">QV</string>
+    <string name="depth_explanation">Real faces show higher std dev and quadrant variance due to 3D geometry.</string>
+    <string name="section_face_checkpoints">Face Checkpoints</string>
+    <string name="checkpoint_normal">Normal</string>
+    <string name="checkpoint_close">Close</string>
+    <string name="depth_min">Min</string>
+    <string name="depth_max">Max</string>
+    <string name="depth_stddev">StdDev</string>
+
+    <!-- HeadlessActivity -->
+    <string name="headless_camera_permission">Camera permission required</string>
+    <string name="headless_title">Headless Demo</string>
+    <string name="headless_close">Close</string>
+    <string name="headless_status">Status</string>
+    <string name="headless_phase">Phase</string>
+    <string name="headless_camera_placeholder">Your own camera view here\n(CameraX preview not wired in this demo\nbut the analyzer IS processing frames)</string>
+    <string name="headless_waiting">Waiting…</string>
+
+    <!-- MainViewModel: toast messages -->
+    <string name="toast_error">Error: %1$s</string>
+    <string name="toast_init_failed">Init failed: %1$s</string>
 </resources>

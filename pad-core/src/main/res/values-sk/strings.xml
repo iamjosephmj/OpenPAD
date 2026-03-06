@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="pad_phase_verified">Overené</string>
+    <string name="pad_phase_evaluating">Vyhodnocovanie…</string>
+    <string name="pad_phase_move_closer">Priblížte sa</string>
+    <string name="pad_phase_positioning">Umiestňovanie</string>
+    <string name="pad_phase_verifying_identity">Overovanie identity</string>
+    <string name="pad_instruction_position_face">Umiestnite tvár do rámčeka</string>
+    <string name="pad_instruction_hold_still_look">Zostaňte v pokoji a pozerajte sa do kamery</string>
+    <string name="pad_verdict_verified">Overené</string>
+    <string name="pad_verdict_failed">Overenie zlyhalo</string>
+    <string name="pad_verdict_live_subtitle">Živosť úspešne potvrdená</string>
+    <string name="pad_verdict_spoof_subtitle">Podozrenie na podvodný útok</string>
+    <string name="pad_verdict_complete">Overenie dokončené</string>
+    <string name="pad_verdict_unsuccessful">Overenie neúspešné</string>
+    <string name="pad_verdict_identity_confirmed">Vaša identita bola potvrdená.</string>
+    <string name="pad_verdict_identity_failed_retry">Nepodarilo sa potvrdiť vašu identitu.\nPokus %1$d z %2$d</string>
+    <string name="pad_verdict_identity_failed_max">Nepodarilo sa potvrdiť vašu identitu.\nDosiahnutý maximálny počet pokusov.</string>
+    <string name="pad_action_done">Hotovo</string>
+    <string name="pad_action_try_again">Skúsiť znova</string>
+    <string name="pad_action_close">Zavrieť</string>
+    <string name="pad_intro_title">Overenie identity</string>
+    <string name="pad_intro_subtitle">Umiestnite tvár do rámčeka a\npostupujte podľa pokynov na obrazovke</string>
+    <string name="pad_intro_begin">Začať overenie</string>
+    <string name="pad_guidance_move_down">Posuňte sa trochu nadol</string>
+    <string name="pad_guidance_move_up">Posuňte sa trochu nahor</string>
+    <string name="pad_guidance_move_right">Posuňte sa trochu doprava</string>
+    <string name="pad_guidance_move_left">Posuňte sa trochu doľava</string>
+    <string name="pad_guidance_position_face">Umiestnite tvár do rámčeka</string>
+    <string name="pad_guidance_too_close">Príliš blízko — trochu ustúpte</string>
+    <string name="pad_guidance_move_closer">Priblížte sa trochu</string>
+    <string name="pad_instruction_center_face">Vycentrujte tvár</string>
+    <string name="pad_instruction_hold_still">Zostaňte v pokoji…</string>
+    <string name="pad_instruction_move_closer">Priblížte sa</string>
+    <string name="pad_instruction_evaluating">Vyhodnocovanie…</string>
+    <string name="pad_instruction_try_again">Skúsiť znova</string>
+    <string name="pad_instruction_verification_failed_retry">Overenie zlyhalo — skúšam znova</string>
+</resources>

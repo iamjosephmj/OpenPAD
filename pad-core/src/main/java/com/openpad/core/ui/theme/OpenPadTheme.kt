@@ -1,12 +1,15 @@
 package com.openpad.core.ui.theme
 
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Shapes
 import androidx.compose.material3.Typography
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.openpad.core.OpenPad
 
@@ -89,9 +92,18 @@ internal fun OpenPadTheme(content: @Composable () -> Unit) {
         )
     )
 
+    val shapes = Shapes(
+        extraSmall = RoundedCornerShape(8.dp),
+        small = RoundedCornerShape(14.dp),
+        medium = RoundedCornerShape(20.dp),
+        large = RoundedCornerShape(24.dp),
+        extraLarge = RoundedCornerShape(28.dp)
+    )
+
     MaterialTheme(
         colorScheme = colorScheme,
         typography = typography,
+        shapes = shapes,
         content = content
     )
 }
