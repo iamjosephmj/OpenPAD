@@ -34,5 +34,9 @@ gradlePlugin {
             id = "openpad.hilt"
             implementationClass = "HiltConventionPlugin"
         }
+        register("mavenPublish") {
+            id = "openpad.maven.publish"
+            implementationClass = "MavenPublishConventionPlugin"
+        }
     }
 }

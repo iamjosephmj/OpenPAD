@@ -77,3 +77,4 @@ openpad-android-application = { id = "openpad.android.application", version = "u
 openpad-android-library = { id = "openpad.android.library", version = "unspecified" }
 openpad-android-compose = { id = "openpad.android.compose", version = "unspecified" }
 openpad-hilt = { id = "openpad.hilt", version = "unspecified" }
+openpad-maven-publish = { id = "openpad.maven.publish", version = "unspecified" }

@@ -30,6 +30,7 @@ class MovementChallengeTest {
         frequencyResult = null,
         deviceDetectionResult = null,
         screenReflectionResult = null,
+        replaySpoofResult = null,
         photometricResult = null,
         faceCropBitmap = faceCropBitmap,
         temporalFeatures = null,
