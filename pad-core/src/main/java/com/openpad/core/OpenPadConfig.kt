@@ -267,7 +267,7 @@ data class OpenPadConfig(
 
         /**
          * All detection gates at their strictest settings. Highest
-         * liveness threshold (0.90), tightest depth and frequency gates.
+         * liveness threshold (0.82), tightest depth and frequency gates.
          * Expect a higher false-rejection rate -- only use when
          * security is the absolute priority over user experience.
          */
