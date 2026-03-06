@@ -1,13 +1,13 @@
 package com.openpad.core.model
 
 import android.content.Context
+import org.brotli.dec.BrotliInputStream
 import org.tensorflow.lite.Interpreter
 import org.tensorflow.lite.gpu.CompatibilityList
 import org.tensorflow.lite.gpu.GpuDelegate
 import java.io.ByteArrayInputStream
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
-import java.util.zip.GZIPInputStream
 
 /** Utility for loading TFLite models from packed (.pad) assets. */
 object ModelLoader {
@@ -20,11 +20,11 @@ object ModelLoader {
         0x53, 0x44, 0x4B, 0x5F, 0x76, 0x31, 0x2E, 0x30,
     )
 
-    /** Load a TFLite model from a packed .pad asset (XOR-scrambled gzip). */
+    /** Load a TFLite model from a packed .pad asset (XOR-scrambled brotli). */
     fun loadFromAssets(context: Context, modelPath: String): ByteBuffer {
         val scrambled = context.assets.open(modelPath).use { it.readBytes() }
         val compressed = xor(scrambled)
-        val raw = GZIPInputStream(ByteArrayInputStream(compressed)).use { it.readBytes() }
+        val raw = BrotliInputStream(ByteArrayInputStream(compressed)).use { it.readBytes() }
 
         return ByteBuffer.allocateDirect(raw.size).apply {
             order(ByteOrder.nativeOrder())

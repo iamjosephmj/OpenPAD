@@ -47,6 +47,9 @@ dependencies {
     implementation(libs.litert)
     implementation(libs.litert.gpu)
 
+    // Brotli decompression for .pad model assets
+    implementation(libs.brotli.dec)
+
     // CameraX
     implementation(libs.camerax.core)
     implementation(libs.camerax.camera2)

@@ -9,17 +9,13 @@ import com.openpad.core.depth.CdcnDepthAnalyzer
 import com.openpad.core.depth.DepthAnalyzer
 import com.openpad.core.detection.FaceDetector
 import com.openpad.core.detection.MediaPipeFaceDetector
-import com.openpad.core.device.DeviceDetector
 import com.openpad.core.device.ScreenReflectionDetector
-import com.openpad.core.device.SsdDeviceDetector
 import com.openpad.core.device.YoloScreenReflectionDetector
 import com.openpad.core.embedding.FaceEmbeddingAnalyzer
 import com.openpad.core.embedding.MobileFaceNetAnalyzer
 import com.openpad.core.enhance.EspcnFrameEnhancer
 import com.openpad.core.enhance.FrameEnhancer
 import com.openpad.core.ndk.NativeChallengeManager
-import com.openpad.core.replay.MobileNetReplaySpoofDetector
-import com.openpad.core.replay.ReplaySpoofDetector
 import com.openpad.core.ndk.OpenPadNative
 import com.openpad.core.texture.MiniFasNetAnalyzer
 import com.openpad.core.texture.TextureAnalyzer
@@ -29,7 +25,7 @@ import com.openpad.core.texture.TextureAnalyzer
  *
  * Creates all components with manual construction (no DI framework).
  * FFT, LBP, photometric, temporal, aggregation, stabilizer, and challenge logic
- * run in the native C layer (NDK). TFLite models (face, texture, depth, device,
+ * run in the native C layer (NDK). TFLite models (face, texture, depth,
  * embedding) remain in Kotlin.
  */
 class PadPipeline private constructor(
@@ -37,9 +33,7 @@ class PadPipeline private constructor(
     val textureAnalyzer: TextureAnalyzer,
     val depthAnalyzer: DepthAnalyzer,
     val depthModels: CdcnDepthAnalyzer,
-    val deviceDetector: DeviceDetector,
     val screenReflectionDetector: ScreenReflectionDetector,
-    val replaySpoofDetector: ReplaySpoofDetector,
     override val embeddingAnalyzer: FaceEmbeddingAnalyzer,
     val frameEnhancer: FrameEnhancer,
     internal val nativeChallengeManager: NativeChallengeManager,
@@ -60,9 +54,7 @@ class PadPipeline private constructor(
             faceDetector = faceDetector,
             textureAnalyzer = textureAnalyzer,
             depthAnalyzer = depthAnalyzer,
-            deviceDetector = deviceDetector,
             screenReflectionDetector = screenReflectionDetector,
-            replaySpoofDetector = replaySpoofDetector,
             frameEnhancer = frameEnhancer,
             framePreprocessor = preprocessor,
             nativeChallengeManager = nativeChallengeManager,
@@ -79,9 +71,7 @@ class PadPipeline private constructor(
         faceDetector.close()
         textureAnalyzer.close()
         depthAnalyzer.close()
-        deviceDetector.close()
         screenReflectionDetector.close()
-        replaySpoofDetector.close()
         embeddingAnalyzer.close()
         frameEnhancer.close()
         OpenPadNative.nativeDestroy()
@@ -99,9 +89,7 @@ class PadPipeline private constructor(
             val textureAnalyzer = MiniFasNetAnalyzer(appContext)
             val depthModels = CdcnDepthAnalyzer(appContext)
             val depthAnalyzer = CascadedDepthAnalyzer(depthModels, config)
-            val deviceDetector = SsdDeviceDetector(appContext)
             val screenReflectionDetector = YoloScreenReflectionDetector(appContext)
-            val replaySpoofDetector = MobileNetReplaySpoofDetector(appContext)
             val embeddingAnalyzer = MobileFaceNetAnalyzer(appContext)
             val frameEnhancer = EspcnFrameEnhancer(appContext)
             val nativeChallengeManager = NativeChallengeManager()
@@ -113,9 +101,7 @@ class PadPipeline private constructor(
                 textureAnalyzer = textureAnalyzer,
                 depthAnalyzer = depthAnalyzer,
                 depthModels = depthModels,
-                deviceDetector = deviceDetector,
                 screenReflectionDetector = screenReflectionDetector,
-                replaySpoofDetector = replaySpoofDetector,
                 embeddingAnalyzer = embeddingAnalyzer,
                 frameEnhancer = frameEnhancer,
                 nativeChallengeManager = nativeChallengeManager,

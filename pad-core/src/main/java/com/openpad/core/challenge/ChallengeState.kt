@@ -37,7 +37,6 @@ data class ChallengeEvidence(
     val displayBitmapAnalyzing: Bitmap? = null,
     /** Display-quality face crop at close distance (preserves natural face size). */
     val displayBitmapChallenge: Bitmap? = null,
-    val holdReplaySpoofScores: List<Float> = emptyList(),
     /** Face luminance values collected during hold phase for ambient light adaptation. */
     val holdLuminances: List<Float> = emptyList(),
     val completed: Boolean = false

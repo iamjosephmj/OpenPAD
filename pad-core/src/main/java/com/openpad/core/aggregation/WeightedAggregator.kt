@@ -3,7 +3,6 @@ package com.openpad.core.aggregation
 import android.util.Log
 import com.openpad.core.InternalPadConfig
 import com.openpad.core.depth.DepthResult
-import com.openpad.core.device.DeviceDetectionResult
 import com.openpad.core.device.ScreenReflectionResult
 import com.openpad.core.frequency.FrequencyResult
 import com.openpad.core.photometric.PhotometricResult
@@ -17,7 +16,6 @@ import com.openpad.core.texture.TextureResult
  * - MiniFASNet (texture): surface micro-texture discrimination
  * - MN3 (binary classifier): fast depth pre-filter
  * - CDCN (depth map): primary depth discriminator
- * - SSD MobileNet (device detection): detects replay devices
  * - FFT moire + LBP (frequency): detects screen pixel patterns
  * - Photometric analysis: detects unnatural lighting/surface properties
  *
@@ -28,8 +26,7 @@ import com.openpad.core.texture.TextureResult
  * 4. Insufficient consecutive face frames → ANALYZING
  * 5a. Static frame gate (high similarity) → SPOOF_SUSPECTED
  * 5b. Low motion gate (no micro-movements) → SPOOF_SUSPECTED
- * 6. Device gate (SSD MobileNet) → SPOOF_SUSPECTED
- * 6b. Screen reflection gate (YOLOv5n) → SPOOF_SUSPECTED
+ * 6. Screen reflection gate (YOLOv5n) → SPOOF_SUSPECTED
  * 7. Frequency gate (moire + LBP screen) → SPOOF_SUSPECTED
  * 8. Texture gate (MiniFASNet) → SPOOF_SUSPECTED
  * 9. CDCN depth gate → SPOOF_SUSPECTED
@@ -45,7 +42,6 @@ class WeightedAggregator(
         textureResult: TextureResult?,
         depthResult: DepthResult?,
         frequencyResult: FrequencyResult?,
-        deviceDetectionResult: DeviceDetectionResult?,
         photometricResult: PhotometricResult?,
         temporalFeatures: TemporalFeatures?,
         screenReflectionResult: ScreenReflectionResult?
@@ -82,16 +78,7 @@ class WeightedAggregator(
             return PadStatus.SPOOF_SUSPECTED
         }
 
-        // Rule 6: Device gate (SSD MobileNet) — phone/laptop/tv overlapping face
-        val deviceFlagged = deviceDetectionResult != null &&
-            deviceDetectionResult.deviceDetected &&
-            deviceDetectionResult.overlapWithFace &&
-            deviceDetectionResult.maxConfidence >= config.deviceConfidenceThreshold
-        if (deviceFlagged) {
-            return PadStatus.SPOOF_SUSPECTED
-        }
-
-        // Rule 6b: Screen reflection gate (YOLOv5n) — multiple PAD-specific signals
+        // Rule 6: Screen reflection gate (YOLOv5n) — multiple PAD-specific signals
         val screenFlagged = screenReflectionResult != null &&
             screenReflectionResult.spoofSignalCount >= config.screenReflectionMinSignals &&
             screenReflectionResult.maxConfidence >= config.screenReflectionConfidenceThreshold
@@ -144,9 +131,9 @@ class WeightedAggregator(
     }
 
     /**
-     * Compute the unified ML aggregate score from the 5 ML model signals.
+     * Compute the unified ML aggregate score from the ML model signals.
      *
-     * When CDCN is available: texture + mn3 + cdcn + device + screenReflection
+     * When CDCN is available: texture + mn3 + cdcn + screenReflection
      * When CDCN not available: redistribute CDCN weight to texture (2/3) and MN3 (1/3).
      *
      * Classical signals (frequency, photometric) act as gates in [classify] but do not
@@ -155,32 +142,28 @@ class WeightedAggregator(
     fun computeAggregateScore(
         textureResult: TextureResult?,
         depthResult: DepthResult?,
-        deviceDetectionResult: DeviceDetectionResult?,
         screenReflectionResult: ScreenReflectionResult?
     ): Float {
         val textureScore = textureResult?.genuineScore ?: 0.5f
         val mn3Score = depthResult?.mn3RealScore ?: 0.5f
         val cdcnScore = depthResult?.cdcnDepthScore
-        val deviceScore = 1f - (deviceDetectionResult?.spoofScore ?: 0f)
         val screenScore = 1f - (screenReflectionResult?.spoofScore ?: 0f)
 
         return if (cdcnScore != null) {
             val totalWeight = config.textureWeight + config.mn3Weight + config.cdcnWeight +
-                config.deviceWeight + config.screenReflectionWeight
+                config.screenReflectionWeight
             (textureScore * config.textureWeight +
                 mn3Score * config.mn3Weight +
                 cdcnScore * config.cdcnWeight +
-                deviceScore * config.deviceWeight +
                 screenScore * config.screenReflectionWeight) / totalWeight
         } else {
             val cdcnRedist = config.cdcnWeight
             val effectiveTextureWeight = config.textureWeight + cdcnRedist * 2f / 3f
             val effectiveMn3Weight = config.mn3Weight + cdcnRedist * 1f / 3f
             val totalWeight = effectiveTextureWeight + effectiveMn3Weight +
-                config.deviceWeight + config.screenReflectionWeight
+                config.screenReflectionWeight
             (textureScore * effectiveTextureWeight +
                 mn3Score * effectiveMn3Weight +
-                deviceScore * config.deviceWeight +
                 screenScore * config.screenReflectionWeight) / totalWeight
         }
     }

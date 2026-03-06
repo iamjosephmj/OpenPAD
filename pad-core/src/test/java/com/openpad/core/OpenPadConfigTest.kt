@@ -14,10 +14,8 @@ class OpenPadConfigTest {
         assertEquals(0.15f, config.textureAnalysisWeight)
         assertEquals(0.20f, config.depthGateWeight)
         assertEquals(0.55f, config.depthAnalysisWeight)
-        assertEquals(0.10f, config.screenDetectionWeight)
         assertEquals(0.20f, config.depthGateMinScore)
         assertEquals(0.40f, config.depthFlatnessMinScore)
-        assertEquals(0.50f, config.screenDetectionMinConfidence)
         assertEquals(0.60f, config.moireDetectionThreshold)
         assertEquals(0.70f, config.screenPatternThreshold)
         assertEquals(0.30f, config.photometricMinScore)
@@ -38,10 +36,8 @@ class OpenPadConfigTest {
             textureAnalysisWeight = 0.25f,
             depthGateWeight = 0.15f,
             depthAnalysisWeight = 0.45f,
-            screenDetectionWeight = 0.15f,
             depthGateMinScore = 0.30f,
             depthFlatnessMinScore = 0.50f,
-            screenDetectionMinConfidence = 0.55f,
             moireDetectionThreshold = 0.65f,
             screenPatternThreshold = 0.75f,
             photometricMinScore = 0.35f,

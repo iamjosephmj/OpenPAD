@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Pack OpenPAD TFLite models: gzip compress then XOR-scramble.
+Pack OpenPAD TFLite models: brotli compress then XOR-scramble.
 
 Produces .pad files that ModelLoader.kt can reverse at runtime.
 Run this once before building the APK.
@@ -10,9 +10,10 @@ Usage:
     python scripts/pack_models.py --unpack # reverse: .pad -> .tflite
 """
 
-import gzip
 import os
 import sys
+
+import brotli
 
 MODELS_DIR = os.path.join(
     os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
@@ -52,7 +53,7 @@ def pack():
         with open(src, "rb") as f:
             raw = f.read()
 
-        compressed = gzip.compress(raw, compresslevel=9)
+        compressed = brotli.compress(raw, quality=11)
         scrambled = xor_bytes(compressed)
 
         with open(dst, "wb") as f:
@@ -96,7 +97,7 @@ def unpack():
             scrambled = f.read()
 
         compressed = xor_bytes(scrambled)
-        raw = gzip.decompress(compressed)
+        raw = brotli.decompress(compressed)
 
         with open(dst, "wb") as f:
             f.write(raw)

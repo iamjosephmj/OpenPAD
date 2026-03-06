@@ -109,10 +109,10 @@ LAYER 1: Face Detection (MediaPipeFaceDetector)
     |       LBP: Local Binary Pattern histograms on face crop
     |           Output: screenScore, sharpnessUniformity
     |
-    +--- LAYER 5: Device Detection (SsdDeviceDetector)
-    |       Model: device_detection.pad (SSD MobileNet V1, 300x300 uint8 RGB)
-    |       Detects: cell phone, laptop, TV, monitor in full frame
-    |       Output: devicePresence score (boosted if overlapping face bbox)
+    +--- LAYER 5: Screen Reflection (YoloScreenReflectionDetector)
+    |       Model: screen_reflection.pad (YOLOv5n, 320x320 float32 RGB)
+    |       Detects: finger, device, artifact, reflection, face (5 PAD classes)
+    |       Output: spoofSignalCount, maxConfidence, spoofScore
     |
     +--- LAYER 6: Photometric (PhotometricAnalyzer)
     |       No ML model. Pure computation:
@@ -140,7 +140,7 @@ LAYER 9: Aggregation (WeightedAggregator + StateStabilizer)
     Decision gates (evaluated in order):
       1. Not enough frames -> ANALYZING
       2. No face / low confidence -> NO_FACE
-      3. Device gate (SSD MobileNet) -> SPOOF_SUSPECTED
+      3. Screen reflection gate (YOLOv5n) -> SPOOF_SUSPECTED
       4. Frequency gate (moire + LBP both flagged) -> SPOOF_SUSPECTED
       5. Texture gate (MiniFASNet) -> SPOOF_SUSPECTED
       6. CDCN depth gate -> SPOOF_SUSPECTED
@@ -222,12 +222,12 @@ Pure Kotlin, no ML model. Two complementary detectors:
 - **FFT Moire**: Detects periodic screen artifacts via radial power spectrum analysis
 - **LBP Screen**: Detects uniform pixel grid patterns characteristic of screens
 
-### Layer 5 -- Device Detection
+### Layer 5 -- Screen Reflection Detection
 
-**Implementation**: `SsdDeviceDetector.kt` (211 lines)
-**Model**: SSD MobileNet V1 COCO (300x300 uint8 RGB)
+**Implementation**: `YoloScreenReflectionDetector.kt`
+**Model**: YOLOv5n custom-trained (320x320 float32 RGB)
 
-Detects presentation devices in the full camera frame. Detection confidence is boosted when the device bounding box overlaps the face region.
+Detects physical indicators of screen-based presentation attacks: finger grips, device bezels, screen reflections, and artifacts. The gate fires when 2+ spoof classes are detected in the same frame.
 
 ### Layer 6 -- Photometric Analysis
 
@@ -278,8 +278,8 @@ At evaluation, both crops are fed into MobileFaceNet in a single batch-2 inferen
 Models are stored as `.pad` files -- not raw `.tflite`. The packing process:
 
 ```
-Build time:  .tflite -> gzip (level 9) -> XOR (32-byte key) -> .pad
-Runtime:     .pad -> XOR (same key) -> gunzip -> ByteBuffer -> TFLite Interpreter
+Build time:  .tflite -> brotli (quality 11) -> XOR (32-byte key) -> .pad
+Runtime:     .pad -> XOR (same key) -> brotli decompress -> ByteBuffer -> TFLite Interpreter
 ```
 
 This prevents:
@@ -346,9 +346,9 @@ Each `PadColors` property is a `get()` that reads from `OpenPad.theme`, allowing
 |-------------|-----------|-----------|----------------|
 | Printed photo (still) | Trivial | Yes | Frame similarity ~1.0 |
 | Printed photo (hand-held) | Easy | Yes | Texture + depth + DOF |
-| Phone screen (static) | Easy | Yes | Frame similarity + device detection |
+| Phone screen (static) | Easy | Yes | Frame similarity + screen reflection |
 | Phone screen (video) | Moderate | Moderate | Depth + texture + frequency gate |
-| OLED screen (video + challenge) | Moderate | Moderate | Depth + device + photometric |
+| OLED screen (video + challenge) | Moderate | Moderate | Depth + screen reflection + photometric |
 | Face swap mid-challenge | Hard | Yes | Face embedding similarity |
 | 3D mask | Hard | No | No depth sensing |
 | Deepfake on screen | Hard | No | Same as video replay |
@@ -375,10 +375,8 @@ All configurable thresholds live in `PadConfig.kt` (internal) and are mapped fro
 | `textureAnalysisWeight` | `textureWeight` | 0.15 | Texture score weight |
 | `depthGateWeight` | `mn3Weight` | 0.20 | MN3 score weight |
 | `depthAnalysisWeight` | `cdcnWeight` | 0.55 | CDCN score weight |
-| `screenDetectionWeight` | `deviceWeight` | 0.10 | Device detection weight |
 | `depthGateMinScore` | `mn3GateThreshold` | 0.20 | MN3 gate for CDCN |
 | `depthFlatnessMinScore` | `depthFlatnessThreshold` | 0.40 | Hard CDCN flat cutoff |
-| `screenDetectionMinConfidence` | `deviceConfidenceThreshold` | 0.50 | Device detection cutoff |
 | `moireDetectionThreshold` | `moireThreshold` | 0.60 | Moire score above this flags screen |
 | `screenPatternThreshold` | `lbpScreenThreshold` | 0.70 | LBP screen score above this flags screen |
 | `photometricMinScore` | `photometricMinScore` | 0.30 | Photometric below this flags spoof |
