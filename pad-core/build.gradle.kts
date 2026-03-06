@@ -2,11 +2,12 @@ plugins {
     alias(libs.plugins.openpad.android.library)
     alias(libs.plugins.openpad.android.compose)
     alias(libs.plugins.openpad.hilt)
-    `maven-publish`
+    alias(libs.plugins.openpad.maven.publish)
 }
 
-val publishVersion = "1.0.5"
-val publishGroupId = "com.github.openpad"
+extra["publish.groupId"] = "com.github.openpad"
+extra["publish.artifactId"] = "OpenPAD"
+extra["publish.version"] = "1.0.5"
 
 android {
     namespace = "com.openpad.core"
@@ -66,32 +67,3 @@ dependencies {
     androidTestImplementation(libs.test.ext.junit)
 }
 
-afterEvaluate {
-    publishing {
-        publications {
-            create("release", MavenPublication::class) {
-                from(components["release"])
-                groupId = publishGroupId
-                artifactId = "OpenPAD"
-                version = publishVersion
-                pom {
-                    name.set("OpenPAD")
-                    description.set("On-device Presentation Attack Detection (face liveness) for Android")
-                    url.set("https://github.com/openpad/OpenPAD")
-                    licenses {
-                        license {
-                            name.set("Apache-2.0")
-                            url.set("https://opensource.org/licenses/Apache-2.0")
-                        }
-                    }
-                }
-            }
-            create("debug", MavenPublication::class) {
-                from(components["debug"])
-                groupId = publishGroupId
-                artifactId = "OpenPAD-debug"
-                version = publishVersion
-            }
-        }
-    }
-}
