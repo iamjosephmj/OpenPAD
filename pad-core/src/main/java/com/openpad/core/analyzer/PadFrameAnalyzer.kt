@@ -15,6 +15,8 @@ import com.openpad.core.device.ScreenReflectionDetector
 import com.openpad.core.device.ScreenReflectionResult
 import com.openpad.core.challenge.ChallengePhase
 import com.openpad.core.device.DeviceDetector
+import com.openpad.core.replay.ReplaySpoofDetector
+import com.openpad.core.replay.ReplaySpoofResult
 import com.openpad.core.texture.TextureResult
 import com.openpad.core.enhance.FrameEnhancer
 import com.openpad.core.ndk.NativeChallengeManager
@@ -34,6 +36,7 @@ class PadFrameAnalyzer internal constructor(
     private val depthAnalyzer: DepthAnalyzer,
     private val deviceDetector: DeviceDetector,
     private val screenReflectionDetector: ScreenReflectionDetector,
+    private val replaySpoofDetector: ReplaySpoofDetector,
     private val frameEnhancer: FrameEnhancer,
     private val framePreprocessor: FramePreprocessor?,
     private val nativeChallengeManager: NativeChallengeManager,
@@ -64,6 +67,7 @@ class PadFrameAnalyzer internal constructor(
             var depthResult: DepthResult? = null
             var deviceResult: DeviceDetectionResult? = null
             var screenReflectionResult: ScreenReflectionResult? = null
+            var replaySpoofResult: ReplaySpoofResult? = null
             var faceCropBitmap: Bitmap? = null
             var faceDisplayBitmap: Bitmap? = null
             var enhancementApplied = false
@@ -97,6 +101,7 @@ class PadFrameAnalyzer internal constructor(
                 textureResult = textureAnalyzer.analyze(analysisBitmap, bbox)
                 deviceResult = deviceDetector.analyze(analysisBitmap, bbox)
                 screenReflectionResult = screenReflectionDetector.analyze(analysisBitmap, bbox)
+                replaySpoofResult = replaySpoofDetector.analyze(analysisBitmap, bbox)
                 faceCropBitmap = BitmapConverter.cropFace(bitmap, bbox)
                 faceDisplayBitmap = BitmapConverter.cropFaceForDisplay(bitmap, bbox)
                 if (framePreprocessor == null) {
@@ -110,7 +115,8 @@ class PadFrameAnalyzer internal constructor(
                 detection = detection,
                 textureResult = textureResult,
                 depthResult = depthResult,
-                deviceResult = deviceResult
+                deviceResult = deviceResult,
+                replaySpoofResult = replaySpoofResult
             )
 
             val outputBytes = OpenPadNative.nativeAnalyzeFrame(input)
@@ -124,6 +130,7 @@ class PadFrameAnalyzer internal constructor(
                 depthResult = depthResult,
                 deviceResult = deviceResult,
                 screenReflectionResult = screenReflectionResult,
+                replaySpoofResult = replaySpoofResult,
                 faceCropBitmap = faceCropBitmap,
                 faceDisplayBitmap = faceDisplayBitmap,
                 enhancementApplied = enhancementApplied,

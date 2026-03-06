@@ -7,6 +7,7 @@ import com.openpad.core.depth.DepthResult
 import com.openpad.core.detection.FaceDetection
 import com.openpad.core.device.DeviceDetectionResult
 import com.openpad.core.device.ScreenReflectionResult
+import com.openpad.core.replay.ReplaySpoofResult
 import com.openpad.core.frequency.FrequencyResult
 import com.openpad.core.ndk.NativeFrameOutput
 import com.openpad.core.photometric.PhotometricResult
@@ -29,6 +30,7 @@ internal object PadResultMapper {
         depthResult: DepthResult?,
         deviceResult: DeviceDetectionResult?,
         screenReflectionResult: ScreenReflectionResult?,
+        replaySpoofResult: ReplaySpoofResult?,
         faceCropBitmap: Bitmap?,
         faceDisplayBitmap: Bitmap?,
         enhancementApplied: Boolean,
@@ -50,6 +52,7 @@ internal object PadResultMapper {
         ),
         deviceDetectionResult = deviceResult,
         screenReflectionResult = screenReflectionResult,
+        replaySpoofResult = replaySpoofResult,
         photometricResult = PhotometricResult(
             specularScore = nativeOutput.photometricSpecular,
             chrominanceScore = nativeOutput.photometricChrominance,
