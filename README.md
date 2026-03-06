@@ -158,6 +158,7 @@ OpenPadConfig(
     livenessThreshold = 0.70f,           // Minimum overall confidence to accept as live
     faceMatchThreshold = 0.70f,          // Minimum face similarity between checkpoints (face swap detection)
     spoofAttemptPenalty = 0.08f,          // Extra threshold per consecutive failed attempt
+    maxSpoofAttempts = 2,                // Maximum retry attempts before final verdict
 
     // --- Detection ---
     faceDetectionConfidence = 0.55f,     // Minimum face detection confidence
@@ -179,12 +180,27 @@ OpenPadConfig(
     screenPatternThreshold = 0.70f,      // LBP screen pattern score above this flags screen
     photometricMinScore = 0.30f,         // Combined photometric score below this flags spoof
 
+    // --- Anti-Replay ---
+    staticFrameThreshold = 0.997f,       // Frame similarity above this flags static/frozen feed
+    minMotionVariance = 0.1f,            // Head movement variance below this flags lack of motion
+
+    // --- Low-Light Adaptation ---
+    lowLightThreshold = 0.40f,           // Brightness below this triggers threshold relaxation
+    lowLightRelaxation = 0.30f,          // Amount to relax scoring gates in low-light conditions
+
     // --- Performance ---
     maxFramesPerSecond = 8,              // Frame processing rate
     enableDebugOverlay = false,          // Show real-time debug metrics
+    sessionTimeoutMs = 10_000L,          // Overall session timeout
+    challengeTimeoutMs = 10_000L,        // Challenge phase timeout
 
     // --- Frame Enhancement ---
-    enableFrameEnhancement = true        // ESPCN x2 super-resolution during challenge (ML quality gate)
+    enableFrameEnhancement = true,       // ESPCN x2 super-resolution during challenge (ML quality gate)
+
+    // --- Preprocessing ---
+    enablePreprocessing = true,          // Gamma correction + CLAHE contrast enhancement
+    preprocessingGammaTarget = 0.45f,    // Target gamma for correction (lower = brighter)
+    preprocessingClaheClipLimit = 2.0f   // CLAHE clip limit (higher = more contrast)
 )
 ```
 
@@ -227,10 +243,10 @@ OpenPad.initialize(
 
 | Parameter | Default | HighSecurity | FastPass | Banking | MaxAccuracy |
 |-----------|---------|-------------|----------|---------|-------------|
-| `livenessThreshold` | 0.70 | 0.85 | 0.55 | 0.85 | 0.90 |
-| `faceMatchThreshold` | 0.70 | 0.80 | 0.60 | 0.82 | 0.85 |
-| `depthFlatnessMinScore` | 0.40 | 0.50 | 0.35 | 0.50 | 0.55 |
-| `photometricMinScore` | 0.30 | 0.35 | 0.25 | 0.40 | 0.45 |
+| `livenessThreshold` | 0.70 | 0.78 | 0.55 | 0.80 | 0.82 |
+| `faceMatchThreshold` | 0.70 | 0.78 | 0.60 | 0.80 | 0.82 |
+| `depthFlatnessMinScore` | 0.40 | 0.45 | 0.35 | 0.45 | 0.50 |
+| `photometricMinScore` | 0.30 | 0.32 | 0.25 | 0.35 | 0.38 |
 | `spoofAttemptPenalty` | 0.08 | 0.10 | 0.05 | 0.12 | 0.12 |
 | `maxFramesPerSecond` | 8 | 8 | 12 | 8 | 8 |
 | `enableFrameEnhancement` | true | true | true | true | true |
@@ -317,8 +333,12 @@ flowchart TD
     B -->|No| ANALYZING[ANALYZING]
     B -->|Yes| C{Face OK?}
     C -->|No| NO_FACE[NO_FACE]
-    C -->|Yes| D{Screen reflection?}
-    D -->|Yes| SPOOF[SPOOF_SUSPECTED]
+    C -->|Yes| SF{Static frame?}
+    SF -->|Yes| SPOOF[SPOOF_SUSPECTED]
+    SF -->|No| LM{Low motion?}
+    LM -->|Yes| SPOOF
+    LM -->|No| D{Screen reflection?}
+    D -->|Yes| SPOOF
     D -->|No| E{Moiré + LBP?}
     E -->|Yes| SPOOF
     E -->|No| F{Texture pass?}
@@ -332,12 +352,14 @@ flowchart TD
 
 1. Not enough frames → ANALYZING  
 2. No face / low confidence → NO_FACE  
-3. **Screen reflection gate**: 2+ PAD classes detected (finger, device, artifact, reflection) → SPOOF_SUSPECTED  
-4. **Frequency gate**: moire + LBP both above threshold → SPOOF_SUSPECTED  
-5. **Texture gate**: MiniFASNet genuine score below threshold → SPOOF_SUSPECTED  
-6. **CDCN depth gate**: depth below flatness threshold → SPOOF_SUSPECTED  
-7. **Photometric gate**: combined score below threshold → SPOOF_SUSPECTED  
-8. All signals pass → LIVE
+3. **Static frame gate**: frame similarity ≥ `staticFrameThreshold` → SPOOF_SUSPECTED  
+4. **Low motion gate**: head movement variance < `minMotionVariance` → SPOOF_SUSPECTED  
+5. **Screen reflection gate**: 2+ PAD classes detected (finger, device, artifact, reflection) → SPOOF_SUSPECTED  
+6. **Frequency gate**: moire + LBP both above threshold → SPOOF_SUSPECTED  
+7. **Texture gate**: MiniFASNet genuine score below threshold → SPOOF_SUSPECTED  
+8. **CDCN depth gate**: depth below flatness threshold → SPOOF_SUSPECTED  
+9. **Photometric gate**: combined score below threshold → SPOOF_SUSPECTED  
+10. All signals pass → LIVE
 
 ### ML Aggregate Score
 
@@ -481,6 +503,8 @@ OpenPAD/
 │   └── src/main/java/com/openpad/app/
 │       ├── OpenPadApp.kt                   # Application class (theme setup)
 │       ├── MainActivity.kt                 # UI mode + headless mode launcher + result display
+│       ├── MainScreen.kt                   # Main UI composable
+│       ├── MainViewModel.kt               # Main screen ViewModel
 │       ├── ConfigBottomSheet.kt            # Runtime configuration editor (all OpenPadConfig params)
 │       ├── ResultBottomSheet.kt            # Verification result details (depth stats + face crops)
 │       └── HeadlessActivity.kt             # Headless integration demo
@@ -501,7 +525,13 @@ OpenPAD/
 │       ├── OpenPadSession.kt               # Headless session interface + impl
 │       ├── PadConfig.kt                    # Internal pipeline thresholds (InternalPadConfig)
 │       ├── PadPipeline.kt                  # Pipeline factory
+│       ├── PadPipelineContract.kt          # Pipeline interface
+│       ├── DeviceCapabilityDetector.kt     # Device tier detection
 │       ├── PadResult.kt                    # Per-frame result
+│       │
+│       ├── di/                             # Dependency injection
+│       │   ├── PadModule.kt               #   Hilt DI module
+│       │   └── PadSessionHolder.kt        #   Session lifecycle holder
 │       │
 │       ├── detection/                      # Layer 1: Face detection
 │       │   ├── MediaPipeFaceDetector.kt    #   BlazeFace inference + SSD decode
@@ -568,6 +598,7 @@ OpenPAD/
 │       │
 │       ├── analyzer/                       # Frame processing
 │       │   ├── PadFrameAnalyzer.kt         #   CameraX analyzer orchestration
+│       │   ├── FramePreprocessor.kt        #   Gamma/CLAHE preprocessing
 │       │   ├── BitmapConverter.kt          #   YUV conversion, crops, similarity
 │       │   ├── NativeInputBuilder.kt       #   Native C input assembly
 │       │   └── PadResultMapper.kt          #   Native output → PadResult mapping
@@ -624,10 +655,11 @@ OpenPAD/
 |-----------|---------|---------|
 | AGP | 8.10.0 | Build system |
 | Kotlin | 2.2.0 | Language |
-| CameraX | 1.4.2 | Camera preview + frame analysis |
+| CameraX | 1.5.3 | Camera preview + frame analysis |
 | Compose BOM | 2026.01.01 | UI (Material3) |
 | Lifecycle | 2.8.7 | ViewModel + Compose integration |
 | LiteRT | 1.4.1 | TFLite model inference |
+| Brotli Dec | 0.1.2 | Model asset decompression |
 | Timber | 5.0.1 | Logging |
 
 ---
