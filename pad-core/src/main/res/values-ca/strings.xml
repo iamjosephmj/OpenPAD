@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="pad_phase_verified">Verificat</string>
+    <string name="pad_phase_evaluating">Avaluant…</string>
+    <string name="pad_phase_move_closer">Apropa\'t</string>
+    <string name="pad_phase_positioning">Posicionant</string>
+    <string name="pad_phase_verifying_identity">Verificant la identitat</string>
+    <string name="pad_instruction_position_face">Col·loqueu la cara al marc</string>
+    <string name="pad_instruction_hold_still_look">Estigueu quiet i mireu la càmera</string>
+    <string name="pad_verdict_verified">Verificat</string>
+    <string name="pad_verdict_failed">Verificació fallida</string>
+    <string name="pad_verdict_live_subtitle">Vivacitat confirmada amb èxit</string>
+    <string name="pad_verdict_spoof_subtitle">Sospita d\'atac de suplantació</string>
+    <string name="pad_verdict_complete">Verificació completada</string>
+    <string name="pad_verdict_unsuccessful">Verificació no reeixida</string>
+    <string name="pad_verdict_identity_confirmed">La vostra identitat ha estat confirmada.</string>
+    <string name="pad_verdict_identity_failed_retry">No hem pogut confirmar la vostra identitat.\nIntent %1$d de %2$d</string>
+    <string name="pad_verdict_identity_failed_max">No hem pogut confirmar la vostra identitat.\nS\'han esgotat els intents.</string>
+    <string name="pad_action_done">Fet</string>
+    <string name="pad_action_try_again">Torna-ho a provar</string>
+    <string name="pad_action_close">Tanca</string>
+    <string name="pad_intro_title">Verificació d\'identitat</string>
+    <string name="pad_intro_subtitle">Col·loqueu la cara al marc i\nseguiu les instruccions de la pantalla</string>
+    <string name="pad_intro_begin">Començar la verificació</string>
+    <string name="pad_guidance_move_down">Mou-te una mica avall</string>
+    <string name="pad_guidance_move_up">Mou-te una mica amunt</string>
+    <string name="pad_guidance_move_right">Mou-te una mica a la dreta</string>
+    <string name="pad_guidance_move_left">Mou-te una mica a l\'esquerra</string>
+    <string name="pad_guidance_position_face">Col·loqueu la cara al marc</string>
+    <string name="pad_guidance_too_close">Massa a prop — retrocedeix una mica</string>
+    <string name="pad_guidance_move_closer">Apropa\'t una mica</string>
+    <string name="pad_instruction_center_face">Centra la cara</string>
+    <string name="pad_instruction_hold_still">Estigueu quiet…</string>
+    <string name="pad_instruction_move_closer">Apropa\'t</string>
+    <string name="pad_instruction_evaluating">Avaluant…</string>
+    <string name="pad_instruction_try_again">Torna-ho a provar</string>
+    <string name="pad_instruction_verification_failed_retry">Verificació fallida — tornant a intentar</string>
+</resources>

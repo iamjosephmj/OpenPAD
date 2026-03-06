@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="pad_phase_verified">Potvrđeno</string>
+    <string name="pad_phase_evaluating">Procjena…</string>
+    <string name="pad_phase_move_closer">Približite se</string>
+    <string name="pad_phase_positioning">Pozicioniranje</string>
+    <string name="pad_phase_verifying_identity">Provjera identiteta</string>
+    <string name="pad_instruction_position_face">Postavite lice u okvir</string>
+    <string name="pad_instruction_hold_still_look">Mirujte i gledajte u kameru</string>
+    <string name="pad_verdict_verified">Potvrđeno</string>
+    <string name="pad_verdict_failed">Provjera neuspješna</string>
+    <string name="pad_verdict_live_subtitle">Živost uspješno potvrđena</string>
+    <string name="pad_verdict_spoof_subtitle">Sumnja na lažni napad</string>
+    <string name="pad_verdict_complete">Provjera dovršena</string>
+    <string name="pad_verdict_unsuccessful">Provjera neuspješna</string>
+    <string name="pad_verdict_identity_confirmed">Vaš identitet je potvrđen.</string>
+    <string name="pad_verdict_identity_failed_retry">Nismo mogli potvrditi vaš identitet.\nPokušaj %1$d od %2$d</string>
+    <string name="pad_verdict_identity_failed_max">Nismo mogli potvrditi vaš identitet.\nDosegnut maksimalni broj pokušaja.</string>
+    <string name="pad_action_done">Gotovo</string>
+    <string name="pad_action_try_again">Pokušajte ponovno</string>
+    <string name="pad_action_close">Zatvori</string>
+    <string name="pad_intro_title">Provjera identiteta</string>
+    <string name="pad_intro_subtitle">Postavite lice u okvir i\npratite upute na zaslonu</string>
+    <string name="pad_intro_begin">Započni provjeru</string>
+    <string name="pad_guidance_move_down">Pomaknite se malo dolje</string>
+    <string name="pad_guidance_move_up">Pomaknite se malo gore</string>
+    <string name="pad_guidance_move_right">Pomaknite se malo desno</string>
+    <string name="pad_guidance_move_left">Pomaknite se malo lijevo</string>
+    <string name="pad_guidance_position_face">Postavite lice u okvir</string>
+    <string name="pad_guidance_too_close">Preblizu — malo se udaljite</string>
+    <string name="pad_guidance_move_closer">Približite se malo</string>
+    <string name="pad_instruction_center_face">Centrirajte lice</string>
+    <string name="pad_instruction_hold_still">Mirujte…</string>
+    <string name="pad_instruction_move_closer">Približite se</string>
+    <string name="pad_instruction_evaluating">Procjena…</string>
+    <string name="pad_instruction_try_again">Pokušajte ponovno</string>
+    <string name="pad_instruction_verification_failed_retry">Provjera neuspješna — pokušavam ponovno</string>
+</resources>

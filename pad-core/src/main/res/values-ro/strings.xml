@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="pad_phase_verified">Verificat</string>
+    <string name="pad_phase_evaluating">Se evaluează…</string>
+    <string name="pad_phase_move_closer">Apropiați-vă</string>
+    <string name="pad_phase_positioning">Poziționare</string>
+    <string name="pad_phase_verifying_identity">Se verifică identitatea</string>
+    <string name="pad_instruction_position_face">Plasați fața în cadru</string>
+    <string name="pad_instruction_hold_still_look">Stați nemișcat și priviți camera</string>
+    <string name="pad_verdict_verified">Verificat</string>
+    <string name="pad_verdict_failed">Verificarea a eșuat</string>
+    <string name="pad_verdict_live_subtitle">Vivacitate confirmată cu succes</string>
+    <string name="pad_verdict_spoof_subtitle">Suspiciune de atac prin falsificare</string>
+    <string name="pad_verdict_complete">Verificare completă</string>
+    <string name="pad_verdict_unsuccessful">Verificare nereușită</string>
+    <string name="pad_verdict_identity_confirmed">Identitatea dvs. a fost confirmată.</string>
+    <string name="pad_verdict_identity_failed_retry">Nu am putut confirma identitatea dvs.\nÎncercarea %1$d din %2$d</string>
+    <string name="pad_verdict_identity_failed_max">Nu am putut confirma identitatea dvs.\nNumăr maxim de încercări atins.</string>
+    <string name="pad_action_done">Gata</string>
+    <string name="pad_action_try_again">Încercați din nou</string>
+    <string name="pad_action_close">Închide</string>
+    <string name="pad_intro_title">Verificare identitate</string>
+    <string name="pad_intro_subtitle">Plasați fața în cadru și\nurmați instrucțiunile de pe ecran</string>
+    <string name="pad_intro_begin">Începeți verificarea</string>
+    <string name="pad_guidance_move_down">Deplasați-vă puțin în jos</string>
+    <string name="pad_guidance_move_up">Deplasați-vă puțin în sus</string>
+    <string name="pad_guidance_move_right">Deplasați-vă puțin la dreapta</string>
+    <string name="pad_guidance_move_left">Deplasați-vă puțin la stânga</string>
+    <string name="pad_guidance_position_face">Plasați fața în cadru</string>
+    <string name="pad_guidance_too_close">Prea aproape — dați-vă puțin înapoi</string>
+    <string name="pad_guidance_move_closer">Apropiați-vă puțin</string>
+    <string name="pad_instruction_center_face">Centrați fața</string>
+    <string name="pad_instruction_hold_still">Stați nemișcat…</string>
+    <string name="pad_instruction_move_closer">Apropiați-vă</string>
+    <string name="pad_instruction_evaluating">Se evaluează…</string>
+    <string name="pad_instruction_try_again">Încercați din nou</string>
+    <string name="pad_instruction_verification_failed_retry">Verificarea a eșuat — se reîncearcă</string>
+</resources>

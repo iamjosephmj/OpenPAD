@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="pad_phase_verified">Imethibitishwa</string>
+    <string name="pad_phase_evaluating">Inatathmini…</string>
+    <string name="pad_phase_move_closer">Sogea karibu</string>
+    <string name="pad_phase_positioning">Kupanga nafasi</string>
+    <string name="pad_phase_verifying_identity">Kuthibitisha utambulisho</string>
+    <string name="pad_instruction_position_face">Weka uso wako kwenye fremu</string>
+    <string name="pad_instruction_hold_still_look">Kaa kimya na uangalie kamera</string>
+    <string name="pad_verdict_verified">Imethibitishwa</string>
+    <string name="pad_verdict_failed">Uthibitisho umeshindwa</string>
+    <string name="pad_verdict_live_subtitle">Uhai umethibitishwa kwa mafanikio</string>
+    <string name="pad_verdict_spoof_subtitle">Mashambulizi ya bandia yanashukiwa</string>
+    <string name="pad_verdict_complete">Uthibitisho umekamilika</string>
+    <string name="pad_verdict_unsuccessful">Uthibitisho haujafaulu</string>
+    <string name="pad_verdict_identity_confirmed">Utambulisho wako umethibitishwa.</string>
+    <string name="pad_verdict_identity_failed_retry">Hatukuweza kuthibitisha utambulisho wako.\nJaribio %1$d la %2$d</string>
+    <string name="pad_verdict_identity_failed_max">Hatukuweza kuthibitisha utambulisho wako.\nUmefika kiwango cha juu cha majaribio.</string>
+    <string name="pad_action_done">Imekamilika</string>
+    <string name="pad_action_try_again">Jaribu tena</string>
+    <string name="pad_action_close">Funga</string>
+    <string name="pad_intro_title">Uthibitisho wa utambulisho</string>
+    <string name="pad_intro_subtitle">Weka uso wako kwenye fremu na\nfuata maagizo kwenye skrini</string>
+    <string name="pad_intro_begin">Anza uthibitisho</string>
+    <string name="pad_guidance_move_down">Sogea chini kidogo</string>
+    <string name="pad_guidance_move_up">Sogea juu kidogo</string>
+    <string name="pad_guidance_move_right">Sogea kulia kidogo</string>
+    <string name="pad_guidance_move_left">Sogea kushoto kidogo</string>
+    <string name="pad_guidance_position_face">Weka uso wako kwenye fremu</string>
+    <string name="pad_guidance_too_close">Karibu sana — rudi nyuma kidogo</string>
+    <string name="pad_guidance_move_closer">Sogea karibu kidogo</string>
+    <string name="pad_instruction_center_face">Weka uso katikati</string>
+    <string name="pad_instruction_hold_still">Kaa kimya…</string>
+    <string name="pad_instruction_move_closer">Sogea karibu</string>
+    <string name="pad_instruction_evaluating">Inatathmini…</string>
+    <string name="pad_instruction_try_again">Jaribu tena</string>
+    <string name="pad_instruction_verification_failed_retry">Uthibitisho umeshindwa — inajaribu tena</string>
+</resources>

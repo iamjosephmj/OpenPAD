@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="pad_phase_verified">Verifierad</string>
+    <string name="pad_phase_evaluating">Utvärderar…</string>
+    <string name="pad_phase_move_closer">Kom närmare</string>
+    <string name="pad_phase_positioning">Positionering</string>
+    <string name="pad_phase_verifying_identity">Verifierar identitet</string>
+    <string name="pad_instruction_position_face">Placera ditt ansikte i ramen</string>
+    <string name="pad_instruction_hold_still_look">Håll stilla och titta in i kameran</string>
+    <string name="pad_verdict_verified">Verifierad</string>
+    <string name="pad_verdict_failed">Verifiering misslyckades</string>
+    <string name="pad_verdict_live_subtitle">Livlighet bekräftad</string>
+    <string name="pad_verdict_spoof_subtitle">Misstänkt förfalskningsattack</string>
+    <string name="pad_verdict_complete">Verifiering slutförd</string>
+    <string name="pad_verdict_unsuccessful">Verifiering misslyckades</string>
+    <string name="pad_verdict_identity_confirmed">Din identitet har bekräftats.</string>
+    <string name="pad_verdict_identity_failed_retry">Vi kunde inte bekräfta din identitet.\nFörsök %1$d av %2$d</string>
+    <string name="pad_verdict_identity_failed_max">Vi kunde inte bekräfta din identitet.\nMaximalt antal försök uppnått.</string>
+    <string name="pad_action_done">Klar</string>
+    <string name="pad_action_try_again">Försök igen</string>
+    <string name="pad_action_close">Stäng</string>
+    <string name="pad_intro_title">Identitetsverifiering</string>
+    <string name="pad_intro_subtitle">Placera ditt ansikte i ramen och\nfölj instruktionerna på skärmen</string>
+    <string name="pad_intro_begin">Starta verifiering</string>
+    <string name="pad_guidance_move_down">Flytta dig lite neråt</string>
+    <string name="pad_guidance_move_up">Flytta dig lite uppåt</string>
+    <string name="pad_guidance_move_right">Flytta dig lite åt höger</string>
+    <string name="pad_guidance_move_left">Flytta dig lite åt vänster</string>
+    <string name="pad_guidance_position_face">Placera ditt ansikte i ramen</string>
+    <string name="pad_guidance_too_close">För nära — backa lite</string>
+    <string name="pad_guidance_move_closer">Kom lite närmare</string>
+    <string name="pad_instruction_center_face">Centrera ansiktet</string>
+    <string name="pad_instruction_hold_still">Håll stilla…</string>
+    <string name="pad_instruction_move_closer">Kom närmare</string>
+    <string name="pad_instruction_evaluating">Utvärderar…</string>
+    <string name="pad_instruction_try_again">Försök igen</string>
+    <string name="pad_instruction_verification_failed_retry">Verifiering misslyckades — försöker igen</string>
+</resources>

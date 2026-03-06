@@ -57,6 +57,10 @@ object OpenPad {
         private set
 
     @Volatile
+    internal var appContext: Context? = null
+        private set
+
+    @Volatile
     internal var activeListener: OpenPadListener? = null
 
     @Volatile
@@ -106,6 +110,7 @@ object OpenPad {
         }
 
         sdkConfig = config
+        appContext = context.applicationContext
 
         if (initExecutor.isShutdown) {
             initExecutor = Executors.newSingleThreadExecutor()
@@ -197,7 +202,7 @@ object OpenPad {
             return null
         }
 
-        return OpenPadSessionImpl(p, sdkConfig.toInternal(), listener)
+        return OpenPadSessionImpl(p, sdkConfig.toInternal(), listener, appContext!!)
     }
 
     /**

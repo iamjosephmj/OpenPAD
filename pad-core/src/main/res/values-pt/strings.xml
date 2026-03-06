@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="pad_phase_verified">Verificado</string>
+    <string name="pad_phase_evaluating">A avaliar…</string>
+    <string name="pad_phase_move_closer">Aproxime-se</string>
+    <string name="pad_phase_positioning">A posicionar</string>
+    <string name="pad_phase_verifying_identity">A verificar identidade</string>
+    <string name="pad_instruction_position_face">Posicione o rosto na moldura</string>
+    <string name="pad_instruction_hold_still_look">Fique parado e olhe para a câmara</string>
+    <string name="pad_verdict_verified">Verificado</string>
+    <string name="pad_verdict_failed">Verificação falhou</string>
+    <string name="pad_verdict_live_subtitle">Vivacidade confirmada com sucesso</string>
+    <string name="pad_verdict_spoof_subtitle">Suspeita de ataque de falsificação</string>
+    <string name="pad_verdict_complete">Verificação concluída</string>
+    <string name="pad_verdict_unsuccessful">Verificação sem sucesso</string>
+    <string name="pad_verdict_identity_confirmed">A sua identidade foi confirmada.</string>
+    <string name="pad_verdict_identity_failed_retry">Não foi possível confirmar a sua identidade.\nTentativa %1$d de %2$d</string>
+    <string name="pad_verdict_identity_failed_max">Não foi possível confirmar a sua identidade.\nNúmero máximo de tentativas atingido.</string>
+    <string name="pad_action_done">Concluído</string>
+    <string name="pad_action_try_again">Tentar novamente</string>
+    <string name="pad_action_close">Fechar</string>
+    <string name="pad_intro_title">Verificação de identidade</string>
+    <string name="pad_intro_subtitle">Posicione o rosto na moldura e\nsiga as instruções no ecrã</string>
+    <string name="pad_intro_begin">Iniciar verificação</string>
+    <string name="pad_guidance_move_down">Mova-se um pouco para baixo</string>
+    <string name="pad_guidance_move_up">Mova-se um pouco para cima</string>
+    <string name="pad_guidance_move_right">Mova-se um pouco para a direita</string>
+    <string name="pad_guidance_move_left">Mova-se um pouco para a esquerda</string>
+    <string name="pad_guidance_position_face">Posicione o rosto na moldura</string>
+    <string name="pad_guidance_too_close">Demasiado perto — recue um pouco</string>
+    <string name="pad_guidance_move_closer">Aproxime-se um pouco</string>
+    <string name="pad_instruction_center_face">Centre o rosto</string>
+    <string name="pad_instruction_hold_still">Fique parado…</string>
+    <string name="pad_instruction_move_closer">Aproxime-se</string>
+    <string name="pad_instruction_evaluating">A avaliar…</string>
+    <string name="pad_instruction_try_again">Tentar novamente</string>
+    <string name="pad_instruction_verification_failed_retry">Verificação falhou — a tentar novamente</string>
+</resources>

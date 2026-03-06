@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="pad_phase_verified">Ellenőrizve</string>
+    <string name="pad_phase_evaluating">Kiértékelés…</string>
+    <string name="pad_phase_move_closer">Közelebb</string>
+    <string name="pad_phase_positioning">Pozicionálás</string>
+    <string name="pad_phase_verifying_identity">Személyazonosság ellenőrzése</string>
+    <string name="pad_instruction_position_face">Helyezze az arcát a keretbe</string>
+    <string name="pad_instruction_hold_still_look">Maradjon mozdulatlan és nézzen a kamerába</string>
+    <string name="pad_verdict_verified">Ellenőrizve</string>
+    <string name="pad_verdict_failed">Az ellenőrzés sikertelen</string>
+    <string name="pad_verdict_live_subtitle">Élőség sikeresen megerősítve</string>
+    <string name="pad_verdict_spoof_subtitle">Hamisítási támadás gyanúja</string>
+    <string name="pad_verdict_complete">Ellenőrzés befejezve</string>
+    <string name="pad_verdict_unsuccessful">Ellenőrzés sikertelen</string>
+    <string name="pad_verdict_identity_confirmed">Személyazonossága megerősítve.</string>
+    <string name="pad_verdict_identity_failed_retry">Nem sikerült megerősíteni a személyazonosságát.\nKísérlet: %1$d / %2$d</string>
+    <string name="pad_verdict_identity_failed_max">Nem sikerült megerősíteni a személyazonosságát.\nMaximális kísérletek elérve.</string>
+    <string name="pad_action_done">Kész</string>
+    <string name="pad_action_try_again">Újrapróbálás</string>
+    <string name="pad_action_close">Bezárás</string>
+    <string name="pad_intro_title">Személyazonosság ellenőrzése</string>
+    <string name="pad_intro_subtitle">Helyezze az arcát a keretbe és\nkövesse a képernyőn megjelenő utasításokat</string>
+    <string name="pad_intro_begin">Ellenőrzés indítása</string>
+    <string name="pad_guidance_move_down">Mozduljon egy kicsit lefelé</string>
+    <string name="pad_guidance_move_up">Mozduljon egy kicsit felfelé</string>
+    <string name="pad_guidance_move_right">Mozduljon egy kicsit jobbra</string>
+    <string name="pad_guidance_move_left">Mozduljon egy kicsit balra</string>
+    <string name="pad_guidance_position_face">Helyezze az arcát a keretbe</string>
+    <string name="pad_guidance_too_close">Túl közel — lépjen egy kicsit hátra</string>
+    <string name="pad_guidance_move_closer">Jöjjön egy kicsit közelebb</string>
+    <string name="pad_instruction_center_face">Középre az arcot</string>
+    <string name="pad_instruction_hold_still">Maradjon mozdulatlan…</string>
+    <string name="pad_instruction_move_closer">Közelebb</string>
+    <string name="pad_instruction_evaluating">Kiértékelés…</string>
+    <string name="pad_instruction_try_again">Újrapróbálás</string>
+    <string name="pad_instruction_verification_failed_retry">Ellenőrzés sikertelen — újrapróbálás</string>
+</resources>

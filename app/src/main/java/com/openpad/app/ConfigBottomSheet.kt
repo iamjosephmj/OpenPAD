@@ -1,45 +1,59 @@
 package com.openpad.app
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.animateContentSize
+import androidx.compose.animation.expandVertically
+import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
-import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FilterChip
-import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Slider
 import androidx.compose.material3.SliderDefaults
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Switch
 import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.res.stringResource
 import com.openpad.core.OpenPadConfig
 
 private val Blue = Color(0xFF2962FF)
+private val BlueDim = Color(0xFF448AFF)
 private val DimText = Color(0xFFB0BEC5)
+private val BgCard = Color(0xFF111B2E)
+private val BgCardBorder = Color(0xFF1E2D45)
+private val SheetBg = Color(0xFF1B2838)
 
 private data class PresetInfo(
     val name: String,
@@ -47,18 +61,19 @@ private data class PresetInfo(
     val config: OpenPadConfig
 )
 
+@Composable
 private fun buildPresets(deviceConfig: OpenPadConfig): List<PresetInfo> = listOf(
-    PresetInfo("Auto (Device)", "Auto-selects based on device hardware capabilities", deviceConfig),
-    PresetInfo("Default", "Balanced security and usability for general-purpose apps", OpenPadConfig.Default),
-    PresetInfo("High Security", "Strict thresholds for high-value identity verification", OpenPadConfig.HighSecurity),
-    PresetInfo("Fast Pass", "Quick verification for low-risk flows like attendance", OpenPadConfig.FastPass),
-    PresetInfo("Banking", "Financial-grade with strict photometric and depth gates", OpenPadConfig.Banking),
-    PresetInfo("Onboarding", "Relaxed thresholds to reduce first-time user drop-off", OpenPadConfig.Onboarding),
-    PresetInfo("Kiosk", "Tuned for fixed-mount kiosks with controlled lighting", OpenPadConfig.Kiosk),
-    PresetInfo("Low-End Device", "Budget phones: no enhancement, 5 FPS, relaxed thresholds", OpenPadConfig.LowEndDevice),
-    PresetInfo("Development", "Debug overlay enabled, relaxed gates for integration testing", OpenPadConfig.Development),
-    PresetInfo("High Throughput", "15 FPS for queues and turnstiles, moderate security", OpenPadConfig.HighThroughput),
-    PresetInfo("Max Accuracy", "Strictest gates, highest security, higher false-rejection rate", OpenPadConfig.MaxAccuracy),
+    PresetInfo(stringResource(R.string.preset_auto), stringResource(R.string.preset_auto_desc), deviceConfig),
+    PresetInfo(stringResource(R.string.preset_default), stringResource(R.string.preset_default_desc), OpenPadConfig.Default),
+    PresetInfo(stringResource(R.string.preset_high_security), stringResource(R.string.preset_high_security_desc), OpenPadConfig.HighSecurity),
+    PresetInfo(stringResource(R.string.preset_fast_pass), stringResource(R.string.preset_fast_pass_desc), OpenPadConfig.FastPass),
+    PresetInfo(stringResource(R.string.preset_banking), stringResource(R.string.preset_banking_desc), OpenPadConfig.Banking),
+    PresetInfo(stringResource(R.string.preset_onboarding), stringResource(R.string.preset_onboarding_desc), OpenPadConfig.Onboarding),
+    PresetInfo(stringResource(R.string.preset_kiosk), stringResource(R.string.preset_kiosk_desc), OpenPadConfig.Kiosk),
+    PresetInfo(stringResource(R.string.preset_low_end), stringResource(R.string.preset_low_end_desc), OpenPadConfig.LowEndDevice),
+    PresetInfo(stringResource(R.string.preset_development), stringResource(R.string.preset_development_desc), OpenPadConfig.Development),
+    PresetInfo(stringResource(R.string.preset_high_throughput), stringResource(R.string.preset_high_throughput_desc), OpenPadConfig.HighThroughput),
+    PresetInfo(stringResource(R.string.preset_max_accuracy), stringResource(R.string.preset_max_accuracy_desc), OpenPadConfig.MaxAccuracy),
 )
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
@@ -70,165 +85,299 @@ fun ConfigBottomSheet(
 ) {
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
     val context = LocalContext.current
-    val presets = remember { buildPresets(OpenPadConfig.forDevice(context)) }
+    val presets = buildPresets(OpenPadConfig.forDevice(context))
     val activePreset = presets.firstOrNull { it.config == config }
+
+    val expandedSections = remember {
+        mutableStateMapOf(
+            "verdict" to true,
+            "weights" to false,
+            "model" to false,
+            "signal" to false,
+            "performance" to true
+        )
+    }
 
     ModalBottomSheet(
         onDismissRequest = onDismiss,
         sheetState = sheetState,
-        containerColor = Color(0xFF1B2838),
-        shape = RoundedCornerShape(topStart = 20.dp, topEnd = 20.dp)
+        containerColor = SheetBg,
+        shape = RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp)
     ) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
                 .navigationBarsPadding()
                 .verticalScroll(rememberScrollState())
-                .padding(horizontal = 20.dp)
                 .padding(bottom = 24.dp)
         ) {
-            Text(
-                "Configuration",
-                fontSize = 20.sp,
-                fontWeight = FontWeight.Bold,
-                color = Color.White
-            )
-            Spacer(Modifier.height(4.dp))
-            Text(
-                "Changes apply on the next verification run.",
-                fontSize = 13.sp,
-                color = DimText
-            )
+            // Header with active preset badge
+            Column(modifier = Modifier.padding(horizontal = 20.dp)) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        stringResource(R.string.config_title),
+                        fontSize = 20.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = Color.White
+                    )
+                    if (activePreset != null) {
+                        Surface(
+                            shape = RoundedCornerShape(50),
+                            color = Blue.copy(alpha = 0.15f),
+                            border = BorderStroke(1.dp, Blue.copy(alpha = 0.3f))
+                        ) {
+                            Text(
+                                activePreset.name,
+                                fontSize = 11.sp,
+                                fontWeight = FontWeight.SemiBold,
+                                color = BlueDim,
+                                modifier = Modifier.padding(horizontal = 12.dp, vertical = 5.dp)
+                            )
+                        }
+                    }
+                }
+                Spacer(Modifier.height(4.dp))
+                Text(
+                    stringResource(R.string.config_subtitle),
+                    fontSize = 13.sp,
+                    color = DimText
+                )
+            }
 
-            SectionHeader("Preset")
-            FlowRow(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                verticalArrangement = Arrangement.spacedBy(8.dp)
+            // Preset cards in horizontal scroll
+            Spacer(Modifier.height(16.dp))
+            LazyRow(
+                contentPadding = PaddingValues(horizontal = 20.dp),
+                horizontalArrangement = Arrangement.spacedBy(10.dp)
             ) {
-                presets.forEach { preset ->
+                items(presets) { preset ->
                     val selected = preset == activePreset
-                    FilterChip(
+                    PresetCard(
+                        name = preset.name,
+                        description = preset.description,
                         selected = selected,
-                        onClick = { onConfigChange(preset.config) },
-                        label = {
-                            Text(preset.name, fontSize = 12.sp, fontWeight = FontWeight.Medium)
-                        },
-                        shape = RoundedCornerShape(20.dp),
-                        border = if (selected) null else BorderStroke(1.dp, Color.White.copy(alpha = 0.15f)),
-                        colors = FilterChipDefaults.filterChipColors(
-                            selectedContainerColor = Blue,
-                            selectedLabelColor = Color.White,
-                            containerColor = Color.Transparent,
-                            labelColor = Color.White.copy(alpha = 0.7f)
-                        )
+                        onClick = { onConfigChange(preset.config) }
                     )
                 }
             }
 
-            val description = activePreset?.description ?: "Custom configuration"
-            Spacer(Modifier.height(8.dp))
-            Text(
-                description,
-                fontSize = 12.sp,
-                color = if (activePreset != null) Blue.copy(alpha = 0.8f) else DimText,
-                fontWeight = FontWeight.Normal
-            )
-
-            // --- Verdict ---
-            SectionHeader("Verdict")
-            SliderRow("Liveness Threshold", config.livenessThreshold, 0f, 1f) {
-                onConfigChange(config.copy(livenessThreshold = it))
-            }
-            SliderRow("Face Match Threshold", config.faceMatchThreshold, 0f, 1f) {
-                onConfigChange(config.copy(faceMatchThreshold = it))
-            }
-            SliderRow("Face Detection Confidence", config.faceDetectionConfidence, 0f, 1f) {
-                onConfigChange(config.copy(faceDetectionConfidence = it))
-            }
-
-            // --- Scoring Weights ---
-            SectionHeader("Scoring Weights")
-            SliderRow("Texture Analysis", config.textureAnalysisWeight, 0f, 1f) {
-                onConfigChange(config.copy(textureAnalysisWeight = it))
-            }
-            SliderRow("Depth Gate (MN3)", config.depthGateWeight, 0f, 1f) {
-                onConfigChange(config.copy(depthGateWeight = it))
-            }
-            SliderRow("Depth Map (CDCN)", config.depthAnalysisWeight, 0f, 1f) {
-                onConfigChange(config.copy(depthAnalysisWeight = it))
-            }
-            SliderRow("Screen Detection", config.screenDetectionWeight, 0f, 1f) {
-                onConfigChange(config.copy(screenDetectionWeight = it))
-            }
-
-            // --- Model Thresholds ---
-            SectionHeader("Model Thresholds")
-            SliderRow("Depth Gate Min Score", config.depthGateMinScore, 0f, 1f) {
-                onConfigChange(config.copy(depthGateMinScore = it))
-            }
-            SliderRow("Depth Flatness Min", config.depthFlatnessMinScore, 0f, 1f) {
-                onConfigChange(config.copy(depthFlatnessMinScore = it))
-            }
-            SliderRow("Screen Detection Min Confidence", config.screenDetectionMinConfidence, 0f, 1f) {
-                onConfigChange(config.copy(screenDetectionMinConfidence = it))
-            }
-
-            // --- Signal Thresholds ---
-            SectionHeader("Signal Thresholds")
-            SliderRow("Moire Detection", config.moireDetectionThreshold, 0f, 1f) {
-                onConfigChange(config.copy(moireDetectionThreshold = it))
-            }
-            SliderRow("Screen Pattern (LBP)", config.screenPatternThreshold, 0f, 1f) {
-                onConfigChange(config.copy(screenPatternThreshold = it))
-            }
-            SliderRow("Photometric Min Score", config.photometricMinScore, 0f, 1f) {
-                onConfigChange(config.copy(photometricMinScore = it))
-            }
-            SliderRow("Spoof Attempt Penalty", config.spoofAttemptPenalty, 0f, 0.5f) {
-                onConfigChange(config.copy(spoofAttemptPenalty = it))
-            }
-
-            // --- Performance ---
-            SectionHeader("Performance")
-            IntSliderRow("Max FPS", config.maxFramesPerSecond, 1, 30) {
-                onConfigChange(config.copy(maxFramesPerSecond = it))
-            }
-            ToggleRow("Debug Overlay", config.enableDebugOverlay) {
-                onConfigChange(config.copy(enableDebugOverlay = it))
-            }
-            ToggleRow("Frame Enhancement (ESPCN)", config.enableFrameEnhancement) {
-                onConfigChange(config.copy(enableFrameEnhancement = it))
-            }
-
-            Spacer(Modifier.height(20.dp))
-            HorizontalDivider(color = Color.White.copy(alpha = 0.1f))
             Spacer(Modifier.height(16.dp))
 
-            OutlinedButton(
-                onClick = { onConfigChange(OpenPadConfig.Default) },
-                modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(12.dp)
-            ) {
-                Text("Reset to Default Preset", color = Blue)
-            }
+            // Collapsible sections in cards
+            Column(modifier = Modifier.padding(horizontal = 20.dp)) {
+                CollapsibleSection(
+                    title = stringResource(R.string.section_verdict),
+                    expanded = expandedSections["verdict"] == true,
+                    onToggle = { expandedSections["verdict"] = it }
+                ) {
+                    SliderRow(stringResource(R.string.slider_liveness_threshold), config.livenessThreshold, 0f, 1f, stringResource(R.string.range_lenient), stringResource(R.string.range_strict)) {
+                        onConfigChange(config.copy(livenessThreshold = it))
+                    }
+                    SliderRow(stringResource(R.string.slider_face_match_threshold), config.faceMatchThreshold, 0f, 1f, stringResource(R.string.range_lenient), stringResource(R.string.range_strict)) {
+                        onConfigChange(config.copy(faceMatchThreshold = it))
+                    }
+                    SliderRow(stringResource(R.string.slider_face_detection_confidence), config.faceDetectionConfidence, 0f, 1f, stringResource(R.string.range_low), stringResource(R.string.range_high)) {
+                        onConfigChange(config.copy(faceDetectionConfidence = it))
+                    }
+                }
 
-            Spacer(Modifier.height(8.dp))
+                Spacer(Modifier.height(10.dp))
+
+                CollapsibleSection(
+                    title = stringResource(R.string.section_scoring_weights),
+                    expanded = expandedSections["weights"] == true,
+                    onToggle = { expandedSections["weights"] = it }
+                ) {
+                    SliderRow(stringResource(R.string.slider_texture_analysis), config.textureAnalysisWeight, 0f, 1f) {
+                        onConfigChange(config.copy(textureAnalysisWeight = it))
+                    }
+                    SliderRow(stringResource(R.string.slider_depth_gate), config.depthGateWeight, 0f, 1f) {
+                        onConfigChange(config.copy(depthGateWeight = it))
+                    }
+                    SliderRow(stringResource(R.string.slider_depth_map), config.depthAnalysisWeight, 0f, 1f) {
+                        onConfigChange(config.copy(depthAnalysisWeight = it))
+                    }
+                    SliderRow(stringResource(R.string.slider_screen_detection), config.screenDetectionWeight, 0f, 1f) {
+                        onConfigChange(config.copy(screenDetectionWeight = it))
+                    }
+                }
+
+                Spacer(Modifier.height(10.dp))
+
+                CollapsibleSection(
+                    title = stringResource(R.string.section_model_thresholds),
+                    expanded = expandedSections["model"] == true,
+                    onToggle = { expandedSections["model"] = it }
+                ) {
+                    SliderRow(stringResource(R.string.slider_depth_gate_min), config.depthGateMinScore, 0f, 1f) {
+                        onConfigChange(config.copy(depthGateMinScore = it))
+                    }
+                    SliderRow(stringResource(R.string.slider_depth_flatness_min), config.depthFlatnessMinScore, 0f, 1f) {
+                        onConfigChange(config.copy(depthFlatnessMinScore = it))
+                    }
+                    SliderRow(stringResource(R.string.slider_screen_detection_min), config.screenDetectionMinConfidence, 0f, 1f) {
+                        onConfigChange(config.copy(screenDetectionMinConfidence = it))
+                    }
+                }
+
+                Spacer(Modifier.height(10.dp))
+
+                CollapsibleSection(
+                    title = stringResource(R.string.section_signal_thresholds),
+                    expanded = expandedSections["signal"] == true,
+                    onToggle = { expandedSections["signal"] = it }
+                ) {
+                    SliderRow(stringResource(R.string.slider_moire_detection), config.moireDetectionThreshold, 0f, 1f) {
+                        onConfigChange(config.copy(moireDetectionThreshold = it))
+                    }
+                    SliderRow(stringResource(R.string.slider_screen_pattern), config.screenPatternThreshold, 0f, 1f) {
+                        onConfigChange(config.copy(screenPatternThreshold = it))
+                    }
+                    SliderRow(stringResource(R.string.slider_photometric_min), config.photometricMinScore, 0f, 1f) {
+                        onConfigChange(config.copy(photometricMinScore = it))
+                    }
+                    SliderRow(stringResource(R.string.slider_spoof_penalty), config.spoofAttemptPenalty, 0f, 0.5f) {
+                        onConfigChange(config.copy(spoofAttemptPenalty = it))
+                    }
+                }
+
+                Spacer(Modifier.height(10.dp))
+
+                CollapsibleSection(
+                    title = stringResource(R.string.section_performance),
+                    expanded = expandedSections["performance"] == true,
+                    onToggle = { expandedSections["performance"] = it }
+                ) {
+                    IntSliderRow(stringResource(R.string.slider_max_fps), config.maxFramesPerSecond, 1, 30) {
+                        onConfigChange(config.copy(maxFramesPerSecond = it))
+                    }
+                    ToggleRow(stringResource(R.string.toggle_debug_overlay), config.enableDebugOverlay) {
+                        onConfigChange(config.copy(enableDebugOverlay = it))
+                    }
+                    ToggleRow(stringResource(R.string.toggle_frame_enhancement), config.enableFrameEnhancement) {
+                        onConfigChange(config.copy(enableFrameEnhancement = it))
+                    }
+                }
+
+                Spacer(Modifier.height(16.dp))
+                HorizontalDivider(color = Color.White.copy(alpha = 0.06f))
+                Spacer(Modifier.height(16.dp))
+
+                OutlinedButton(
+                    onClick = { onConfigChange(OpenPadConfig.Default) },
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(50),
+                    border = BorderStroke(1.dp, BgCardBorder)
+                ) {
+                    Text(stringResource(R.string.config_reset), color = Blue, fontWeight = FontWeight.Medium)
+                }
+
+                Spacer(Modifier.height(8.dp))
+            }
         }
     }
 }
 
 @Composable
-private fun SectionHeader(title: String) {
-    Spacer(Modifier.height(20.dp))
-    Text(
-        title,
-        fontSize = 14.sp,
-        fontWeight = FontWeight.SemiBold,
-        color = Blue,
-        letterSpacing = 0.5.sp
-    )
-    Spacer(Modifier.height(8.dp))
+private fun PresetCard(
+    name: String,
+    description: String,
+    selected: Boolean,
+    onClick: () -> Unit
+) {
+    Surface(
+        onClick = onClick,
+        modifier = Modifier
+            .width(140.dp)
+            .height(76.dp),
+        shape = RoundedCornerShape(20.dp),
+        color = if (selected) Blue.copy(alpha = 0.15f) else BgCard,
+        border = BorderStroke(
+            1.dp,
+            if (selected) Blue.copy(alpha = 0.5f) else BgCardBorder
+        )
+    ) {
+        Column(
+            modifier = Modifier.padding(12.dp),
+            verticalArrangement = Arrangement.SpaceBetween
+        ) {
+            Text(
+                name,
+                fontSize = 12.sp,
+                fontWeight = FontWeight.SemiBold,
+                color = if (selected) BlueDim else Color.White.copy(alpha = 0.9f),
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
+            )
+            Text(
+                description,
+                fontSize = 10.sp,
+                color = if (selected) Blue.copy(alpha = 0.7f) else DimText.copy(alpha = 0.6f),
+                maxLines = 2,
+                overflow = TextOverflow.Ellipsis,
+                lineHeight = 13.sp
+            )
+        }
+    }
+}
+
+@Composable
+private fun CollapsibleSection(
+    title: String,
+    expanded: Boolean,
+    onToggle: (Boolean) -> Unit,
+    content: @Composable () -> Unit
+) {
+    Surface(
+        shape = RoundedCornerShape(20.dp),
+        color = BgCard,
+        border = BorderStroke(1.dp, BgCardBorder),
+        modifier = Modifier.animateContentSize()
+    ) {
+        Column {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clickable { onToggle(!expanded) }
+                    .padding(horizontal = 16.dp, vertical = 14.dp),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    title,
+                    fontSize = 14.sp,
+                    fontWeight = FontWeight.SemiBold,
+                    color = Blue,
+                    letterSpacing = 0.5.sp
+                )
+                Text(
+                    if (expanded) "\u25B2" else "\u25BC",
+                    fontSize = 10.sp,
+                    color = DimText
+                )
+            }
+
+            AnimatedVisibility(
+                visible = expanded,
+                enter = expandVertically(),
+                exit = shrinkVertically()
+            ) {
+                Column(
+                    modifier = Modifier.padding(
+                        start = 16.dp,
+                        end = 16.dp,
+                        bottom = 12.dp
+                    )
+                ) {
+                    content()
+                }
+            }
+        }
+    }
 }
 
 @Composable
@@ -237,6 +386,8 @@ private fun SliderRow(
     value: Float,
     min: Float,
     max: Float,
+    rangeStart: String? = null,
+    rangeEnd: String? = null,
     onValueChange: (Float) -> Unit
 ) {
     Column(modifier = Modifier.padding(vertical = 4.dp)) {
@@ -260,9 +411,18 @@ private fun SliderRow(
             colors = SliderDefaults.colors(
                 thumbColor = Blue,
                 activeTrackColor = Blue,
-                inactiveTrackColor = Color.White.copy(alpha = 0.1f)
+                inactiveTrackColor = Color.White.copy(alpha = 0.08f)
             )
         )
+        if (rangeStart != null && rangeEnd != null) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Text(rangeStart, fontSize = 10.sp, color = DimText.copy(alpha = 0.5f))
+                Text(rangeEnd, fontSize = 10.sp, color = DimText.copy(alpha = 0.5f))
+            }
+        }
     }
 }
 
@@ -296,7 +456,7 @@ private fun IntSliderRow(
             colors = SliderDefaults.colors(
                 thumbColor = Blue,
                 activeTrackColor = Blue,
-                inactiveTrackColor = Color.White.copy(alpha = 0.1f)
+                inactiveTrackColor = Color.White.copy(alpha = 0.08f)
             )
         )
     }

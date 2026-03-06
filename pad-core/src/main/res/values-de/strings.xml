@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="pad_phase_verified">Verifiziert</string>
+    <string name="pad_phase_evaluating">Auswertung…</string>
+    <string name="pad_phase_move_closer">Näher kommen</string>
+    <string name="pad_phase_positioning">Positionierung</string>
+    <string name="pad_phase_verifying_identity">Identität wird überprüft</string>
+    <string name="pad_instruction_position_face">Positionieren Sie Ihr Gesicht im Rahmen</string>
+    <string name="pad_instruction_hold_still_look">Stillhalten und in die Kamera schauen</string>
+    <string name="pad_verdict_verified">Verifiziert</string>
+    <string name="pad_verdict_failed">Verifizierung fehlgeschlagen</string>
+    <string name="pad_verdict_live_subtitle">Lebenderkennung erfolgreich bestätigt</string>
+    <string name="pad_verdict_spoof_subtitle">Spoofing-Angriff vermutet</string>
+    <string name="pad_verdict_complete">Verifizierung abgeschlossen</string>
+    <string name="pad_verdict_unsuccessful">Verifizierung nicht erfolgreich</string>
+    <string name="pad_verdict_identity_confirmed">Ihre Identität wurde bestätigt.</string>
+    <string name="pad_verdict_identity_failed_retry">Ihre Identität konnte nicht bestätigt werden.\nVersuch %1$d von %2$d</string>
+    <string name="pad_verdict_identity_failed_max">Ihre Identität konnte nicht bestätigt werden.\nMaximale Versuche erreicht.</string>
+    <string name="pad_action_done">Fertig</string>
+    <string name="pad_action_try_again">Erneut versuchen</string>
+    <string name="pad_action_close">Schließen</string>
+    <string name="pad_intro_title">Identitätsüberprüfung</string>
+    <string name="pad_intro_subtitle">Positionieren Sie Ihr Gesicht im Rahmen und\nfolgen Sie den Anweisungen auf dem Bildschirm</string>
+    <string name="pad_intro_begin">Verifizierung starten</string>
+    <string name="pad_guidance_move_down">Etwas nach unten bewegen</string>
+    <string name="pad_guidance_move_up">Etwas nach oben bewegen</string>
+    <string name="pad_guidance_move_right">Etwas nach rechts bewegen</string>
+    <string name="pad_guidance_move_left">Etwas nach links bewegen</string>
+    <string name="pad_guidance_position_face">Positionieren Sie Ihr Gesicht im Rahmen</string>
+    <string name="pad_guidance_too_close">Zu nah — etwas zurücktreten</string>
+    <string name="pad_guidance_move_closer">Etwas näher kommen</string>
+    <string name="pad_instruction_center_face">Gesicht zentrieren</string>
+    <string name="pad_instruction_hold_still">Stillhalten…</string>
+    <string name="pad_instruction_move_closer">Näher kommen</string>
+    <string name="pad_instruction_evaluating">Auswertung…</string>
+    <string name="pad_instruction_try_again">Erneut versuchen</string>
+    <string name="pad_instruction_verification_failed_retry">Verifizierung fehlgeschlagen — erneuter Versuch</string>
+</resources>

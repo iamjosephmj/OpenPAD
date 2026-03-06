@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="pad_phase_verified">Підтверджено</string>
+    <string name="pad_phase_evaluating">Оцінювання…</string>
+    <string name="pad_phase_move_closer">Підійдіть ближче</string>
+    <string name="pad_phase_positioning">Позиціювання</string>
+    <string name="pad_phase_verifying_identity">Перевірка особи</string>
+    <string name="pad_instruction_position_face">Розташуйте обличчя в рамці</string>
+    <string name="pad_instruction_hold_still_look">Не рухайтесь і дивіться в камеру</string>
+    <string name="pad_verdict_verified">Підтверджено</string>
+    <string name="pad_verdict_failed">Перевірка не пройдена</string>
+    <string name="pad_verdict_live_subtitle">Живість успішно підтверджена</string>
+    <string name="pad_verdict_spoof_subtitle">Підозра на підробку</string>
+    <string name="pad_verdict_complete">Перевірка завершена</string>
+    <string name="pad_verdict_unsuccessful">Перевірка не вдалася</string>
+    <string name="pad_verdict_identity_confirmed">Вашу особу підтверджено.</string>
+    <string name="pad_verdict_identity_failed_retry">Не вдалося підтвердити вашу особу.\nСпроба %1$d з %2$d</string>
+    <string name="pad_verdict_identity_failed_max">Не вдалося підтвердити вашу особу.\nДосягнуто максимальну кількість спроб.</string>
+    <string name="pad_action_done">Готово</string>
+    <string name="pad_action_try_again">Спробувати ще</string>
+    <string name="pad_action_close">Закрити</string>
+    <string name="pad_intro_title">Перевірка особи</string>
+    <string name="pad_intro_subtitle">Розташуйте обличчя в рамці та\nдотримуйтесь інструкцій на екрані</string>
+    <string name="pad_intro_begin">Почати перевірку</string>
+    <string name="pad_guidance_move_down">Перемістіться трохи вниз</string>
+    <string name="pad_guidance_move_up">Перемістіться трохи вгору</string>
+    <string name="pad_guidance_move_right">Перемістіться трохи вправо</string>
+    <string name="pad_guidance_move_left">Перемістіться трохи вліво</string>
+    <string name="pad_guidance_position_face">Розташуйте обличчя в рамці</string>
+    <string name="pad_guidance_too_close">Занадто близько — відійдіть трохи</string>
+    <string name="pad_guidance_move_closer">Підійдіть трохи ближче</string>
+    <string name="pad_instruction_center_face">Відцентруйте обличчя</string>
+    <string name="pad_instruction_hold_still">Не рухайтесь…</string>
+    <string name="pad_instruction_move_closer">Підійдіть ближче</string>
+    <string name="pad_instruction_evaluating">Оцінювання…</string>
+    <string name="pad_instruction_try_again">Спробувати ще</string>
+    <string name="pad_instruction_verification_failed_retry">Перевірка не пройдена — повторна спроба</string>
+</resources>

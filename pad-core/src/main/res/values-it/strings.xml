@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="pad_phase_verified">Verificato</string>
+    <string name="pad_phase_evaluating">Valutazione…</string>
+    <string name="pad_phase_move_closer">Avvicinati</string>
+    <string name="pad_phase_positioning">Posizionamento</string>
+    <string name="pad_phase_verifying_identity">Verifica dell\'identità</string>
+    <string name="pad_instruction_position_face">Posiziona il viso nella cornice</string>
+    <string name="pad_instruction_hold_still_look">Resta fermo e guarda la fotocamera</string>
+    <string name="pad_verdict_verified">Verificato</string>
+    <string name="pad_verdict_failed">Verifica fallita</string>
+    <string name="pad_verdict_live_subtitle">Vivacità confermata con successo</string>
+    <string name="pad_verdict_spoof_subtitle">Sospetto attacco di spoofing</string>
+    <string name="pad_verdict_complete">Verifica completata</string>
+    <string name="pad_verdict_unsuccessful">Verifica non riuscita</string>
+    <string name="pad_verdict_identity_confirmed">La tua identità è stata confermata.</string>
+    <string name="pad_verdict_identity_failed_retry">Non siamo riusciti a confermare la tua identità.\nTentativo %1$d di %2$d</string>
+    <string name="pad_verdict_identity_failed_max">Non siamo riusciti a confermare la tua identità.\nNumero massimo di tentativi raggiunto.</string>
+    <string name="pad_action_done">Fatto</string>
+    <string name="pad_action_try_again">Riprova</string>
+    <string name="pad_action_close">Chiudi</string>
+    <string name="pad_intro_title">Verifica dell\'identità</string>
+    <string name="pad_intro_subtitle">Posiziona il viso nella cornice e\nsegui le istruzioni sullo schermo</string>
+    <string name="pad_intro_begin">Inizia la verifica</string>
+    <string name="pad_guidance_move_down">Spostati un po\' in basso</string>
+    <string name="pad_guidance_move_up">Spostati un po\' in alto</string>
+    <string name="pad_guidance_move_right">Spostati un po\' a destra</string>
+    <string name="pad_guidance_move_left">Spostati un po\' a sinistra</string>
+    <string name="pad_guidance_position_face">Posiziona il viso nella cornice</string>
+    <string name="pad_guidance_too_close">Troppo vicino — indietreggia un po\'</string>
+    <string name="pad_guidance_move_closer">Avvicinati un po\'</string>
+    <string name="pad_instruction_center_face">Centra il viso</string>
+    <string name="pad_instruction_hold_still">Resta fermo…</string>
+    <string name="pad_instruction_move_closer">Avvicinati</string>
+    <string name="pad_instruction_evaluating">Valutazione…</string>
+    <string name="pad_instruction_try_again">Riprova</string>
+    <string name="pad_instruction_verification_failed_retry">Verifica fallita — nuovo tentativo</string>
+</resources>

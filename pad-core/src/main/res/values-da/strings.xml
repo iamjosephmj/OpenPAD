@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="pad_phase_verified">Bekræftet</string>
+    <string name="pad_phase_evaluating">Evaluerer…</string>
+    <string name="pad_phase_move_closer">Kom tættere på</string>
+    <string name="pad_phase_positioning">Positionering</string>
+    <string name="pad_phase_verifying_identity">Bekræfter identitet</string>
+    <string name="pad_instruction_position_face">Placer dit ansigt i rammen</string>
+    <string name="pad_instruction_hold_still_look">Hold stille og se ind i kameraet</string>
+    <string name="pad_verdict_verified">Bekræftet</string>
+    <string name="pad_verdict_failed">Bekræftelse mislykkedes</string>
+    <string name="pad_verdict_live_subtitle">Livlighed bekræftet</string>
+    <string name="pad_verdict_spoof_subtitle">Mistanke om spoofing-angreb</string>
+    <string name="pad_verdict_complete">Bekræftelse fuldført</string>
+    <string name="pad_verdict_unsuccessful">Bekræftelse mislykkedes</string>
+    <string name="pad_verdict_identity_confirmed">Din identitet er blevet bekræftet.</string>
+    <string name="pad_verdict_identity_failed_retry">Vi kunne ikke bekræfte din identitet.\nForsøg %1$d af %2$d</string>
+    <string name="pad_verdict_identity_failed_max">Vi kunne ikke bekræfte din identitet.\nMaksimalt antal forsøg nået.</string>
+    <string name="pad_action_done">Færdig</string>
+    <string name="pad_action_try_again">Prøv igen</string>
+    <string name="pad_action_close">Luk</string>
+    <string name="pad_intro_title">Identitetsbekræftelse</string>
+    <string name="pad_intro_subtitle">Placer dit ansigt i rammen og\nfølg instruktionerne på skærmen</string>
+    <string name="pad_intro_begin">Begynd bekræftelse</string>
+    <string name="pad_guidance_move_down">Flyt lidt ned</string>
+    <string name="pad_guidance_move_up">Flyt lidt op</string>
+    <string name="pad_guidance_move_right">Flyt lidt til højre</string>
+    <string name="pad_guidance_move_left">Flyt lidt til venstre</string>
+    <string name="pad_guidance_position_face">Placer dit ansigt i rammen</string>
+    <string name="pad_guidance_too_close">For tæt på — flyt lidt tilbage</string>
+    <string name="pad_guidance_move_closer">Kom lidt tættere på</string>
+    <string name="pad_instruction_center_face">Centrer dit ansigt</string>
+    <string name="pad_instruction_hold_still">Hold stille…</string>
+    <string name="pad_instruction_move_closer">Kom tættere på</string>
+    <string name="pad_instruction_evaluating">Evaluerer…</string>
+    <string name="pad_instruction_try_again">Prøv igen</string>
+    <string name="pad_instruction_verification_failed_retry">Bekræftelse mislykkedes — prøver igen</string>
+</resources>

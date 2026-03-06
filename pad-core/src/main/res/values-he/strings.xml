@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="pad_phase_verified">אומת</string>
+    <string name="pad_phase_evaluating">מעריך…</string>
+    <string name="pad_phase_move_closer">התקרב</string>
+    <string name="pad_phase_positioning">מיקום</string>
+    <string name="pad_phase_verifying_identity">מאמת זהות</string>
+    <string name="pad_instruction_position_face">מקם את הפנים במסגרת</string>
+    <string name="pad_instruction_hold_still_look">הישאר במקום והסתכל למצלמה</string>
+    <string name="pad_verdict_verified">אומת</string>
+    <string name="pad_verdict_failed">האימות נכשל</string>
+    <string name="pad_verdict_live_subtitle">חיות אושרה בהצלחה</string>
+    <string name="pad_verdict_spoof_subtitle">חשד למתקפת התחזות</string>
+    <string name="pad_verdict_complete">האימות הושלם</string>
+    <string name="pad_verdict_unsuccessful">האימות לא הצליח</string>
+    <string name="pad_verdict_identity_confirmed">הזהות שלך אושרה.</string>
+    <string name="pad_verdict_identity_failed_retry">לא הצלחנו לאמת את זהותך.\nניסיון %1$d מתוך %2$d</string>
+    <string name="pad_verdict_identity_failed_max">לא הצלחנו לאמת את זהותך.\nהגעת למספר הניסיונות המרבי.</string>
+    <string name="pad_action_done">סיום</string>
+    <string name="pad_action_try_again">נסה שוב</string>
+    <string name="pad_action_close">סגור</string>
+    <string name="pad_intro_title">אימות זהות</string>
+    <string name="pad_intro_subtitle">מקם את הפנים במסגרת ועקוב\nאחר ההנחיות על המסך</string>
+    <string name="pad_intro_begin">התחל אימות</string>
+    <string name="pad_guidance_move_down">זוז קצת למטה</string>
+    <string name="pad_guidance_move_up">זוז קצת למעלה</string>
+    <string name="pad_guidance_move_right">זוז קצת ימינה</string>
+    <string name="pad_guidance_move_left">זוז קצת שמאלה</string>
+    <string name="pad_guidance_position_face">מקם את הפנים במסגרת</string>
+    <string name="pad_guidance_too_close">קרוב מדי — סוג קצת אחורה</string>
+    <string name="pad_guidance_move_closer">התקרב קצת</string>
+    <string name="pad_instruction_center_face">מרכז את הפנים</string>
+    <string name="pad_instruction_hold_still">הישאר במקום…</string>
+    <string name="pad_instruction_move_closer">התקרב</string>
+    <string name="pad_instruction_evaluating">מעריך…</string>
+    <string name="pad_instruction_try_again">נסה שוב</string>
+    <string name="pad_instruction_verification_failed_retry">האימות נכשל — מנסה שוב</string>
+</resources>

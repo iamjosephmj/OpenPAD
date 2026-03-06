@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="pad_phase_verified">Vahvistettu</string>
+    <string name="pad_phase_evaluating">Arvioidaan…</string>
+    <string name="pad_phase_move_closer">Tule lähemmäs</string>
+    <string name="pad_phase_positioning">Sijoittelu</string>
+    <string name="pad_phase_verifying_identity">Henkilöllisyys varmistetaan</string>
+    <string name="pad_instruction_position_face">Aseta kasvosi kehykseen</string>
+    <string name="pad_instruction_hold_still_look">Pysy paikallasi ja katso kameraan</string>
+    <string name="pad_verdict_verified">Vahvistettu</string>
+    <string name="pad_verdict_failed">Varmennus epäonnistui</string>
+    <string name="pad_verdict_live_subtitle">Elävyys vahvistettu</string>
+    <string name="pad_verdict_spoof_subtitle">Epäilty huijausyritys</string>
+    <string name="pad_verdict_complete">Varmennus valmis</string>
+    <string name="pad_verdict_unsuccessful">Varmennus epäonnistui</string>
+    <string name="pad_verdict_identity_confirmed">Henkilöllisyytesi on vahvistettu.</string>
+    <string name="pad_verdict_identity_failed_retry">Henkilöllisyyttäsi ei voitu vahvistaa.\nYritys %1$d / %2$d</string>
+    <string name="pad_verdict_identity_failed_max">Henkilöllisyyttäsi ei voitu vahvistaa.\nYritykset käytetty.</string>
+    <string name="pad_action_done">Valmis</string>
+    <string name="pad_action_try_again">Yritä uudelleen</string>
+    <string name="pad_action_close">Sulje</string>
+    <string name="pad_intro_title">Henkilöllisyyden varmennus</string>
+    <string name="pad_intro_subtitle">Aseta kasvosi kehykseen ja\nseuraa näytön ohjeita</string>
+    <string name="pad_intro_begin">Aloita varmennus</string>
+    <string name="pad_guidance_move_down">Siirry hieman alaspäin</string>
+    <string name="pad_guidance_move_up">Siirry hieman ylöspäin</string>
+    <string name="pad_guidance_move_right">Siirry hieman oikealle</string>
+    <string name="pad_guidance_move_left">Siirry hieman vasemmalle</string>
+    <string name="pad_guidance_position_face">Aseta kasvosi kehykseen</string>
+    <string name="pad_guidance_too_close">Liian lähellä — siirry taaksepäin</string>
+    <string name="pad_guidance_move_closer">Tule hieman lähemmäs</string>
+    <string name="pad_instruction_center_face">Keskitä kasvosi</string>
+    <string name="pad_instruction_hold_still">Pysy paikallasi…</string>
+    <string name="pad_instruction_move_closer">Tule lähemmäs</string>
+    <string name="pad_instruction_evaluating">Arvioidaan…</string>
+    <string name="pad_instruction_try_again">Yritä uudelleen</string>
+    <string name="pad_instruction_verification_failed_retry">Varmennus epäonnistui — yritetään uudelleen</string>
+</resources>

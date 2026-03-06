@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="pad_phase_verified">Bekreftet</string>
+    <string name="pad_phase_evaluating">Evaluerer…</string>
+    <string name="pad_phase_move_closer">Kom nærmere</string>
+    <string name="pad_phase_positioning">Posisjonering</string>
+    <string name="pad_phase_verifying_identity">Bekrefter identitet</string>
+    <string name="pad_instruction_position_face">Plasser ansiktet ditt i rammen</string>
+    <string name="pad_instruction_hold_still_look">Hold stille og se inn i kameraet</string>
+    <string name="pad_verdict_verified">Bekreftet</string>
+    <string name="pad_verdict_failed">Bekreftelse mislyktes</string>
+    <string name="pad_verdict_live_subtitle">Livlighet bekreftet</string>
+    <string name="pad_verdict_spoof_subtitle">Mistenkt forfalskning</string>
+    <string name="pad_verdict_complete">Bekreftelse fullført</string>
+    <string name="pad_verdict_unsuccessful">Bekreftelse mislyktes</string>
+    <string name="pad_verdict_identity_confirmed">Identiteten din er bekreftet.</string>
+    <string name="pad_verdict_identity_failed_retry">Vi kunne ikke bekrefte identiteten din.\nForsøk %1$d av %2$d</string>
+    <string name="pad_verdict_identity_failed_max">Vi kunne ikke bekrefte identiteten din.\nMaksimalt antall forsøk nådd.</string>
+    <string name="pad_action_done">Ferdig</string>
+    <string name="pad_action_try_again">Prøv igjen</string>
+    <string name="pad_action_close">Lukk</string>
+    <string name="pad_intro_title">Identitetsbekreftelse</string>
+    <string name="pad_intro_subtitle">Plasser ansiktet ditt i rammen og\nfølg instruksjonene på skjermen</string>
+    <string name="pad_intro_begin">Start bekreftelse</string>
+    <string name="pad_guidance_move_down">Flytt litt ned</string>
+    <string name="pad_guidance_move_up">Flytt litt opp</string>
+    <string name="pad_guidance_move_right">Flytt litt til høyre</string>
+    <string name="pad_guidance_move_left">Flytt litt til venstre</string>
+    <string name="pad_guidance_position_face">Plasser ansiktet ditt i rammen</string>
+    <string name="pad_guidance_too_close">For nærme — gå litt tilbake</string>
+    <string name="pad_guidance_move_closer">Kom litt nærmere</string>
+    <string name="pad_instruction_center_face">Sentrer ansiktet</string>
+    <string name="pad_instruction_hold_still">Hold stille…</string>
+    <string name="pad_instruction_move_closer">Kom nærmere</string>
+    <string name="pad_instruction_evaluating">Evaluerer…</string>
+    <string name="pad_instruction_try_again">Prøv igjen</string>
+    <string name="pad_instruction_verification_failed_retry">Bekreftelse mislyktes — prøver igjen</string>
+</resources>

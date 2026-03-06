@@ -3,7 +3,6 @@ package com.openpad.core.ui
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.FastOutSlowInEasing
-import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.scaleIn
@@ -14,12 +13,9 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
@@ -36,9 +32,11 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.openpad.core.R
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -133,21 +131,13 @@ internal fun PadRoute(
 private fun VerdictOverlay(outcome: PadOutcome) {
     val isLive = outcome is PadOutcome.LiveConfirmed
     val accentColor = if (isLive) PadColors.Success else PadColors.Error
-    val label = if (isLive) "Verified" else "Verification Failed"
+    val label = if (isLive) stringResource(R.string.pad_verdict_verified)
+        else stringResource(R.string.pad_verdict_failed)
+    val subtitle = if (isLive) stringResource(R.string.pad_verdict_live_subtitle)
+        else stringResource(R.string.pad_verdict_spoof_subtitle)
 
     var visible by remember { mutableStateOf(false) }
     LaunchedEffect(Unit) { visible = true }
-
-    val progress = remember { Animatable(0f) }
-    LaunchedEffect(Unit) {
-        progress.animateTo(
-            targetValue = 1f,
-            animationSpec = tween(
-                durationMillis = VERDICT_DISPLAY_MS.toInt(),
-                easing = LinearEasing
-            )
-        )
-    }
 
     Box(
         modifier = Modifier
@@ -163,14 +153,14 @@ private fun VerdictOverlay(outcome: PadOutcome) {
                 visible = visible,
                 enter = scaleIn(
                     animationSpec = tween(400, easing = FastOutSlowInEasing),
-                    initialScale = 0.3f
+                    initialScale = 0.5f
                 ) + fadeIn(animationSpec = tween(300))
             ) {
                 Box(
                     modifier = Modifier
                         .size(100.dp)
                         .clip(CircleShape)
-                        .background(accentColor.copy(alpha = 0.12f)),
+                        .background(accentColor.copy(alpha = 0.10f)),
                     contentAlignment = Alignment.Center
                 ) {
                     if (isLive) {
@@ -189,8 +179,8 @@ private fun VerdictOverlay(outcome: PadOutcome) {
             ) {
                 Text(
                     text = label,
-                    fontSize = 22.sp,
-                    fontWeight = FontWeight.SemiBold,
+                    fontSize = 24.sp,
+                    fontWeight = FontWeight.Bold,
                     color = PadColors.OnSurfaceHigh,
                     letterSpacing = 0.5.sp
                 )
@@ -203,26 +193,13 @@ private fun VerdictOverlay(outcome: PadOutcome) {
                 enter = fadeIn(tween(300, delayMillis = 350))
             ) {
                 Text(
-                    text = if (isLive) "Liveness confirmed successfully"
-                    else "Presentation attack suspected",
+                    text = subtitle,
                     fontSize = 14.sp,
                     fontWeight = FontWeight.Normal,
                     color = PadColors.OnSurface.copy(alpha = 0.6f)
                 )
             }
         }
-
-        LinearProgressIndicator(
-            progress = { progress.value },
-            modifier = Modifier
-                .fillMaxWidth()
-                .align(Alignment.BottomCenter)
-                .padding(horizontal = 48.dp, vertical = 48.dp)
-                .height(3.dp),
-            color = accentColor,
-            trackColor = PadColors.SurfaceVariant,
-            strokeCap = StrokeCap.Round
-        )
     }
 }
 

@@ -23,10 +23,12 @@ import com.openpad.core.challenge.ChallengePhase
 import com.openpad.core.challenge.ChallengeManager
 import com.openpad.core.evaluation.ChallengeEvaluator
 import com.openpad.core.evaluation.OpenPadResultFactory
+import com.openpad.core.R
 import com.openpad.core.evaluation.PositioningGuidance
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
+import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -42,6 +44,7 @@ import java.util.concurrent.atomic.AtomicBoolean
 
 internal class PadViewModel @AssistedInject constructor(
     private val pipeline: PadPipelineContract,
+    @ApplicationContext private val appContext: Context,
     @Assisted private val sessionStartMs: Long,
     @Assisted val callback: PadSessionCallback,
     @Assisted val themeConfig: OpenPadThemeConfig
@@ -215,7 +218,7 @@ internal class PadViewModel @AssistedInject constructor(
                     copy(
                         phase = ChallengePhase.POSITIONING,
                         challengeProgress = 0.1f,
-                        messageOverride = computePositioningGuidance(result) ?: "Center your face"
+                        messageOverride = computePositioningGuidance(result) ?: appContext.getString(R.string.pad_instruction_center_face)
                     )
                 }
             }
@@ -224,9 +227,9 @@ internal class PadViewModel @AssistedInject constructor(
                 startChallengeTimeoutIfNeeded()
                 val ev = challenge.evidence
                 val msg = if (ev.maxAreaIncrease >= config.challengeCloserMinIncrease) {
-                    "Hold still\u2026"
+                    appContext.getString(R.string.pad_instruction_hold_still)
                 } else {
-                    "Move closer"
+                    appContext.getString(R.string.pad_instruction_move_closer)
                 }
 
                 val holdProgress = if (config.challengeStableFrames > 0) {
@@ -250,7 +253,7 @@ internal class PadViewModel @AssistedInject constructor(
                     copy(
                         phase = ChallengePhase.EVALUATING,
                         challengeProgress = 0.85f,
-                        messageOverride = "Evaluating\u2026"
+                        messageOverride = appContext.getString(R.string.pad_instruction_evaluating)
                     )
                 }
                 if (evaluateJob == null || evaluateJob?.isActive != true) {
@@ -270,7 +273,7 @@ internal class PadViewModel @AssistedInject constructor(
     }
 
     private fun computePositioningGuidance(result: PadResult): String? =
-        PositioningGuidance.compute(result, config)
+        PositioningGuidance.compute(result, config, appContext)
 
     private fun evaluateChallenge(): Job {
         return viewModelScope.launch {
@@ -305,7 +308,7 @@ internal class PadViewModel @AssistedInject constructor(
                             copy(
                                 challengeProgress = 0f,
                                 messageOverride = if (verdict == ChallengeEvaluator.Verdict.SPOOF_FACE_SWAP)
-                                    "Try again" else "Verification failed \u2014 trying again"
+                                    appContext.getString(R.string.pad_instruction_try_again) else appContext.getString(R.string.pad_instruction_verification_failed_retry)
                             )
                         }
                     }

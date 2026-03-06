@@ -105,7 +105,7 @@ class MainViewModel @Inject constructor(
 
         override fun onError(error: OpenPadError) {
             Timber.e("Error: %s", error)
-            _sideEffect.trySend(SideEffect.Toast("Error: $error"))
+            _sideEffect.trySend(SideEffect.Toast(context.getString(R.string.toast_error, error)))
         }
 
         override fun onCancelled() {
@@ -126,8 +126,8 @@ class MainViewModel @Inject constructor(
             config = cfg,
             onReady = { _state.value = UiState.Ready(config = cfg) },
             onError = { error ->
-                _state.value = UiState.Error("Init failed: $error")
-                _sideEffect.trySend(SideEffect.Toast("Init failed: $error"))
+                _state.value = UiState.Error(context.getString(R.string.toast_init_failed, error))
+                _sideEffect.trySend(SideEffect.Toast(context.getString(R.string.toast_init_failed, error)))
             }
         )
     }
@@ -143,8 +143,8 @@ class MainViewModel @Inject constructor(
             config = cfg,
             onReady = { _state.value = UiState.Ready(config = cfg) },
             onError = { error ->
-                _state.value = UiState.Error("Init failed: $error")
-                _sideEffect.trySend(SideEffect.Toast("Init failed: $error"))
+                _state.value = UiState.Error(context.getString(R.string.toast_init_failed, error))
+                _sideEffect.trySend(SideEffect.Toast(context.getString(R.string.toast_init_failed, error)))
             }
         )
     }

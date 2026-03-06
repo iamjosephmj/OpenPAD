@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="pad_phase_verified">Disahkan</string>
+    <string name="pad_phase_evaluating">Menilai…</string>
+    <string name="pad_phase_move_closer">Dekati</string>
+    <string name="pad_phase_positioning">Meletakkan kedudukan</string>
+    <string name="pad_phase_verifying_identity">Mengesahkan identiti</string>
+    <string name="pad_instruction_position_face">Letakkan wajah anda dalam bingkai</string>
+    <string name="pad_instruction_hold_still_look">Berdiam diri dan pandang kamera</string>
+    <string name="pad_verdict_verified">Disahkan</string>
+    <string name="pad_verdict_failed">Pengesahan gagal</string>
+    <string name="pad_verdict_live_subtitle">Keaktifan berjaya disahkan</string>
+    <string name="pad_verdict_spoof_subtitle">Disyaki serangan penipuan</string>
+    <string name="pad_verdict_complete">Pengesahan selesai</string>
+    <string name="pad_verdict_unsuccessful">Pengesahan tidak berjaya</string>
+    <string name="pad_verdict_identity_confirmed">Identiti anda telah disahkan.</string>
+    <string name="pad_verdict_identity_failed_retry">Kami tidak dapat mengesahkan identiti anda.\nPercubaan %1$d daripada %2$d</string>
+    <string name="pad_verdict_identity_failed_max">Kami tidak dapat mengesahkan identiti anda.\nPercubaan maksimum dicapai.</string>
+    <string name="pad_action_done">Selesai</string>
+    <string name="pad_action_try_again">Cuba lagi</string>
+    <string name="pad_action_close">Tutup</string>
+    <string name="pad_intro_title">Pengesahan identiti</string>
+    <string name="pad_intro_subtitle">Letakkan wajah anda dalam bingkai dan\nikuti arahan pada skrin</string>
+    <string name="pad_intro_begin">Mulakan pengesahan</string>
+    <string name="pad_guidance_move_down">Gerak sedikit ke bawah</string>
+    <string name="pad_guidance_move_up">Gerak sedikit ke atas</string>
+    <string name="pad_guidance_move_right">Gerak sedikit ke kanan</string>
+    <string name="pad_guidance_move_left">Gerak sedikit ke kiri</string>
+    <string name="pad_guidance_position_face">Letakkan wajah anda dalam bingkai</string>
+    <string name="pad_guidance_too_close">Terlalu dekat — undur sedikit</string>
+    <string name="pad_guidance_move_closer">Dekati sedikit</string>
+    <string name="pad_instruction_center_face">Pusatkan wajah anda</string>
+    <string name="pad_instruction_hold_still">Berdiam diri…</string>
+    <string name="pad_instruction_move_closer">Dekati</string>
+    <string name="pad_instruction_evaluating">Menilai…</string>
+    <string name="pad_instruction_try_again">Cuba lagi</string>
+    <string name="pad_instruction_verification_failed_retry">Pengesahan gagal — mencuba lagi</string>
+</resources>

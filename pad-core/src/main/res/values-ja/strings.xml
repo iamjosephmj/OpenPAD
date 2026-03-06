@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="pad_phase_verified">確認済み</string>
+    <string name="pad_phase_evaluating">評価中…</string>
+    <string name="pad_phase_move_closer">近づいてください</string>
+    <string name="pad_phase_positioning">位置調整中</string>
+    <string name="pad_phase_verifying_identity">本人確認中</string>
+    <string name="pad_instruction_position_face">顔をフレーム内に配置してください</string>
+    <string name="pad_instruction_hold_still_look">じっとしてカメラを見てください</string>
+    <string name="pad_verdict_verified">確認済み</string>
+    <string name="pad_verdict_failed">確認に失敗しました</string>
+    <string name="pad_verdict_live_subtitle">生体確認に成功しました</string>
+    <string name="pad_verdict_spoof_subtitle">なりすまし攻撃の疑い</string>
+    <string name="pad_verdict_complete">確認完了</string>
+    <string name="pad_verdict_unsuccessful">確認に失敗しました</string>
+    <string name="pad_verdict_identity_confirmed">本人確認が完了しました。</string>
+    <string name="pad_verdict_identity_failed_retry">本人確認ができませんでした。\n試行 %1$d / %2$d</string>
+    <string name="pad_verdict_identity_failed_max">本人確認ができませんでした。\n試行回数の上限に達しました。</string>
+    <string name="pad_action_done">完了</string>
+    <string name="pad_action_try_again">再試行</string>
+    <string name="pad_action_close">閉じる</string>
+    <string name="pad_intro_title">本人確認</string>
+    <string name="pad_intro_subtitle">顔をフレーム内に配置し\n画面の指示に従ってください</string>
+    <string name="pad_intro_begin">確認を開始</string>
+    <string name="pad_guidance_move_down">少し下に動いてください</string>
+    <string name="pad_guidance_move_up">少し上に動いてください</string>
+    <string name="pad_guidance_move_right">少し右に動いてください</string>
+    <string name="pad_guidance_move_left">少し左に動いてください</string>
+    <string name="pad_guidance_position_face">顔をフレーム内に配置してください</string>
+    <string name="pad_guidance_too_close">近すぎます — 少し後ろに下がってください</string>
+    <string name="pad_guidance_move_closer">少し近づいてください</string>
+    <string name="pad_instruction_center_face">顔を中央に</string>
+    <string name="pad_instruction_hold_still">じっとしてください…</string>
+    <string name="pad_instruction_move_closer">近づいてください</string>
+    <string name="pad_instruction_evaluating">評価中…</string>
+    <string name="pad_instruction_try_again">再試行</string>
+    <string name="pad_instruction_verification_failed_retry">確認に失敗 — 再試行中</string>
+</resources>

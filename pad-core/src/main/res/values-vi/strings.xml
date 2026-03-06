@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="pad_phase_verified">Đã xác minh</string>
+    <string name="pad_phase_evaluating">Đang đánh giá…</string>
+    <string name="pad_phase_move_closer">Tiến lại gần hơn</string>
+    <string name="pad_phase_positioning">Đang định vị</string>
+    <string name="pad_phase_verifying_identity">Đang xác minh danh tính</string>
+    <string name="pad_instruction_position_face">Đặt khuôn mặt vào khung</string>
+    <string name="pad_instruction_hold_still_look">Giữ yên và nhìn vào camera</string>
+    <string name="pad_verdict_verified">Đã xác minh</string>
+    <string name="pad_verdict_failed">Xác minh thất bại</string>
+    <string name="pad_verdict_live_subtitle">Xác nhận sự sống thành công</string>
+    <string name="pad_verdict_spoof_subtitle">Nghi ngờ tấn công giả mạo</string>
+    <string name="pad_verdict_complete">Xác minh hoàn tất</string>
+    <string name="pad_verdict_unsuccessful">Xác minh không thành công</string>
+    <string name="pad_verdict_identity_confirmed">Danh tính của bạn đã được xác nhận.</string>
+    <string name="pad_verdict_identity_failed_retry">Chúng tôi không thể xác nhận danh tính của bạn.\nLần thử %1$d / %2$d</string>
+    <string name="pad_verdict_identity_failed_max">Chúng tôi không thể xác nhận danh tính của bạn.\nĐã đạt số lần thử tối đa.</string>
+    <string name="pad_action_done">Hoàn tất</string>
+    <string name="pad_action_try_again">Thử lại</string>
+    <string name="pad_action_close">Đóng</string>
+    <string name="pad_intro_title">Xác minh danh tính</string>
+    <string name="pad_intro_subtitle">Đặt khuôn mặt vào khung và\nlàm theo hướng dẫn trên màn hình</string>
+    <string name="pad_intro_begin">Bắt đầu xác minh</string>
+    <string name="pad_guidance_move_down">Di chuyển xuống một chút</string>
+    <string name="pad_guidance_move_up">Di chuyển lên một chút</string>
+    <string name="pad_guidance_move_right">Di chuyển sang phải một chút</string>
+    <string name="pad_guidance_move_left">Di chuyển sang trái một chút</string>
+    <string name="pad_guidance_position_face">Đặt khuôn mặt vào khung</string>
+    <string name="pad_guidance_too_close">Quá gần — lùi lại một chút</string>
+    <string name="pad_guidance_move_closer">Tiến lại gần một chút</string>
+    <string name="pad_instruction_center_face">Căn giữa khuôn mặt</string>
+    <string name="pad_instruction_hold_still">Giữ yên…</string>
+    <string name="pad_instruction_move_closer">Tiến lại gần hơn</string>
+    <string name="pad_instruction_evaluating">Đang đánh giá…</string>
+    <string name="pad_instruction_try_again">Thử lại</string>
+    <string name="pad_instruction_verification_failed_retry">Xác minh thất bại — đang thử lại</string>
+</resources>

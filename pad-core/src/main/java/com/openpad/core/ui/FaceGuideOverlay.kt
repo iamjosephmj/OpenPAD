@@ -27,6 +27,8 @@ import androidx.compose.ui.graphics.drawscope.clipPath
 import com.openpad.core.aggregation.PadStatus
 import com.openpad.core.challenge.ChallengePhase
 import com.openpad.core.ui.theme.PadColors
+import kotlin.math.cos
+import kotlin.math.sin
 
 @Composable
 internal fun FaceGuideOverlay(
@@ -45,7 +47,7 @@ internal fun FaceGuideOverlay(
         targetValue = when (status) {
             PadStatus.LIVE, PadStatus.COMPLETED -> PadColors.Success
             PadStatus.SPOOF_SUSPECTED -> PadColors.Error
-            PadStatus.NO_FACE -> PadColors.OnSurface.copy(alpha = 0.2f)
+            PadStatus.NO_FACE -> PadColors.OnSurface.copy(alpha = 0.15f)
             PadStatus.ANALYZING -> PadColors.OvalIdle
         },
         animationSpec = tween(500),
@@ -62,30 +64,10 @@ internal fun FaceGuideOverlay(
         label = "arcColor"
     )
 
-    val glowColor by animateColorAsState(
-        targetValue = when (status) {
-            PadStatus.LIVE, PadStatus.COMPLETED -> PadColors.Success
-            PadStatus.SPOOF_SUSPECTED -> PadColors.Error
-            else -> Color.Transparent
-        },
-        animationSpec = tween(600),
-        label = "glowColor"
-    )
-
-    val glowAlpha by animateFloatAsState(
-        targetValue = when (status) {
-            PadStatus.LIVE, PadStatus.COMPLETED -> 0.18f
-            PadStatus.SPOOF_SUSPECTED -> 0.14f
-            else -> 0f
-        },
-        animationSpec = tween(500),
-        label = "glowAlpha"
-    )
-
     val infiniteTransition = rememberInfiniteTransition(label = "guidePulse")
     val pulseAlpha by infiniteTransition.animateFloat(
         initialValue = 0.25f,
-        targetValue = 0.50f,
+        targetValue = 0.55f,
         animationSpec = infiniteRepeatable(
             animation = tween(1500, easing = LinearEasing),
             repeatMode = RepeatMode.Reverse
@@ -93,7 +75,7 @@ internal fun FaceGuideOverlay(
         label = "pulse"
     )
 
-    val borderAlpha = if (isActive) pulseAlpha else 0.35f
+    val borderAlpha = if (isActive) pulseAlpha else 0.30f
 
     val animatedProgress by animateFloatAsState(
         targetValue = challengeProgress,
@@ -122,30 +104,20 @@ internal fun FaceGuideOverlay(
 
         val ovalRect = Rect(centerX - rx, centerY - ry, centerX + rx, centerY + ry)
 
-        // Scrim: radial gradient for softer falloff around the oval
+        // Scrim outside the oval
         val cutoutPath = Path().apply { addOval(ovalRect) }
         clipPath(cutoutPath, ClipOp.Difference) {
             drawRect(
                 brush = Brush.radialGradient(
                     colorStops = arrayOf(
                         0.0f to Color.Transparent,
-                        0.45f to PadColors.Scrim.copy(alpha = 0.40f),
+                        0.45f to PadColors.Scrim.copy(alpha = 0.35f),
                         0.65f to PadColors.Scrim.copy(alpha = 0.65f),
                         1.0f to PadColors.Scrim.copy(alpha = 0.80f)
                     ),
                     center = Offset(centerX, centerY),
                     radius = maxOf(canvasW, canvasH) * 0.55f
                 )
-            )
-        }
-
-        // Outer glow ring (animated per status)
-        if (glowAlpha > 0.01f) {
-            drawOval(
-                color = glowColor.copy(alpha = glowAlpha),
-                topLeft = Offset(ovalRect.left - 10f, ovalRect.top - 10f),
-                size = Size(ovalRect.width + 20f, ovalRect.height + 20f),
-                style = Stroke(width = 14f)
             )
         }
 
@@ -157,46 +129,35 @@ internal fun FaceGuideOverlay(
             style = Stroke(width = borderWidth)
         )
 
-        // Progress arc
+        // Progress arc with leading dot
         if (animatedProgress > 0f) {
-            val arcInset = 5f
+            val arcInset = 6f
             val arcRect = Rect(
                 ovalRect.left - arcInset,
                 ovalRect.top - arcInset,
                 ovalRect.right + arcInset,
                 ovalRect.bottom + arcInset
             )
+            val sweepAngle = 360f * animatedProgress
+
             drawArc(
                 color = arcColor,
                 startAngle = -90f,
-                sweepAngle = 360f * animatedProgress,
+                sweepAngle = sweepAngle,
                 useCenter = false,
                 topLeft = Offset(arcRect.left, arcRect.top),
                 size = Size(arcRect.width, arcRect.height),
                 style = Stroke(width = 4f, cap = StrokeCap.Round)
             )
+
+            val angleRad = Math.toRadians((-90.0 + sweepAngle))
+            val dotX = centerX + (arcRect.width / 2f) * cos(angleRad).toFloat()
+            val dotY = centerY + (arcRect.height / 2f) * sin(angleRad).toFloat()
+            drawCircle(
+                color = arcColor,
+                radius = 4f,
+                center = Offset(dotX, dotY)
+            )
         }
-
-        // Corner accent brackets for a polished look
-        val bracketLen = 24f
-        val bracketStroke = Stroke(width = 2.5f, cap = StrokeCap.Round)
-        val bracketColor = borderColor.copy(alpha = borderAlpha * 0.7f)
-        val bPad = 18f
-
-        // Top-left
-        drawLine(bracketColor, Offset(ovalRect.left - bPad, ovalRect.top + bracketLen), Offset(ovalRect.left - bPad, ovalRect.top - bPad), bracketStroke.width)
-        drawLine(bracketColor, Offset(ovalRect.left - bPad, ovalRect.top - bPad), Offset(ovalRect.left + bracketLen, ovalRect.top - bPad), bracketStroke.width)
-
-        // Top-right
-        drawLine(bracketColor, Offset(ovalRect.right + bPad, ovalRect.top + bracketLen), Offset(ovalRect.right + bPad, ovalRect.top - bPad), bracketStroke.width)
-        drawLine(bracketColor, Offset(ovalRect.right + bPad, ovalRect.top - bPad), Offset(ovalRect.right - bracketLen, ovalRect.top - bPad), bracketStroke.width)
-
-        // Bottom-left
-        drawLine(bracketColor, Offset(ovalRect.left - bPad, ovalRect.bottom - bracketLen), Offset(ovalRect.left - bPad, ovalRect.bottom + bPad), bracketStroke.width)
-        drawLine(bracketColor, Offset(ovalRect.left - bPad, ovalRect.bottom + bPad), Offset(ovalRect.left + bracketLen, ovalRect.bottom + bPad), bracketStroke.width)
-
-        // Bottom-right
-        drawLine(bracketColor, Offset(ovalRect.right + bPad, ovalRect.bottom - bracketLen), Offset(ovalRect.right + bPad, ovalRect.bottom + bPad), bracketStroke.width)
-        drawLine(bracketColor, Offset(ovalRect.right + bPad, ovalRect.bottom + bPad), Offset(ovalRect.right - bracketLen, ovalRect.bottom + bPad), bracketStroke.width)
     }
 }

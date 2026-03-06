@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="pad_phase_verified">যাচাই সম্পন্ন</string>
+    <string name="pad_phase_evaluating">মূল্যায়ন হচ্ছে…</string>
+    <string name="pad_phase_move_closer">কাছে আসুন</string>
+    <string name="pad_phase_positioning">অবস্থান নির্ধারণ</string>
+    <string name="pad_phase_verifying_identity">পরিচয় যাচাই হচ্ছে</string>
+    <string name="pad_instruction_position_face">ফ্রেমে আপনার মুখ রাখুন</string>
+    <string name="pad_instruction_hold_still_look">স্থির থাকুন এবং ক্যামেরায় তাকান</string>
+    <string name="pad_verdict_verified">যাচাই সম্পন্ন</string>
+    <string name="pad_verdict_failed">যাচাই ব্যর্থ</string>
+    <string name="pad_verdict_live_subtitle">সজীবতা সফলভাবে নিশ্চিত হয়েছে</string>
+    <string name="pad_verdict_spoof_subtitle">প্রতারণামূলক আক্রমণের সন্দেহ</string>
+    <string name="pad_verdict_complete">যাচাই সম্পূর্ণ</string>
+    <string name="pad_verdict_unsuccessful">যাচাই অসফল</string>
+    <string name="pad_verdict_identity_confirmed">আপনার পরিচয় নিশ্চিত হয়েছে।</string>
+    <string name="pad_verdict_identity_failed_retry">আপনার পরিচয় নিশ্চিত করা যায়নি।\nপ্রচেষ্টা %1$d / %2$d</string>
+    <string name="pad_verdict_identity_failed_max">আপনার পরিচয় নিশ্চিত করা যায়নি।\nসর্বোচ্চ প্রচেষ্টা শেষ।</string>
+    <string name="pad_action_done">সম্পন্ন</string>
+    <string name="pad_action_try_again">আবার চেষ্টা করুন</string>
+    <string name="pad_action_close">বন্ধ করুন</string>
+    <string name="pad_intro_title">পরিচয় যাচাই</string>
+    <string name="pad_intro_subtitle">ফ্রেমে আপনার মুখ রাখুন এবং\nস্ক্রিনের নির্দেশনা অনুসরণ করুন</string>
+    <string name="pad_intro_begin">যাচাই শুরু করুন</string>
+    <string name="pad_guidance_move_down">একটু নিচে নামুন</string>
+    <string name="pad_guidance_move_up">একটু উপরে উঠুন</string>
+    <string name="pad_guidance_move_right">একটু ডানে যান</string>
+    <string name="pad_guidance_move_left">একটু বাঁয়ে যান</string>
+    <string name="pad_guidance_position_face">ফ্রেমে আপনার মুখ রাখুন</string>
+    <string name="pad_guidance_too_close">খুব কাছে — একটু পিছিয়ে যান</string>
+    <string name="pad_guidance_move_closer">একটু কাছে আসুন</string>
+    <string name="pad_instruction_center_face">মুখ কেন্দ্রে রাখুন</string>
+    <string name="pad_instruction_hold_still">স্থির থাকুন…</string>
+    <string name="pad_instruction_move_closer">কাছে আসুন</string>
+    <string name="pad_instruction_evaluating">মূল্যায়ন হচ্ছে…</string>
+    <string name="pad_instruction_try_again">আবার চেষ্টা করুন</string>
+    <string name="pad_instruction_verification_failed_retry">যাচাই ব্যর্থ — আবার চেষ্টা হচ্ছে</string>
+</resources>
