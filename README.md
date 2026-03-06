@@ -650,6 +650,38 @@ OpenPAD/
 
 ---
 
+## Memory Footprint
+
+### On-Disk (APK Contribution)
+
+All 8 models are FP16-quantized and Brotli-compressed (quality 11) with XOR scrambling. Total packed size: **~15 MB**.
+
+| Model | Packed Size | Purpose |
+|-------|------------|---------|
+| `depth_gate.pad` | 5.1 MB | MobileNetV3 depth pre-filter |
+| `depth_map.pad` | 3.1 MB | CDCN full depth analysis |
+| `screen_reflection.pad` | 3.1 MB | YOLOv5n screen replay detection |
+| `face_embedding.pad` | 2.2 MB | MobileFaceNet face consistency |
+| `texture_2x7.pad` | 748 KB | MiniFASNet v2 texture |
+| `texture_4x0.pad` | 748 KB | MiniFASNet v1SE texture |
+| `face_detection.pad` | 183 KB | BlazeFace detection |
+| `face_enhance.pad` | 39 KB | ESPCN super-resolution |
+
+### Runtime Memory
+
+Models are loaded lazily on first use, not all at once. At inference time, FP16 weights are upcasted to FP32 by TFLite kernels.
+
+| Component | Estimated Peak |
+|-----------|---------------|
+| All 8 TFLite interpreters | ~25–30 MB |
+| Frame buffers (camera, crops, depth maps) | ~5–10 MB |
+| **Total peak** | **~30–40 MB** |
+
+- The `depth_map` model uses the **GPU delegate** when available, offloading its weights to GPU VRAM instead of main RAM.
+- For comparison, a typical social media app uses 200–400 MB at runtime.
+
+---
+
 ## Dependencies
 
 | Dependency | Version | Purpose |
