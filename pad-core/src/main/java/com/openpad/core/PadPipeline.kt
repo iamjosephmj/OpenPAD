@@ -18,6 +18,8 @@ import com.openpad.core.embedding.MobileFaceNetAnalyzer
 import com.openpad.core.enhance.EspcnFrameEnhancer
 import com.openpad.core.enhance.FrameEnhancer
 import com.openpad.core.ndk.NativeChallengeManager
+import com.openpad.core.replay.MobileNetReplaySpoofDetector
+import com.openpad.core.replay.ReplaySpoofDetector
 import com.openpad.core.ndk.OpenPadNative
 import com.openpad.core.texture.MiniFasNetAnalyzer
 import com.openpad.core.texture.TextureAnalyzer
@@ -37,6 +39,7 @@ class PadPipeline private constructor(
     val depthModels: CdcnDepthAnalyzer,
     val deviceDetector: DeviceDetector,
     val screenReflectionDetector: ScreenReflectionDetector,
+    val replaySpoofDetector: ReplaySpoofDetector,
     override val embeddingAnalyzer: FaceEmbeddingAnalyzer,
     val frameEnhancer: FrameEnhancer,
     internal val nativeChallengeManager: NativeChallengeManager,
@@ -59,6 +62,7 @@ class PadPipeline private constructor(
             depthAnalyzer = depthAnalyzer,
             deviceDetector = deviceDetector,
             screenReflectionDetector = screenReflectionDetector,
+            replaySpoofDetector = replaySpoofDetector,
             frameEnhancer = frameEnhancer,
             framePreprocessor = preprocessor,
             nativeChallengeManager = nativeChallengeManager,
@@ -77,6 +81,7 @@ class PadPipeline private constructor(
         depthAnalyzer.close()
         deviceDetector.close()
         screenReflectionDetector.close()
+        replaySpoofDetector.close()
         embeddingAnalyzer.close()
         frameEnhancer.close()
         OpenPadNative.nativeDestroy()
@@ -96,6 +101,7 @@ class PadPipeline private constructor(
             val depthAnalyzer = CascadedDepthAnalyzer(depthModels, config)
             val deviceDetector = SsdDeviceDetector(appContext)
             val screenReflectionDetector = YoloScreenReflectionDetector(appContext)
+            val replaySpoofDetector = MobileNetReplaySpoofDetector(appContext)
             val embeddingAnalyzer = MobileFaceNetAnalyzer(appContext)
             val frameEnhancer = EspcnFrameEnhancer(appContext)
             val nativeChallengeManager = NativeChallengeManager()
@@ -109,6 +115,7 @@ class PadPipeline private constructor(
                 depthModels = depthModels,
                 deviceDetector = deviceDetector,
                 screenReflectionDetector = screenReflectionDetector,
+                replaySpoofDetector = replaySpoofDetector,
                 embeddingAnalyzer = embeddingAnalyzer,
                 frameEnhancer = frameEnhancer,
                 nativeChallengeManager = nativeChallengeManager,

@@ -5,6 +5,7 @@ import com.openpad.core.depth.DepthResult
 import com.openpad.core.detection.FaceDetection
 import com.openpad.core.device.DeviceDetectionResult
 import com.openpad.core.ndk.OpenPadNative
+import com.openpad.core.replay.ReplaySpoofResult
 import com.openpad.core.texture.TextureResult
 
 /**
@@ -21,7 +22,8 @@ internal object NativeInputBuilder {
         detection: FaceDetection?,
         textureResult: TextureResult?,
         depthResult: DepthResult?,
-        deviceResult: DeviceDetectionResult?
+        deviceResult: DeviceDetectionResult?,
+        replaySpoofResult: ReplaySpoofResult? = null
     ): ByteArray {
         val frameDownsampled = BitmapConverter.downsampleToGray(bitmap)
 

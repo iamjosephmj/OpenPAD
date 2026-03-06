@@ -91,7 +91,7 @@ data class InternalPadConfig internal constructor(
     // --- Evaluation ---
     val genuineProbabilityThreshold: Float = 0.70f,
     val spoofAttemptPenaltyPerCount: Float = 0.08f,
-    val maxGenuineProbabilityThreshold: Float = 0.85f,
+    val maxGenuineProbabilityThreshold: Float = 0.90f,
     val evaluatingDurationMs: Long = 500L,
 
     // --- Face consistency (embedding) ---
@@ -105,10 +105,10 @@ data class InternalPadConfig internal constructor(
     val maxSpoofAttempts: Int = 2,
     /** Maximum total time (ms) for the entire verification session.
      *  If the session exceeds this, a verdict is forced with accumulated signals. 0 = no timeout. */
-    val sessionTimeoutMs: Long = 8_000L,
+    val sessionTimeoutMs: Long = 10_000L,
     /** Maximum time (ms) allowed in the CHALLENGE_CLOSER phase before forcing
      *  an evaluation with whatever signals have been accumulated. 0 = no timeout. */
-    val challengeTimeoutMs: Long = 5_000L,
+    val challengeTimeoutMs: Long = 10_000L,
 
     // --- Frame enhancement ---
     /** Enable ESPCN super-resolution on face regions during CHALLENGE_CLOSER.

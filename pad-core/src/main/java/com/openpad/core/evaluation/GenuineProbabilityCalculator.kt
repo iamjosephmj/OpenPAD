@@ -42,6 +42,12 @@ internal object GenuineProbabilityCalculator {
 
         score *= depthVariancePenalty(ev, config)
 
+        // Replay spoof penalty disabled: the current model was trained on
+        // LFW (studio photos) vs phone-camera replays, causing a severe
+        // domain mismatch that produces spoofScore ≈ 1.0 for genuine faces.
+        // Re-enable once the model is retrained with real phone-camera data.
+        // score *= replaySpoofPenalty(ev)
+
         return score.coerceIn(0f, 1f)
     }
 
@@ -68,6 +74,18 @@ internal object GenuineProbabilityCalculator {
         }
 
         return penalty
+    }
+
+    /**
+     * Multiplicative penalty when the replay spoof detector consistently
+     * flags frames as spoofed. The average spoof score across hold frames
+     * is inverted to a penalty: avg 0 → no penalty (1.0), avg 1 → full penalty (0.3).
+     */
+    private fun replaySpoofPenalty(ev: ChallengeEvidence): Float {
+        if (ev.holdReplaySpoofScores.size < 3) return 1.0f
+        val avgSpoof = ev.holdReplaySpoofScores.average().toFloat()
+        if (avgSpoof < REPLAY_SPOOF_THRESHOLD) return 1.0f
+        return (1.0f - avgSpoof * REPLAY_SPOOF_MAX_PENALTY).coerceAtLeast(REPLAY_SPOOF_MIN_MULTIPLIER)
     }
 
     private fun variance(values: List<Float>): Float {
@@ -102,4 +120,11 @@ internal object GenuineProbabilityCalculator {
             else -> 0f
         }
     }
+
+    /** Avg spoof score above this triggers the penalty. */
+    private const val REPLAY_SPOOF_THRESHOLD = 0.5f
+    /** Max fraction of score removed (0.7 = up to 70% penalty). */
+    private const val REPLAY_SPOOF_MAX_PENALTY = 0.7f
+    /** Floor: genuine probability is multiplied by at least this. */
+    private const val REPLAY_SPOOF_MIN_MULTIPLIER = 0.3f
 }
