@@ -1,5 +1,6 @@
 package com.openpad.core.ui.viewmodel
 
+import android.app.Application
 import com.openpad.core.InternalPadConfig
 import com.openpad.core.OpenPadError
 import com.openpad.core.OpenPadResult
@@ -15,8 +16,11 @@ import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
+import org.junit.runner.RunWith
+import org.robolectric.RobolectricTestRunner
 
 @OptIn(ExperimentalCoroutinesApi::class)
+@RunWith(RobolectricTestRunner::class)
 class PadViewModelTest {
 
     @get:Rule
@@ -38,6 +42,7 @@ class PadViewModelTest {
         callback = RecordingCallback()
         vm = PadViewModel(
             pipeline = pipeline,
+            appContext = org.robolectric.RuntimeEnvironment.getApplication(),
             sessionStartMs = System.currentTimeMillis(),
             callback = callback,
             themeConfig = OpenPadThemeConfig.Default

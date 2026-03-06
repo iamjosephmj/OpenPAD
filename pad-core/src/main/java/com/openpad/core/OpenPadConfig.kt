@@ -15,12 +15,11 @@ package com.openpad.core
  * ```
  *
  * ### Scoring weights
- * The final liveness score is a weighted sum of four signals. The weights
+ * The final liveness score is a weighted sum of ML signals. The weights
  * should sum to approximately 1.0:
  * - [textureAnalysisWeight] — surface texture patterns (print/screen artifacts)
  * - [depthAnalysisWeight] — 3D depth map quality (flat = spoof)
  * - [depthGateWeight] — fast depth pre-filter
- * - [screenDetectionWeight] — phone/laptop/tablet screen in frame
  *
  * @property livenessThreshold Minimum overall confidence to accept as live. Range [0.0, 1.0].
  * @property faceMatchThreshold Minimum similarity between checkpoint face captures. Below this = face swap. Range [0.0, 1.0].
@@ -28,10 +27,8 @@ package com.openpad.core
  * @property textureAnalysisWeight Scoring weight for texture analysis. Default 0.15.
  * @property depthGateWeight Scoring weight for the fast depth pre-filter. Default 0.20.
  * @property depthAnalysisWeight Scoring weight for full depth map analysis. Default 0.55.
- * @property screenDetectionWeight Scoring weight for screen/device detection. Default 0.10.
  * @property depthGateMinScore Minimum depth gate score to run the full depth analysis. Lower = more permissive.
  * @property depthFlatnessMinScore Hard cutoff: faces flatter than this are rejected as spoof.
- * @property screenDetectionMinConfidence Minimum confidence for screen detection to count as a signal.
  * @property moireDetectionThreshold Moire score above this triggers the frequency gate. Range [0.0, 1.0].
  * @property screenPatternThreshold LBP screen pattern score above this triggers the frequency gate. Range [0.0, 1.0].
  * @property photometricMinScore Combined photometric score below this triggers spoof detection. Range [0.0, 1.0].
@@ -61,10 +58,8 @@ data class OpenPadConfig(
     val textureAnalysisWeight: Float = 0.15f,
     val depthGateWeight: Float = 0.20f,
     val depthAnalysisWeight: Float = 0.55f,
-    val screenDetectionWeight: Float = 0.10f,
     val depthGateMinScore: Float = 0.20f,
     val depthFlatnessMinScore: Float = 0.40f,
-    val screenDetectionMinConfidence: Float = 0.50f,
     val moireDetectionThreshold: Float = 0.60f,
     val screenPatternThreshold: Float = 0.70f,
     val photometricMinScore: Float = 0.30f,
@@ -121,7 +116,6 @@ data class OpenPadConfig(
             faceDetectionConfidence = 0.60f,
             depthGateMinScore = 0.25f,
             depthFlatnessMinScore = 0.45f,
-            screenDetectionMinConfidence = 0.40f,
             moireDetectionThreshold = 0.50f,
             screenPatternThreshold = 0.60f,
             photometricMinScore = 0.32f,
@@ -162,7 +156,6 @@ data class OpenPadConfig(
             faceDetectionConfidence = 0.60f,
             depthGateMinScore = 0.25f,
             depthFlatnessMinScore = 0.45f,
-            screenDetectionMinConfidence = 0.40f,
             moireDetectionThreshold = 0.45f,
             screenPatternThreshold = 0.55f,
             photometricMinScore = 0.35f,
@@ -203,7 +196,6 @@ data class OpenPadConfig(
             faceDetectionConfidence = 0.65f,
             depthGateMinScore = 0.25f,
             depthFlatnessMinScore = 0.45f,
-            screenDetectionMinConfidence = 0.45f,
             photometricMinScore = 0.35f,
             maxFramesPerSecond = 10,
             lowLightThreshold = 0.25f,
@@ -285,7 +277,6 @@ data class OpenPadConfig(
             faceDetectionConfidence = 0.62f,
             depthGateMinScore = 0.30f,
             depthFlatnessMinScore = 0.50f,
-            screenDetectionMinConfidence = 0.38f,
             moireDetectionThreshold = 0.45f,
             screenPatternThreshold = 0.55f,
             photometricMinScore = 0.38f,

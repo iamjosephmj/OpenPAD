@@ -23,7 +23,6 @@ internal class NativeChallengeManager : ChallengeManager {
     private val accMn3Scores = mutableListOf<Float>()
     private val accCdcnScores = mutableListOf<Float>()
     private val accDepthCharacteristics = mutableListOf<DepthCharacteristics>()
-    private val accReplaySpoofScores = mutableListOf<Float>()
     private val accLuminances = mutableListOf<Float>()
     private var lastHoldFrames = 0
 
@@ -51,7 +50,6 @@ internal class NativeChallengeManager : ChallengeManager {
             accMn3Scores.add(result.depthResult?.mn3RealScore ?: 0.5f)
             result.depthResult?.cdcnDepthScore?.let { accCdcnScores.add(it) }
             result.depthResult?.depthCharacteristics?.let { accDepthCharacteristics.add(it) }
-            result.replaySpoofResult?.let { accReplaySpoofScores.add(it.spoofScore) }
             accLuminances.add(result.faceLuminance)
         }
         lastHoldFrames = nativeOutput.challengeHoldFrames
@@ -69,7 +67,6 @@ internal class NativeChallengeManager : ChallengeManager {
             holdMn3Scores = accMn3Scores.toList(),
             holdCdcnScores = accCdcnScores.toList(),
             holdDepthCharacteristics = accDepthCharacteristics.toList(),
-            holdReplaySpoofScores = accReplaySpoofScores.toList(),
             holdLuminances = accLuminances.toList(),
             checkpointBitmapAnalyzing = newCheckpoint1,
             checkpointBitmapChallenge = newCheckpoint2,
@@ -119,7 +116,6 @@ internal class NativeChallengeManager : ChallengeManager {
         accMn3Scores.clear()
         accCdcnScores.clear()
         accDepthCharacteristics.clear()
-        accReplaySpoofScores.clear()
         accLuminances.clear()
         lastHoldFrames = 0
     }

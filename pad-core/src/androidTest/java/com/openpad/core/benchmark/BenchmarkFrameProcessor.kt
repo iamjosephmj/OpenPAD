@@ -11,7 +11,7 @@ import com.openpad.core.ndk.OpenPadNative
  * Processes Bitmap frames through the full PAD pipeline for benchmarking.
  *
  * Uses the native C layer (NDK) for FFT, LBP, photometric, temporal, aggregation, and challenge.
- * TFLite (face, texture, depth, device) runs in Kotlin.
+ * TFLite (face, texture, depth) runs in Kotlin.
  */
 class BenchmarkFrameProcessor(
     private val pipeline: PadPipeline,
@@ -24,7 +24,6 @@ class BenchmarkFrameProcessor(
         val detection = pipeline.faceDetector.detect(bitmap)
         val textureResult = detection?.let { pipeline.textureAnalyzer.analyze(bitmap, it.bbox) }
         val depthResult = detection?.let { pipeline.depthModels.analyze(bitmap, it.bbox) }
-        val deviceResult = detection?.let { pipeline.deviceDetector.analyze(bitmap, it.bbox) }
 
         val frameDownsampled = BitmapConverter.downsampleToGray(bitmap)
         val faceCrop64Gray = if (detection != null) {
@@ -50,10 +49,10 @@ class BenchmarkFrameProcessor(
             textureGenuine = textureResult?.genuineScore ?: 0.5f,
             mn3Real = depthResult?.mn3RealScore,
             cdcn = depthResult?.cdcnDepthScore,
-            deviceDetected = deviceResult?.deviceDetected ?: false,
-            deviceOverlap = deviceResult?.overlapWithFace ?: false,
-            deviceMaxConf = deviceResult?.maxConfidence ?: 0f,
-            deviceSpoof = deviceResult?.spoofScore ?: 0f
+            deviceDetected = false,
+            deviceOverlap = false,
+            deviceMaxConf = 0f,
+            deviceSpoof = 0f
         )
 
         val outputBytes = OpenPadNative.nativeAnalyzeFrame(input)
@@ -76,8 +75,8 @@ class BenchmarkFrameProcessor(
             moireScore = out.moireScore,
             lbpScreenScore = out.lbpScreenScore,
             spectralFlatness = out.spectralFlatness,
-            deviceDetected = deviceResult?.deviceDetected,
-            deviceSpoofScore = deviceResult?.spoofScore,
+            deviceDetected = false,
+            deviceSpoofScore = null,
             photometricCombinedScore = out.photometricCombined,
             specularScore = out.photometricSpecular,
             chrominanceScore = out.photometricChrominance,

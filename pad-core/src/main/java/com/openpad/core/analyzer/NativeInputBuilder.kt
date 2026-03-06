@@ -3,9 +3,7 @@ package com.openpad.core.analyzer
 import android.graphics.Bitmap
 import com.openpad.core.depth.DepthResult
 import com.openpad.core.detection.FaceDetection
-import com.openpad.core.device.DeviceDetectionResult
 import com.openpad.core.ndk.OpenPadNative
-import com.openpad.core.replay.ReplaySpoofResult
 import com.openpad.core.texture.TextureResult
 
 /**
@@ -21,9 +19,7 @@ internal object NativeInputBuilder {
         analysisBitmap: Bitmap,
         detection: FaceDetection?,
         textureResult: TextureResult?,
-        depthResult: DepthResult?,
-        deviceResult: DeviceDetectionResult?,
-        replaySpoofResult: ReplaySpoofResult? = null
+        depthResult: DepthResult?
     ): ByteArray {
         val frameDownsampled = BitmapConverter.downsampleToGray(bitmap)
 
@@ -56,10 +52,10 @@ internal object NativeInputBuilder {
             textureGenuine = textureResult?.genuineScore ?: 0.5f,
             mn3Real = depthResult?.mn3RealScore,
             cdcn = depthResult?.cdcnDepthScore,
-            deviceDetected = deviceResult?.deviceDetected ?: false,
-            deviceOverlap = deviceResult?.overlapWithFace ?: false,
-            deviceMaxConf = deviceResult?.maxConfidence ?: 0f,
-            deviceSpoof = deviceResult?.spoofScore ?: 0f
+            deviceDetected = false,
+            deviceOverlap = false,
+            deviceMaxConf = 0f,
+            deviceSpoof = 0f
         )
     }
 }

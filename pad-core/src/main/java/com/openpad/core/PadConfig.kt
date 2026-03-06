@@ -6,7 +6,7 @@ package com.openpad.core
  * This is the internal representation -- consumers use [OpenPadConfig] which
  * maps to this via [OpenPadConfigMapper.toInternal].
  *
- * Classification uses ML models (texture, depth, device) and classical signal
+ * Classification uses ML models (texture, depth) and classical signal
  * processing (frequency, photometric) as sequential decision gates.
  */
 @ConsistentCopyVisibility
@@ -58,9 +58,8 @@ data class InternalPadConfig internal constructor(
     /** Hard CDCN depth gate: below this = definitely flat/spoof. */
     val depthFlatnessThreshold: Float = 0.4f,
 
-    // --- Device detection (SSD MobileNet) ---
-    /** Minimum confidence for device detection to trigger spoof gate. */
-    val deviceConfidenceThreshold: Float = 0.5f,
+    @Deprecated("Device detection model removed; kept for native wire format compatibility")
+    val deviceConfidenceThreshold: Float = 1f,
 
     // --- Frequency gate (FFT moire + LBP screen) ---
     /** Moire score above this triggers frequency gate. Higher = stricter. */
@@ -84,7 +83,8 @@ data class InternalPadConfig internal constructor(
     val textureWeight: Float = 0.15f,
     val mn3Weight: Float = 0.20f,
     val cdcnWeight: Float = 0.55f,
-    val deviceWeight: Float = 0.10f,
+    @Deprecated("Device detection model removed; kept for native wire format compatibility")
+    val deviceWeight: Float = 0f,
     /** Scoring weight for the YOLOv5n screen-reflection detector. */
     val screenReflectionWeight: Float = 0.08f,
 

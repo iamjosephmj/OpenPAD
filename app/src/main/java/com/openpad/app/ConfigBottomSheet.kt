@@ -201,9 +201,6 @@ fun ConfigBottomSheet(
                     SliderRow(stringResource(R.string.slider_depth_map), config.depthAnalysisWeight, 0f, 1f) {
                         onConfigChange(config.copy(depthAnalysisWeight = it))
                     }
-                    SliderRow(stringResource(R.string.slider_screen_detection), config.screenDetectionWeight, 0f, 1f) {
-                        onConfigChange(config.copy(screenDetectionWeight = it))
-                    }
                 }
 
                 Spacer(Modifier.height(10.dp))
@@ -218,9 +215,6 @@ fun ConfigBottomSheet(
                     }
                     SliderRow(stringResource(R.string.slider_depth_flatness_min), config.depthFlatnessMinScore, 0f, 1f) {
                         onConfigChange(config.copy(depthFlatnessMinScore = it))
-                    }
-                    SliderRow(stringResource(R.string.slider_screen_detection_min), config.screenDetectionMinConfidence, 0f, 1f) {
-                        onConfigChange(config.copy(screenDetectionMinConfidence = it))
                     }
                 }
 

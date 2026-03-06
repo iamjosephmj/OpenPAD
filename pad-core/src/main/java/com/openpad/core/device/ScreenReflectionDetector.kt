@@ -6,9 +6,8 @@ import com.openpad.core.detection.FaceDetection
 /**
  * Detects screen-based presentation attack indicators using a custom YOLOv5n model.
  *
- * Complements [DeviceDetector] (COCO-based SSD MobileNet) with PAD-specific
- * signals: reflections, screen artifacts, bezels, and finger grips that are
- * invisible to a generic object detector.
+ * Detects PAD-specific signals: reflections, screen artifacts, bezels,
+ * and finger grips.
  */
 interface ScreenReflectionDetector {
 

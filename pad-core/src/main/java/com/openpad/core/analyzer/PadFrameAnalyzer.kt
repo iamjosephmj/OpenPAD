@@ -10,13 +10,9 @@ import com.openpad.core.depth.DepthResult
 import com.openpad.core.detection.FaceDetection
 import com.openpad.core.detection.FaceDetector
 import com.openpad.core.aggregation.PadStatus
-import com.openpad.core.device.DeviceDetectionResult
 import com.openpad.core.device.ScreenReflectionDetector
 import com.openpad.core.device.ScreenReflectionResult
 import com.openpad.core.challenge.ChallengePhase
-import com.openpad.core.device.DeviceDetector
-import com.openpad.core.replay.ReplaySpoofDetector
-import com.openpad.core.replay.ReplaySpoofResult
 import com.openpad.core.texture.TextureResult
 import com.openpad.core.enhance.FrameEnhancer
 import com.openpad.core.ndk.NativeChallengeManager
@@ -27,16 +23,14 @@ import android.graphics.Bitmap
 /**
  * CameraX [ImageAnalysis.Analyzer] that orchestrates the full PAD pipeline per frame.
  *
- * TFLite (face, texture, depth, device) runs in Kotlin. FFT, LBP, photometric,
+ * TFLite (face, texture, depth) runs in Kotlin. FFT, LBP, photometric,
  * temporal, aggregation, stabilizer, and challenge run in the native C layer.
  */
 class PadFrameAnalyzer internal constructor(
     private val faceDetector: FaceDetector,
     private val textureAnalyzer: TextureAnalyzer,
     private val depthAnalyzer: DepthAnalyzer,
-    private val deviceDetector: DeviceDetector,
     private val screenReflectionDetector: ScreenReflectionDetector,
-    private val replaySpoofDetector: ReplaySpoofDetector,
     private val frameEnhancer: FrameEnhancer,
     private val framePreprocessor: FramePreprocessor?,
     private val nativeChallengeManager: NativeChallengeManager,
@@ -65,9 +59,7 @@ class PadFrameAnalyzer internal constructor(
 
             var textureResult: TextureResult? = null
             var depthResult: DepthResult? = null
-            var deviceResult: DeviceDetectionResult? = null
             var screenReflectionResult: ScreenReflectionResult? = null
-            var replaySpoofResult: ReplaySpoofResult? = null
             var faceCropBitmap: Bitmap? = null
             var faceDisplayBitmap: Bitmap? = null
             var enhancementApplied = false
@@ -99,9 +91,7 @@ class PadFrameAnalyzer internal constructor(
                 val bbox = detection.bbox
                 depthResult = depthAnalyzer.analyze(analysisBitmap, bbox)
                 textureResult = textureAnalyzer.analyze(analysisBitmap, bbox)
-                deviceResult = deviceDetector.analyze(analysisBitmap, bbox)
                 screenReflectionResult = screenReflectionDetector.analyze(analysisBitmap, bbox)
-                replaySpoofResult = replaySpoofDetector.analyze(analysisBitmap, bbox)
                 faceCropBitmap = BitmapConverter.cropFace(bitmap, bbox)
                 faceDisplayBitmap = BitmapConverter.cropFaceForDisplay(bitmap, bbox)
                 if (framePreprocessor == null) {
@@ -114,9 +104,7 @@ class PadFrameAnalyzer internal constructor(
                 analysisBitmap = analysisBitmap,
                 detection = detection,
                 textureResult = textureResult,
-                depthResult = depthResult,
-                deviceResult = deviceResult,
-                replaySpoofResult = replaySpoofResult
+                depthResult = depthResult
             )
 
             val outputBytes = OpenPadNative.nativeAnalyzeFrame(input)
@@ -128,9 +116,7 @@ class PadFrameAnalyzer internal constructor(
                 rawDetection = rawDetection,
                 textureResult = textureResult,
                 depthResult = depthResult,
-                deviceResult = deviceResult,
                 screenReflectionResult = screenReflectionResult,
-                replaySpoofResult = replaySpoofResult,
                 faceCropBitmap = faceCropBitmap,
                 faceDisplayBitmap = faceDisplayBitmap,
                 enhancementApplied = enhancementApplied,

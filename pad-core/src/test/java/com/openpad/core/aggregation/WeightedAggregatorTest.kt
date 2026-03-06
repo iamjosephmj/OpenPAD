@@ -2,7 +2,6 @@ package com.openpad.core.aggregation
 
 import com.openpad.core.InternalPadConfig
 import com.openpad.core.depth.DepthResult
-import com.openpad.core.device.DeviceDetectionResult
 import com.openpad.core.device.ScreenReflectionResult
 import com.openpad.core.frequency.FrequencyResult
 import com.openpad.core.photometric.PhotometricResult
@@ -42,7 +41,7 @@ class WeightedAggregatorTest {
         val aggregator = WeightedAggregator(config)
         assertEquals(
             PadStatus.ANALYZING,
-            aggregator.classify(null, null, null, null, null, null, null)
+            aggregator.classify(null, null, null, null, null, null)
         )
     }
 
@@ -52,7 +51,7 @@ class WeightedAggregatorTest {
         val features = temporal(framesCollected = 1, consecutiveFaceFrames = 5)
         assertEquals(
             PadStatus.ANALYZING,
-            aggregator.classify(null, null, null, null, null, features, null)
+            aggregator.classify(null, null, null, null, features, null)
         )
     }
 
@@ -62,7 +61,7 @@ class WeightedAggregatorTest {
         val features = temporal(faceDetected = false)
         assertEquals(
             PadStatus.NO_FACE,
-            aggregator.classify(null, null, null, null, null, features, null)
+            aggregator.classify(null, null, null, null, features, null)
         )
     }
 
@@ -72,24 +71,7 @@ class WeightedAggregatorTest {
         val features = temporal(faceConfidence = 0.3f)
         assertEquals(
             PadStatus.NO_FACE,
-            aggregator.classify(null, null, null, null, null, features, null)
-        )
-    }
-
-    @Test
-    fun deviceGateTriggersSpoofSuspected() {
-        val aggregator = WeightedAggregator(config)
-        val features = temporal()
-        val device = DeviceDetectionResult(
-            deviceDetected = true,
-            maxConfidence = 0.9f,
-            deviceClass = "cell phone",
-            overlapWithFace = true,
-            spoofScore = 0.8f
-        )
-        assertEquals(
-            PadStatus.SPOOF_SUSPECTED,
-            aggregator.classify(null, null, null, device, null, features, null)
+            aggregator.classify(null, null, null, null, features, null)
         )
     }
 
@@ -109,7 +91,7 @@ class WeightedAggregatorTest {
         )
         assertEquals(
             PadStatus.SPOOF_SUSPECTED,
-            aggregator.classify(null, null, null, null, null, features, screen)
+            aggregator.classify(null, null, null, null, features, screen)
         )
     }
 
@@ -120,7 +102,7 @@ class WeightedAggregatorTest {
         val texture = TextureResult(genuineScore = 0.2f, spoofScore = 0.8f, backgroundScore = 0f)
         assertEquals(
             PadStatus.SPOOF_SUSPECTED,
-            aggregator.classify(texture, null, null, null, null, features, null)
+            aggregator.classify(texture, null, null, null, features, null)
         )
     }
 
@@ -131,7 +113,7 @@ class WeightedAggregatorTest {
         val depth = DepthResult.fromBoth(0.8f, 0.2f, cdcnScore = 0.2f, cdcnVariance = 0f, cdcnMean = 0.2f)
         assertEquals(
             PadStatus.SPOOF_SUSPECTED,
-            aggregator.classify(null, depth, null, null, null, features, null)
+            aggregator.classify(null, depth, null, null, features, null)
         )
     }
 
@@ -142,7 +124,7 @@ class WeightedAggregatorTest {
         val photometric = PhotometricResult(0.5f, 0.5f, 0.5f, 0.5f, combinedScore = 0.1f)
         assertEquals(
             PadStatus.SPOOF_SUSPECTED,
-            aggregator.classify(null, null, null, null, photometric, features, null)
+            aggregator.classify(null, null, null, photometric, features, null)
         )
     }
 
@@ -154,7 +136,7 @@ class WeightedAggregatorTest {
         val depth = DepthResult.fromBoth(0.8f, 0.2f, cdcnScore = 0.8f, cdcnVariance = 0f, cdcnMean = 0.8f)
         assertEquals(
             PadStatus.LIVE,
-            aggregator.classify(texture, depth, null, null, null, features, null)
+            aggregator.classify(texture, depth, null, null, features, null)
         )
     }
 
@@ -163,9 +145,8 @@ class WeightedAggregatorTest {
         val aggregator = WeightedAggregator(config)
         val texture = TextureResult(genuineScore = 1f, spoofScore = 0f, backgroundScore = 0f)
         val depth = DepthResult.fromBoth(1f, 0f, cdcnScore = 1f, cdcnVariance = 0f, cdcnMean = 1f)
-        val device = DeviceDetectionResult(false, 0f, null, false, spoofScore = 0f)
 
-        val score = aggregator.computeAggregateScore(texture, depth, device, null)
+        val score = aggregator.computeAggregateScore(texture, depth, null)
         assertEquals(1f, score, 0.01f)
     }
 
@@ -174,9 +155,8 @@ class WeightedAggregatorTest {
         val aggregator = WeightedAggregator(config)
         val texture = TextureResult(genuineScore = 1f, spoofScore = 0f, backgroundScore = 0f)
         val depth = DepthResult.fromMn3Only(1f, 0f)
-        val device = DeviceDetectionResult(false, 0f, null, false, spoofScore = 0f)
 
-        val score = aggregator.computeAggregateScore(texture, depth, device, null)
+        val score = aggregator.computeAggregateScore(texture, depth, null)
         assert(score >= 0.9f && score <= 1.01f)
     }
 
@@ -187,7 +167,7 @@ class WeightedAggregatorTest {
         val texture = TextureResult(genuineScore = 0.8f, spoofScore = 0.2f, backgroundScore = 0f)
         assertEquals(
             PadStatus.SPOOF_SUSPECTED,
-            aggregator.classify(texture, null, null, null, null, features, null)
+            aggregator.classify(texture, null, null, null, features, null)
         )
     }
 
@@ -198,7 +178,7 @@ class WeightedAggregatorTest {
         val texture = TextureResult(genuineScore = 0.8f, spoofScore = 0.2f, backgroundScore = 0f)
         assertEquals(
             PadStatus.SPOOF_SUSPECTED,
-            aggregator.classify(texture, null, null, null, null, features, null)
+            aggregator.classify(texture, null, null, null, features, null)
         )
     }
 }

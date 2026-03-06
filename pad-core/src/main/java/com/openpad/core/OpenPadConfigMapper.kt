@@ -10,10 +10,8 @@ package com.openpad.core
  * - textureAnalysisWeight -> textureWeight
  * - depthGateWeight -> mn3Weight
  * - depthAnalysisWeight -> cdcnWeight
- * - screenDetectionWeight -> deviceWeight
  * - depthGateMinScore -> mn3GateThreshold
  * - depthFlatnessMinScore -> depthFlatnessThreshold
- * - screenDetectionMinConfidence -> deviceConfidenceThreshold
  * - moireDetectionThreshold -> moireThreshold
  * - screenPatternThreshold -> lbpScreenThreshold
  * - spoofAttemptPenalty -> spoofAttemptPenaltyPerCount
@@ -31,10 +29,8 @@ internal object OpenPadConfigMapper {
         textureWeight = config.textureAnalysisWeight,
         mn3Weight = config.depthGateWeight,
         cdcnWeight = config.depthAnalysisWeight,
-        deviceWeight = config.screenDetectionWeight,
         mn3GateThreshold = config.depthGateMinScore,
         depthFlatnessThreshold = config.depthFlatnessMinScore,
-        deviceConfidenceThreshold = config.screenDetectionMinConfidence,
         moireThreshold = config.moireDetectionThreshold,
         lbpScreenThreshold = config.screenPatternThreshold,
         photometricMinScore = config.photometricMinScore,
