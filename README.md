@@ -8,6 +8,7 @@ On-device Presentation Attack Detection (face liveness) for Android. Detects fac
   <img src="resources/pad.gif" width="300" alt="OpenPAD demo"/>
 </p>
 
+** This is an AI gen photo, source: https://this-person-does-not-exist.com/en
 ---
 
 ## Integration Guide
